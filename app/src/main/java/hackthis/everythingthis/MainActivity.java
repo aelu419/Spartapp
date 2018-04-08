@@ -294,4 +294,5 @@ public class MainActivity extends AppCompatActivity {
         return(size * DisplayMetrics.DENSITY_DEFAULT) / metrics.densityDpi;
     }
 
+    public void doSomething(){ Log.d("something","something");}
 }
