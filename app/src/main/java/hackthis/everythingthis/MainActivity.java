@@ -107,11 +107,6 @@ public class MainActivity extends AppCompatActivity {
             announcements.add(nextAnnouncements[i]);
         }
 
-        LinearLayout filter_Layout = (LinearLayout) findViewById(R.id.filterLayout);
-
-        View v2 = inf.inflate(R.layout.filter_view, null);
-        filter_Layout.addView(v2);
-
         filter_Layout.setVisibility(View.INVISIBLE);
 
         final ImageButton next = (ImageButton) findViewById(R.id.nextBT);
@@ -206,7 +201,6 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
         );
-        toolbar.setOnMenuItemClickListener(this);
 
         //get access to internet
         StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
@@ -268,14 +262,19 @@ public class MainActivity extends AppCompatActivity {
 
         //setContentView(R.layout.view_announcements);
         Toolbar toolbar = (Toolbar) findViewById(R.id.myToolbar);
+        toolbar.setOnMenuItemClickListener(this);
         setSupportActionBar(toolbar);
         getSupportActionBar().show();
         LinearLayout mainLayout = (LinearLayout) findViewById(R.id.linearOne);
         LayoutInflater inf2 = LayoutInflater.from(this);
         View v = inf2.inflate(R.layout.announcements_list, null);
-        mainLayout.addView(v);
+        mainLayout.addView(v); //announcements LIST
 
-        View v = inf.inflate(R.layout.view_announcements, null);
+        LinearLayout filter_Layout = (LinearLayout) findViewById(R.id.filterLayout);
+        View v2 = inf2.inflate(R.layout.filter_view, null); //filter view
+        filter_Layout.addView(v2);
+
+        View v = inf.inflate(R.layout.view_announcements, null); //announcements VIEW
         l.addView(v);
     }
 
