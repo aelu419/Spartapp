@@ -75,6 +75,8 @@ public class MainActivity extends AppCompatActivity {
     public boolean shown = false; //this is for the filter view
 
     public int announcementsIndex = 2;
+    
+    public ArrayList<Announcement> announcements = new ArrayList<Announcement>();
 
     public Announcement[] nextAnnouncements = {/*change this to get the announcement from the database instead of from a set string
     also the time has not really been implemented*/
