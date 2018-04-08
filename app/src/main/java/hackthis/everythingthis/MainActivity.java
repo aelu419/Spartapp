@@ -359,7 +359,7 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 scheduleIcon.setImageResource(R.drawable.schedule);
                 announcementIcon.setImageResource(R.drawable.announcement_selected);
-                AnnouncementsOnCreate();
+                showAnnouncementsPage();
             }
             pageModeHistory = pageMode;
         }
