@@ -107,8 +107,6 @@ public class MainActivity extends AppCompatActivity {
             announcements.add(nextAnnouncements[i]);
         }
 
-        filter_Layout.setVisibility(View.INVISIBLE);
-
         final ImageButton next = (ImageButton) findViewById(R.id.nextBT);
         final ImageButton prev = (ImageButton) findViewById(R.id.prevBT);
 
