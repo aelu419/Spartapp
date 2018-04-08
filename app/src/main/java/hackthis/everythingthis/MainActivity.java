@@ -37,6 +37,25 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.StringTokenizer;
 
+import android.app.SearchManager;
+import android.content.Context;
+import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.SearchView;
+import android.support.v7.widget.Toolbar;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import java.util.ArrayList;
+
 public class MainActivity extends AppCompatActivity {
 
     //false = schedule, true = announcement
@@ -53,9 +72,24 @@ public class MainActivity extends AppCompatActivity {
     private ImageView scheduleIcon, announcementIcon;
 
     //announcement page vars
+    public boolean shown = false; //this is for the filter view
 
+    public int announcementsIndex = 2;
 
-
+    public Announcement[] nextAnnouncements = {/*change this to get the announcement from the database instead of from a set string
+    also the time has not really been implemented*/
+            //format: content, new Time(time), club (you can use null)
+            new Announcement("Dogs", new Time(19700101), null),
+            new Announcement("More Dogs", new Time(19700101), null),
+            new Announcement("Cats", new Time(19700101), null),
+            new Announcement("More Cats", new Time(19700101), null),
+            new Announcement("Birds", new Time(19700101), null),
+            new Announcement("More Birds", new Time(19700101), null),
+            new Announcement("Snakes", new Time(19700101), null),
+            new Announcement("More Snakes", new Time(19700101), null),
+            new Announcement("Raccoons", new Time(19700101), null),
+            new Announcement("More Raccoons", new Time(19700101), null),
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,6 +99,112 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         getSupportActionBar().hide();
+
+        announcements.clear();
+        for(int i = 0; i < nextAnnouncements.length; i ++) {
+            announcements.add(nextAnnouncements[i]);
+        }
+
+        LinearLayout filter_Layout = (LinearLayout) findViewById(R.id.filterLayout);
+
+        View v2 = inf.inflate(R.layout.filter_view, null);
+        filter_Layout.addView(v2);
+
+        filter_Layout.setVisibility(View.INVISIBLE);
+
+        final ImageButton next = (ImageButton) findViewById(R.id.nextBT);
+        final ImageButton prev = (ImageButton) findViewById(R.id.prevBT);
+
+
+        next.setOnClickListener(
+                new Button.OnClickListener() {
+                    public void onClick(View v) {
+                        announcementsIndex = (announcementsIndex+10)%10;
+                        //Toast.makeText(MainActivity.this, "hjju", Toast.LENGTH_SHORT).show();
+                        TextView[] textviews = { //this is temporary make this adaptable for leancloud
+                                (TextView) findViewById(R.id.content1),
+                                (TextView) findViewById(R.id.content2),
+                                (TextView) findViewById(R.id.content3),
+                                (TextView) findViewById(R.id.content4),
+                                (TextView) findViewById(R.id.content5),
+                                (TextView) findViewById(R.id.content6),
+                                (TextView) findViewById(R.id.content7),
+                                (TextView) findViewById(R.id.content8)
+                        };
+
+                        //those are the two sample announcements for now (more can be added later)
+
+                        String current = (String)textviews[0].getText(); //this is used to make sure the button actually changes the thing
+
+                        Announcement[] currentAnnouncements = new Announcement[textviews.length];
+                        for(int i = 0; i < textviews.length; i ++) {
+                                currentAnnouncements[i] = new Announcement((String)textviews[i].getText(), null, null);
+                                textviews[i].setText(announcements.get((announcementsIndex+i)%announcements.size()).getAnnouncement());
+                        }; //change this to get the announcement from the database instead of from a set string
+
+                        announcementsIndex+=8; //8 is the number on one page at the moment
+                        //replaces the announcements in like a cycle
+                        nextAnnouncements = currentAnnouncements;
+                        String afterChange = (String)textviews[0].getText(); //compares the changes and if they are the same it changes again otherwise nothing happens
+
+                        for(int i = 0; i < currentAnnouncements.length; i ++) {
+                            currentAnnouncements[i] = new Announcement((String)textviews[i].getText(), null, null);
+                        }
+
+                        if(current.equals(afterChange)) {
+                            next.callOnClick();
+                        }
+
+                        Toast.makeText(MainActivity.this, nextAnnouncements[0].getAnnouncement(), Toast.LENGTH_SHORT).show();
+                        //prev.callOnClick();
+                    }
+                }
+        );
+        prev.setOnClickListener(
+                new Button.OnClickListener() {
+                    public void onClick(View v) {
+                        announcementsIndex-=8; //8 is the number on one page at the moment
+                        announcementsIndex = (announcementsIndex+10)%10;
+                        //Toast.makeText(MainActivity.this, "hjju", Toast.LENGTH_SHORT).show();
+                        TextView[] textviews = { //this is temporary make this adaptable for the database
+                                (TextView) findViewById(R.id.content1),
+                                (TextView) findViewById(R.id.content2),
+                                (TextView) findViewById(R.id.content3),
+                                (TextView) findViewById(R.id.content4),
+                                (TextView) findViewById(R.id.content5),
+                                (TextView) findViewById(R.id.content6),
+                                (TextView) findViewById(R.id.content7),
+                                (TextView) findViewById(R.id.content8)
+                        };
+
+                        //those are the two sample announcements for now (more can be added later)
+
+                        String current = (String)textviews[0].getText(); //this is used to make sure the button actually changes the thing
+
+                        Announcement[] currentAnnouncements = new Announcement[textviews.length];
+                        for(int i = 0; i < textviews.length; i ++) {
+                            currentAnnouncements[i] = new Announcement((String)textviews[i].getText(), null, null);
+                            textviews[i].setText(announcements.get((announcementsIndex+i)%announcements.size()).getAnnouncement());
+                        }; //change this to get the announcement from the database instead of from a set string
+
+                        //replaces the announcements in like a cycle
+                        nextAnnouncements = currentAnnouncements;
+                        String afterChange = (String)textviews[0].getText(); //compares the changes and if they are the same it changes again otherwise nothing happens
+
+                        for(int i = 0; i < currentAnnouncements.length; i ++) {
+                            currentAnnouncements[i] = new Announcement((String)textviews[i].getText(), null, null);
+                        }
+
+                        if(current.equals(afterChange)) {
+                            prev.callOnClick();
+                        }
+
+                        Toast.makeText(MainActivity.this, nextAnnouncements[0].getAnnouncement(), Toast.LENGTH_SHORT).show();
+                        //prev.callOnClick();
+                    }
+                }
+        );
+        toolbar.setOnMenuItemClickListener(this);
 
         //get access to internet
         StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
@@ -97,6 +237,49 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });*/
+    }
+
+/**
+ *
+ * Stuff to change to adapt to database
+ * Line 47 mainly
+ * the array called nextAnnouncements
+ * Line 206
+ *
+ * just use control and f and search for database
+ * most stuff to implement will be in those locations
+ *
+ * also right now the announcements are moving up by size%8 (which is two) which i have no clue how to fix without adding ghost announcements
+ *
+ * I was thinking for the filter screen we might as well use a spinner (dropdown) because it's more versatile
+ * the spinner is already there we just need to set it to visible (R.id.filterDropdown)
+ *
+ * Todo:
+ * make the next and prev page buttons turn gray or something when announcements run out (like if(announcementsToLoad=0) changeColorToGray)
+ * add functions to set the title of an announcement
+ * add a function to implement the time function (current time minus that time or whatever)
+ * are we gonna do search? (we can just linear search all the announcements or something and show only the ones that have the thing the user's searching for)
+ */
+
+    public void showAnnouncementsPage(LinearLayout l /*provide a layout to inflate the announcements page into*/) {
+        LayoutInflater inf = LayoutInflater.from(this);
+
+        //setContentView(R.layout.view_announcements);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.myToolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().show();
+        LinearLayout mainLayout = (LinearLayout) findViewById(R.id.linearOne);
+        LayoutInflater inf2 = LayoutInflater.from(this);
+        View v = inf2.inflate(R.layout.announcements_list, null);
+        mainLayout.addView(v);
+
+        View v = inf.inflate(R.layout.view_announcements, null);
+        l.addView(v);
+    }
+
+    public void showMainPage() /*schedule page*/ {
+        setContentView(R.layout.activity_main);
+        getSupportActionBar().hide();
     }
 
     @Override
@@ -174,7 +357,7 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 scheduleIcon.setImageResource(R.drawable.schedule);
                 announcementIcon.setImageResource(R.drawable.announcement_selected);
-                //Todo: call announcement initialization method
+                AnnouncementsOnCreate();
             }
             pageModeHistory = pageMode;
         }
@@ -295,4 +478,113 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void doSomething(){ Log.d("something","something");}
+
+    /**
+    *below: from the announcements thing
+    **/
+
+    public boolean onMenuItemClick(MenuItem m) {
+        switch (m.getItemId()) {
+
+            case R.id.filter:
+//                Toast.makeText(this, "filterV", Toast.LENGTH_SHORT).show();
+                LinearLayout filterLayout = (LinearLayout) findViewById(R.id.filterLayout);
+
+              //  Toast.makeText(this, "filterV " + filterLayout.getWidth(), Toast.LENGTH_SHORT).show();
+
+                if(!shown)
+                {
+                    filterLayout.setVisibility(View.VISIBLE);
+                   // Toast.makeText(this, "shown", Toast.LENGTH_SHORT).show();
+                    shown = !shown;
+                }
+
+                else
+                {
+                    filterLayout.setVisibility(View.INVISIBLE);
+                 //   Toast.makeText(this, "hide", Toast.LENGTH_SHORT).show();
+                    shown = !shown;
+                }
+
+                ImageButton up = (ImageButton) findViewById(R.id.up);
+                ImageButton down = (ImageButton) findViewById(R.id.down);
+                Button apply = (Button) findViewById(R.id.applyButton);
+
+
+                up.setOnClickListener(
+                        new ImageButton.OnClickListener() {
+                            public void onClick(View v) {
+                                TextView text = (TextView) findViewById(R.id.dayInt);
+                                String dayText = text.getText().toString();
+                                try {
+                                    int daytextInt = Integer.parseInt(dayText);
+                                    if(daytextInt <= 5) daytextInt++;
+                                    else daytextInt = 1;
+                                    text.setText("" + daytextInt);
+                                } catch (NumberFormatException e) {
+                                    System.out.println(e); //outputs to the console (useful when debugging or something)
+                                }
+                                //Toast.makeText(MainActivity.this, dayText, Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                );
+
+                down.setOnClickListener(
+                        new ImageButton.OnClickListener() {
+                            public void onClick(View v) {
+                                TextView text = (TextView) findViewById(R.id.dayInt);
+                                String dayText = text.getText().toString();
+                                try {
+                                    int daytextInt = Integer.parseInt(dayText);
+                                    if(daytextInt >= 2) daytextInt--;
+                                    else daytextInt = 6;
+                                    text.setText("" + daytextInt);
+                                } catch (NumberFormatException e) {
+                                    System.out.println(e); //outputs to the console (useful when debugging or something)
+                                }
+                                //Toast.makeText(MainActivity.this, dayText, Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                );
+                apply.setOnClickListener(
+                        new Button.OnClickListener() {
+                            public void onClick(View v) {
+
+                                //write code here to apply the filter
+
+                                LinearLayout filterLayout = (LinearLayout) findViewById(R.id.filterLayout);
+                                filterLayout.setVisibility(View.INVISIBLE);
+                                shown = !shown;
+                            }
+                        }
+                );
+
+
+
+
+
+            default:
+                break;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.options_menu, menu);
+
+        MenuItem searchItem = menu.findItem(R.id.search);
+
+        SearchManager searchManager = (SearchManager) MainActivity.this.getSystemService(Context.SEARCH_SERVICE);
+
+        SearchView searchView = null;
+        if (searchItem != null) {
+            searchView = (SearchView) searchItem.getActionView();
+        }
+        if (searchView != null) {
+            searchView.setSearchableInfo(searchManager.getSearchableInfo(MainActivity.this.getComponentName()));
+        }
+        return super.onCreateOptionsMenu(menu);
+    }
 }
