@@ -272,8 +272,8 @@ public class MainActivity extends AppCompatActivity {
         View v2 = inf2.inflate(R.layout.filter_view, null); //filter view
         filter_Layout.addView(v2);
 
-        View v = inf.inflate(R.layout.view_announcements, null); //announcements VIEW
-        l.addView(v);
+        View v3 = inf.inflate(R.layout.view_announcements, null); //announcements VIEW
+        l.addView(v3);
     }
 
     public void showMainPage() /*schedule page*/ {
