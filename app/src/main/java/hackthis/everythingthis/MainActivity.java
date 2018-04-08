@@ -107,8 +107,6 @@ public class MainActivity extends AppCompatActivity {
             announcements.add(nextAnnouncements[i]);
         }
 
-        filter_Layout.setVisibility(View.INVISIBLE);
-
         final ImageButton next = (ImageButton) findViewById(R.id.nextBT);
         final ImageButton prev = (ImageButton) findViewById(R.id.prevBT);
 
@@ -274,8 +272,8 @@ public class MainActivity extends AppCompatActivity {
         View v2 = inf2.inflate(R.layout.filter_view, null); //filter view
         filter_Layout.addView(v2);
 
-        View v = inf.inflate(R.layout.view_announcements, null); //announcements VIEW
-        l.addView(v);
+        View v3 = inf.inflate(R.layout.view_announcements, null); //announcements VIEW
+        l.addView(v3);
     }
 
     public void showMainPage() /*schedule page*/ {
