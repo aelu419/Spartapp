@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="net.andrewli.announcementstab.MainActivity">
+    >
 
     <android.support.v7.widget.Toolbar
         android:id="@+id/myToolbar"
@@ -17,6 +17,8 @@
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/linearOne"
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
         tools:layout_editor_absoluteY="0dp" />
 
@@ -47,7 +49,8 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/myToolbar"></LinearLayout>
+        app:layout_constraintTop_toTopOf="@+id/myToolbar"
+        android:background="@color/background"></LinearLayout>
 
     <LinearLayout
         android:id="@+id/filterLayout"

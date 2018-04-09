@@ -1,10 +1,12 @@
 package hackthis.everythingthis;
 
+import java.util.Date;
+
 class Club {
-    private CharSequence name;
+    private String name;
     private String manager /*like the student or teacher that manages the club*/;
 
-    public Club(CharSequence name, String manager) {
+    public Club(String name, String manager) {
         this.setName(name);
         this.setManager(manager);
     }
@@ -13,11 +15,11 @@ class Club {
      * @return
      */
 
-    public CharSequence getName() {
+    public String getName() {
         return name;
     }
 
-    public void setName(CharSequence name) {
+    public void setName(String name) {
         this.name = name;
     }
 
@@ -34,9 +36,9 @@ class Time {
     String formatted = "";
 
     public Time(int unformatted) {
-        String unformattedString = "" + unformatted;
-        formatted += unformattedString.substring(6, 8) + " "; // day
-        int month = Integer.parseInt(unformattedString.substring(4, 6));
+
+        //formatted += unformattedString.substring(6, 8) + " "; // day
+        /*int month = Integer.parseInt(unformattedString.substring(4, 6));
         switch (month) { // changes the number to the month name (this isn't all that useful but it might
             // come in handy)
             case 1:
@@ -77,9 +79,9 @@ class Time {
                 break;
             default:
                 formatted += " ";
-        }
+        }*/
 
-        formatted += unformattedString.substring(0, 4); // the year
+        //formatted += unformattedString.substring(0, 4); // the year
     }
 
     public void printFormatted() {
@@ -91,15 +93,17 @@ class Time {
     }
 }
 
-public class Announcement {
-    private CharSequence announcement;
-    private Time postTime; //see above for the class
+class Announcement implements Comparable {
+    public String title;
+    private String announcement;
+    private Date postTime; //see above for the class
     private Club club; //see above for the class
 
-    public Announcement(CharSequence announcement /* What does it say? */, Time postTime /* When was it posted? */, Club club /*Who made the announcement?*/) {
+    public Announcement(String title, String announcement /* What does it say? */, Date postTime /* When was it posted? */, Club club /*Who made the announcement?*/) {
         this.setAnnouncement(announcement);
         this.setPostTime(postTime);
         this.setClub(club);
+        this.title = title;
     }
     /**
      * maybe we could use rss; it doesn't really simplify things, it just makes it easier to post
@@ -107,11 +111,11 @@ public class Announcement {
      * @return
      */
 
-    public CharSequence getAnnouncement() {
+    public String getAnnouncement() {
         return announcement;
     }
 
-    public void setAnnouncement(CharSequence announcement) {
+    public void setAnnouncement(String announcement) {
         this.announcement = announcement;
     }
 
@@ -134,7 +138,7 @@ public class Announcement {
      * @return
      */
 
-    public Time getPostTime() {
+    public Date getPostTime() {
         return postTime;
     }
 
@@ -145,7 +149,7 @@ public class Announcement {
      * @param postTime
      */
 
-    public void setPostTime(Time postTime) {
+    public void setPostTime(Date postTime) {
         this.postTime = postTime;
     }
 
@@ -177,4 +181,15 @@ public class Announcement {
      *
      * We can also somehow get announcements from the database this way
      */
+
+
+    public int compareTo(Object obj){
+        long time = ((Announcement)obj).getPostTime().getTime();
+        if(this.getPostTime().getTime() > time)
+            return 1;
+        else if(this.getPostTime().getTime() < time)
+            return -1;
+        else
+            return 0;
+    }
 }

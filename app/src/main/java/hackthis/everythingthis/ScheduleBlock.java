@@ -414,7 +414,7 @@ public class ScheduleBlock extends LinearLayout {
 
             TextView errorMessage = new TextView(context);
 
-            errorMessage.setTextSize((float)screenWidth/50);
+            errorMessage.setTextSize((float)(screenWidth > screenHeight ? screenWidth/50.0 : screenHeight/50.0));
             errorMessage.setGravity(Gravity.CENTER_HORIZONTAL|Gravity.CENTER_VERTICAL);
 
             if(fuckCalendarsWhyTheFuckDoesntWeekDayChangeAutomatically == GregorianCalendar.SUNDAY

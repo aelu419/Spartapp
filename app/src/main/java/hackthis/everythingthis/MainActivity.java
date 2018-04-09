@@ -56,7 +56,7 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity{
 
     //false = schedule, true = announcement
     private boolean pageMode = false;
@@ -64,34 +64,18 @@ public class MainActivity extends AppCompatActivity {
 
     // schedule page vars
     private int screenWidth, screenHeight;
-    private Date currentTime = new Date();
     private ScheduleRefresher scheduleRefresher = null;
     private boolean scheduleRefresherRunning = true;
     private ScheduleBlock sb;
+
+    //main frame vars
     private LinearLayout body;
     private ImageView scheduleIcon, announcementIcon;
 
     //announcement page vars
-    public boolean shown = false; //this is for the filter view
-
-    public int announcementsIndex = 2;
-    
-    public ArrayList<Announcement> announcements = new ArrayList<Announcement>();
-
-    public Announcement[] nextAnnouncements = {/*change this to get the announcement from the database instead of from a set string
-    also the time has not really been implemented*/
-            //format: content, new Time(time), club (you can use null)
-            new Announcement("Dogs", new Time(19700101), null),
-            new Announcement("More Dogs", new Time(19700101), null),
-            new Announcement("Cats", new Time(19700101), null),
-            new Announcement("More Cats", new Time(19700101), null),
-            new Announcement("Birds", new Time(19700101), null),
-            new Announcement("More Birds", new Time(19700101), null),
-            new Announcement("Snakes", new Time(19700101), null),
-            new Announcement("More Snakes", new Time(19700101), null),
-            new Announcement("Raccoons", new Time(19700101), null),
-            new Announcement("More Raccoons", new Time(19700101), null),
-    };
+    private AnnouncementBlock ab;
+    private AnnouncementRefresher announcementRefresher = null;
+    private boolean announcementRefresherRunning = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -101,104 +85,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         getSupportActionBar().hide();
-
-        announcements.clear();
-        for(int i = 0; i < nextAnnouncements.length; i ++) {
-            announcements.add(nextAnnouncements[i]);
-        }
-
-        final ImageButton next = (ImageButton) findViewById(R.id.nextBT);
-        final ImageButton prev = (ImageButton) findViewById(R.id.prevBT);
-
-
-        next.setOnClickListener(
-                new Button.OnClickListener() {
-                    public void onClick(View v) {
-                        announcementsIndex = (announcementsIndex+10)%10;
-                        //Toast.makeText(MainActivity.this, "hjju", Toast.LENGTH_SHORT).show();
-                        TextView[] textviews = { //this is temporary make this adaptable for leancloud
-                                (TextView) findViewById(R.id.content1),
-                                (TextView) findViewById(R.id.content2),
-                                (TextView) findViewById(R.id.content3),
-                                (TextView) findViewById(R.id.content4),
-                                (TextView) findViewById(R.id.content5),
-                                (TextView) findViewById(R.id.content6),
-                                (TextView) findViewById(R.id.content7),
-                                (TextView) findViewById(R.id.content8)
-                        };
-
-                        //those are the two sample announcements for now (more can be added later)
-
-                        String current = (String)textviews[0].getText(); //this is used to make sure the button actually changes the thing
-
-                        Announcement[] currentAnnouncements = new Announcement[textviews.length];
-                        for(int i = 0; i < textviews.length; i ++) {
-                                currentAnnouncements[i] = new Announcement((String)textviews[i].getText(), null, null);
-                                textviews[i].setText(announcements.get((announcementsIndex+i)%announcements.size()).getAnnouncement());
-                        }; //change this to get the announcement from the database instead of from a set string
-
-                        announcementsIndex+=8; //8 is the number on one page at the moment
-                        //replaces the announcements in like a cycle
-                        nextAnnouncements = currentAnnouncements;
-                        String afterChange = (String)textviews[0].getText(); //compares the changes and if they are the same it changes again otherwise nothing happens
-
-                        for(int i = 0; i < currentAnnouncements.length; i ++) {
-                            currentAnnouncements[i] = new Announcement((String)textviews[i].getText(), null, null);
-                        }
-
-                        if(current.equals(afterChange)) {
-                            next.callOnClick();
-                        }
-
-                        Toast.makeText(MainActivity.this, nextAnnouncements[0].getAnnouncement(), Toast.LENGTH_SHORT).show();
-                        //prev.callOnClick();
-                    }
-                }
-        );
-        prev.setOnClickListener(
-                new Button.OnClickListener() {
-                    public void onClick(View v) {
-                        announcementsIndex-=8; //8 is the number on one page at the moment
-                        announcementsIndex = (announcementsIndex+10)%10;
-                        //Toast.makeText(MainActivity.this, "hjju", Toast.LENGTH_SHORT).show();
-                        TextView[] textviews = { //this is temporary make this adaptable for the database
-                                (TextView) findViewById(R.id.content1),
-                                (TextView) findViewById(R.id.content2),
-                                (TextView) findViewById(R.id.content3),
-                                (TextView) findViewById(R.id.content4),
-                                (TextView) findViewById(R.id.content5),
-                                (TextView) findViewById(R.id.content6),
-                                (TextView) findViewById(R.id.content7),
-                                (TextView) findViewById(R.id.content8)
-                        };
-
-                        //those are the two sample announcements for now (more can be added later)
-
-                        String current = (String)textviews[0].getText(); //this is used to make sure the button actually changes the thing
-
-                        Announcement[] currentAnnouncements = new Announcement[textviews.length];
-                        for(int i = 0; i < textviews.length; i ++) {
-                            currentAnnouncements[i] = new Announcement((String)textviews[i].getText(), null, null);
-                            textviews[i].setText(announcements.get((announcementsIndex+i)%announcements.size()).getAnnouncement());
-                        }; //change this to get the announcement from the database instead of from a set string
-
-                        //replaces the announcements in like a cycle
-                        nextAnnouncements = currentAnnouncements;
-                        String afterChange = (String)textviews[0].getText(); //compares the changes and if they are the same it changes again otherwise nothing happens
-
-                        for(int i = 0; i < currentAnnouncements.length; i ++) {
-                            currentAnnouncements[i] = new Announcement((String)textviews[i].getText(), null, null);
-                        }
-
-                        if(current.equals(afterChange)) {
-                            prev.callOnClick();
-                        }
-
-                        Toast.makeText(MainActivity.this, nextAnnouncements[0].getAnnouncement(), Toast.LENGTH_SHORT).show();
-                        //prev.callOnClick();
-                    }
-                }
-        );
 
         //get access to internet
         StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
@@ -255,32 +141,6 @@ public class MainActivity extends AppCompatActivity {
  * are we gonna do search? (we can just linear search all the announcements or something and show only the ones that have the thing the user's searching for)
  */
 
-    public void showAnnouncementsPage(LinearLayout l /*provide a layout to inflate the announcements page into*/) {
-        LayoutInflater inf = LayoutInflater.from(this);
-
-        //setContentView(R.layout.view_announcements);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.myToolbar);
-        toolbar.setOnMenuItemClickListener(this);
-        setSupportActionBar(toolbar);
-        getSupportActionBar().show();
-        LinearLayout mainLayout = (LinearLayout) findViewById(R.id.linearOne);
-        LayoutInflater inf2 = LayoutInflater.from(this);
-        View v = inf2.inflate(R.layout.announcements_list, null);
-        mainLayout.addView(v); //announcements LIST
-
-        LinearLayout filter_Layout = (LinearLayout) findViewById(R.id.filterLayout);
-        View v2 = inf2.inflate(R.layout.filter_view, null); //filter view
-        filter_Layout.addView(v2);
-
-        View v3 = inf.inflate(R.layout.view_announcements, null); //announcements VIEW
-        l.addView(v3);
-    }
-
-    public void showMainPage() /*schedule page*/ {
-        setContentView(R.layout.activity_main);
-        getSupportActionBar().hide();
-    }
-
     @Override
     public void onStart(){
 
@@ -301,7 +161,7 @@ public class MainActivity extends AppCompatActivity {
         footer.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, (int)(0.075*screenHeight)));
         footer.setPadding(0,(int)(0.01*screenHeight),0,(int)(0.01*screenHeight));
 
-        //initialize icon button
+        //initialize icon buttons
         scheduleIcon = findViewById(R.id.scheduleIcon);
         LinearLayout.LayoutParams footerButtonParams = new LinearLayout.LayoutParams((int)(0.075*screenHeight),ViewGroup.LayoutParams.MATCH_PARENT);
         footerButtonParams.setMargins((int)(0.04*screenHeight),0,(int)(0.04*screenHeight),0);
@@ -312,6 +172,7 @@ public class MainActivity extends AppCompatActivity {
         announcementIcon = findViewById(R.id.announcementIcon);
         announcementIcon.setLayoutParams(footerButtonParams);
         announcementIcon.setPadding((int)(0.005*screenHeight),(int)(0.005*screenHeight),(int)(0.005*screenHeight),(int)(0.005*screenHeight));
+
 
 
         scheduleIcon.setOnClickListener(new View.OnClickListener() {
@@ -329,6 +190,9 @@ public class MainActivity extends AppCompatActivity {
                 updatePageMode();
             }
         });
+
+        sb = new ScheduleBlock(getApplicationContext(), screenHeight, screenWidth);
+        ab = new AnnouncementBlock(getApplicationContext(), new LinearLayout.LayoutParams(screenWidth, (int)(0.85*screenHeight)));
 
         pageMode = false;
         pageModeHistory = true;
@@ -350,13 +214,17 @@ public class MainActivity extends AppCompatActivity {
             });
 
             if (!pageMode) {
+                body.addView(sb);
                 scheduleIcon.setImageResource(R.drawable.schedule_selected);
                 announcementIcon.setImageResource(R.drawable.announcement);
+                //setContentView(R.layout.activity_main);
+                //getSupportActionBar().hide();
                 startScheduleRefresher();
             } else {
+                body.addView(ab);
                 scheduleIcon.setImageResource(R.drawable.schedule);
                 announcementIcon.setImageResource(R.drawable.announcement_selected);
-                showAnnouncementsPage();
+                startAnnouncementRefresher();
             }
             pageModeHistory = pageMode;
         }
@@ -381,14 +249,6 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected Void doInBackground(Void... params) {
 
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    sb = new ScheduleBlock(getApplicationContext(), screenHeight, screenWidth);
-                    body.addView(sb);
-                }
-            });
-
             while (scheduleRefresherRunning) {
 
                 publishProgress();
@@ -405,6 +265,46 @@ public class MainActivity extends AppCompatActivity {
         protected void onProgressUpdate(Void... values) {
             Log.i("Demo","progress update");
             sb.onSelection();
+            super.onProgressUpdate(values);
+        }
+
+    }
+
+    public void startAnnouncementRefresher() {
+        stopAnnouncementRefresher();
+        announcementRefresherRunning = true;
+        announcementRefresher = (AnnouncementRefresher) new AnnouncementRefresher().execute();
+    }
+
+    public void stopAnnouncementRefresher() {
+        if (announcementRefresher != null) {
+            announcementRefresherRunning = false;
+            announcementRefresher.cancel(true);
+            announcementRefresher = null;
+        }
+    }
+
+    public class AnnouncementRefresher extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... params) {
+
+            while (announcementRefresherRunning) {
+
+                publishProgress();
+                try {
+                    Thread.sleep(15000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+            return null;
+        }
+
+        @Override
+        protected void onProgressUpdate(Void... values) {
+            Log.i("Demo","progress update");
+            ab.loadAnnouncements();
             super.onProgressUpdate(values);
         }
 
@@ -476,114 +376,4 @@ public class MainActivity extends AppCompatActivity {
         return(size * DisplayMetrics.DENSITY_DEFAULT) / metrics.densityDpi;
     }
 
-    public void doSomething(){ Log.d("something","something");}
-
-    /**
-    *below: from the announcements thing
-    **/
-
-    public boolean onMenuItemClick(MenuItem m) {
-        switch (m.getItemId()) {
-
-            case R.id.filter:
-//                Toast.makeText(this, "filterV", Toast.LENGTH_SHORT).show();
-                LinearLayout filterLayout = (LinearLayout) findViewById(R.id.filterLayout);
-
-              //  Toast.makeText(this, "filterV " + filterLayout.getWidth(), Toast.LENGTH_SHORT).show();
-
-                if(!shown)
-                {
-                    filterLayout.setVisibility(View.VISIBLE);
-                   // Toast.makeText(this, "shown", Toast.LENGTH_SHORT).show();
-                    shown = !shown;
-                }
-
-                else
-                {
-                    filterLayout.setVisibility(View.INVISIBLE);
-                 //   Toast.makeText(this, "hide", Toast.LENGTH_SHORT).show();
-                    shown = !shown;
-                }
-
-                ImageButton up = (ImageButton) findViewById(R.id.up);
-                ImageButton down = (ImageButton) findViewById(R.id.down);
-                Button apply = (Button) findViewById(R.id.applyButton);
-
-
-                up.setOnClickListener(
-                        new ImageButton.OnClickListener() {
-                            public void onClick(View v) {
-                                TextView text = (TextView) findViewById(R.id.dayInt);
-                                String dayText = text.getText().toString();
-                                try {
-                                    int daytextInt = Integer.parseInt(dayText);
-                                    if(daytextInt <= 5) daytextInt++;
-                                    else daytextInt = 1;
-                                    text.setText("" + daytextInt);
-                                } catch (NumberFormatException e) {
-                                    System.out.println(e); //outputs to the console (useful when debugging or something)
-                                }
-                                //Toast.makeText(MainActivity.this, dayText, Toast.LENGTH_SHORT).show();
-                            }
-                        }
-                );
-
-                down.setOnClickListener(
-                        new ImageButton.OnClickListener() {
-                            public void onClick(View v) {
-                                TextView text = (TextView) findViewById(R.id.dayInt);
-                                String dayText = text.getText().toString();
-                                try {
-                                    int daytextInt = Integer.parseInt(dayText);
-                                    if(daytextInt >= 2) daytextInt--;
-                                    else daytextInt = 6;
-                                    text.setText("" + daytextInt);
-                                } catch (NumberFormatException e) {
-                                    System.out.println(e); //outputs to the console (useful when debugging or something)
-                                }
-                                //Toast.makeText(MainActivity.this, dayText, Toast.LENGTH_SHORT).show();
-                            }
-                        }
-                );
-                apply.setOnClickListener(
-                        new Button.OnClickListener() {
-                            public void onClick(View v) {
-
-                                //write code here to apply the filter
-
-                                LinearLayout filterLayout = (LinearLayout) findViewById(R.id.filterLayout);
-                                filterLayout.setVisibility(View.INVISIBLE);
-                                shown = !shown;
-                            }
-                        }
-                );
-
-
-
-
-
-            default:
-                break;
-        }
-        return false;
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.options_menu, menu);
-
-        MenuItem searchItem = menu.findItem(R.id.search);
-
-        SearchManager searchManager = (SearchManager) MainActivity.this.getSystemService(Context.SEARCH_SERVICE);
-
-        SearchView searchView = null;
-        if (searchItem != null) {
-            searchView = (SearchView) searchItem.getActionView();
-        }
-        if (searchView != null) {
-            searchView.setSearchableInfo(searchManager.getSearchableInfo(MainActivity.this.getComponentName()));
-        }
-        return super.onCreateOptionsMenu(menu);
-    }
 }
