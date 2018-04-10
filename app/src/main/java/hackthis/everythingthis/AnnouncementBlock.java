@@ -32,9 +32,16 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.avos.avoscloud.AVException;
+import com.avos.avoscloud.AVOSCloud;
+import com.avos.avoscloud.AVObject;
+import com.avos.avoscloud.AVQuery;
 import com.avos.avoscloud.search.SearchActivity;
 
 import java.lang.reflect.Array;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLConnection;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -42,6 +49,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 public class AnnouncementBlock extends LinearLayout{
@@ -49,22 +57,11 @@ public class AnnouncementBlock extends LinearLayout{
     Context context;
     boolean shown;
 
+    boolean internetConnected = true;
+
     public ArrayList<Announcement> announcements = new ArrayList<Announcement>();
 
     public ArrayList<String> defaultSubscribes = new ArrayList<>(10);
-
-    public Announcement[] nextAnnouncements = {
-            //format: content, new Time(time), club (you can use null)
-            new Announcement("Dogs", "a dog event", new Date(), new Club("dog club", "DOG")),
-            new Announcement("More Dogs", "more dog events", new Date(), new Club("more dog club","MOREDOG")),
-            new Announcement("Cats", "a cat event", new Date(), new Club("cat club", "CAT")),
-            new Announcement("Dogs", "a dog event", new Date(), new Club("dog club", "DOG")),
-            new Announcement("More Dogs", "more dog events", new Date(), new Club("more dog club","MOREDOG")),
-            new Announcement("Cats", "a cat event", new Date(), new Club("cat club", "CAT")),
-            new Announcement("Dogs", "a dog event", new Date(), new Club("dog club", "DOG")),
-            new Announcement("More Dogs", "more dog events", new Date(), new Club("more dog club","MOREDOG")),
-            new Announcement("Cats", "a cat event", new Date(), new Club("cat club", "CAT"))
-    };
 
     public ArrayList<Club> clubs = new ArrayList<>(50);
 
@@ -95,15 +92,16 @@ public class AnnouncementBlock extends LinearLayout{
         AnnouncementFilterLayout filter;
             //inside filter
             LinearLayout.LayoutParams optionCellLayout;
-
+    //leanCloud
+    AVQuery<AVObject> clubQuery;
+    AVQuery<AVObject> announcementQuery;
 
 
     public AnnouncementBlock(Context viewContext, LayoutParams body, SharedPreferences PREFERENCES, SharedPreferences.Editor EDITOR){
         super(viewContext);
         context = viewContext;
 
-        //TODO: change this to all the school related orgs online
-        defaultSubscribes.add("more dog club");
+        defaultSubscribes.add("Student Council");
 
         editor = EDITOR;
         preferences = PREFERENCES;
@@ -123,16 +121,6 @@ public class AnnouncementBlock extends LinearLayout{
         this.setLayoutParams(bodyParams);
         this.setOrientation(VERTICAL);
         this.setGravity(Gravity.TOP);
-
-        //TODO: delete this after pull method is complete, also notice that the second param is editKey, not manager
-        announcements.clear();
-        for(int i = 0; i < nextAnnouncements.length; i ++) {
-            announcements.add(nextAnnouncements[i]);
-        }
-        clubs.clear();
-        clubs.add(new Club("dog club", "DOG"));
-        clubs.add(new Club("more dog club","MOREDOG"));
-        clubs.add(new Club("cat club", "CAT"));
 
         subscribed = new ArrayList<>(preferences.getStringSet(getResources().getString(R.string.subscribed_channels_key),
                 new HashSet<String>(defaultSubscribes)));
@@ -167,6 +155,12 @@ public class AnnouncementBlock extends LinearLayout{
         pullFromDatabase();
 
         list.removeAllViews();
+
+        if(!internetConnected){
+            ErrorButton eb = new ErrorButton();
+            list.addView(eb);
+            return;
+        }
 
         ArrayList<Announcement> filteredAnnouncement = new ArrayList<>(50);
 
@@ -213,14 +207,14 @@ public class AnnouncementBlock extends LinearLayout{
         Contents midValue = arr[0];
         for(int i = 1; i < arr.length; i++){
 
-			if((arr[i].content).compareTo(midValue.content)<=0)
+			if((arr[i].content).compareTo(midValue.content)>=0)
 				len++;
         }
         Contents[] tempLeft = new Contents[len];
         Contents[] tempRight = new Contents[arr.length - 1 - len];
         int m1 = 0, m2 = 0;
         for(int i = 1; i < arr.length; i++){
-			if((arr[i].content).compareTo(midValue.content)<=0)
+			if((arr[i].content).compareTo(midValue.content)>=0)
 				tempLeft[m1++] = arr[i];
 			else{
 				tempRight[m2++] = arr[i];
@@ -244,10 +238,59 @@ public class AnnouncementBlock extends LinearLayout{
 
 
     public void pullFromDatabase(){
-        //TODO: write pull method here
+        //check if there is internet connection
 
-        //TODO: update announcements into announcements<Announcement>
-        //TODO: update clubs into subscribedChannels<Club>
+        try
+        {
+            Log.d("announcement","try to connect");
+            URL url = new URL("http://www.baidu.com");
+
+            URLConnection connection = url.openConnection();
+            connection.connect();
+            internetConnected = true;
+
+
+        }catch (Exception e){
+
+            Log.d("announcement","failed to connect");
+            internetConnected = false;
+            return;
+
+        }
+
+
+
+        try {
+            announcements.clear();
+            for(String i : subscribed) {
+                announcementQuery = new AVQuery<>("Announcements");
+                announcementQuery.whereContains("clubName",i);
+                List<AVObject> annList = announcementQuery.find();
+                for(AVObject j : annList){
+                    announcements.add(new Announcement(j.getString("announcementTitle"),
+                            j.getString("announcementTitle"), j.getDate("createdAt"),
+                            new Club(j.getString("clubName"), "key")));
+                }
+            }
+        }
+        catch (AVException e){
+            //TODO: add handler?
+        }
+
+
+
+        try {
+            clubQuery = new AVQuery<>("Clubs");
+            List<AVObject> clubsList = clubQuery.find();
+            clubs.clear();
+            for(AVObject i : clubsList){
+                //TODO: add the key part
+                clubs.add(new Club(i.getString("name"), "key"));
+            }
+        }
+        catch(AVException e){
+            //TODO: any handler?
+        }
 
     }
 
@@ -368,7 +411,6 @@ public class AnnouncementBlock extends LinearLayout{
             searchButton.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    //TODO: call search method
                     if(!filterShown) {
                         searchKey = editText.getText().toString();
                         loadAnnouncements();
@@ -390,6 +432,8 @@ public class AnnouncementBlock extends LinearLayout{
                 public void onClick(View view) {
                     bodyLayout.removeAllViews();
 
+                    editText.setText("");
+
                     filterShown = !filterShown;
 
                     if(filterShown){
@@ -402,9 +446,6 @@ public class AnnouncementBlock extends LinearLayout{
                         loadAnnouncements();
                         editText.setHint("Search Announcement");
                     }
-
-
-                    //TODO: Call filter init method
                 }
             });
 
@@ -425,7 +466,7 @@ public class AnnouncementBlock extends LinearLayout{
             this.setGravity(Gravity.TOP);
             //this.setBackgroundColor(getResources().getColor(R.color.white));
 
-            LinearLayout.LayoutParams introTextParams = new LinearLayout.LayoutParams(bodyWidth-20, ViewGroup.LayoutParams.WRAP_CONTENT);
+            LinearLayout.LayoutParams introTextParams = new LinearLayout.LayoutParams((int)(0.9*bodyWidth), ViewGroup.LayoutParams.WRAP_CONTENT);
             introTextParams.setMargins(0,10,0,10);
 
             introText_1 = new TextView(context);
@@ -443,12 +484,16 @@ public class AnnouncementBlock extends LinearLayout{
             this.loadCells();
 
             pullFromDatabase();
-
-            //TODO: complete introText_2 and time limit part, also implement time Period into loadAnnouncements()
-            //TODO: idea: class TimeLimit (Date time, boolean larger) larger: true : filter ones larger than time
         }
 
         public void loadCells(){
+
+            if(!internetConnected){
+                this.removeAllViews();
+                ErrorButton eb = new ErrorButton();
+                this.addView(eb);
+                return;
+            }
 
             for(OptionCell i : cells)
                 this.removeView(i);
@@ -465,7 +510,7 @@ public class AnnouncementBlock extends LinearLayout{
                         break;
                     }
                 }
-                if((clubSearchKey!="" && clubs.get(i).getName().contains(clubSearchKey)) || clubSearchKey==""){
+                if((clubSearchKey!="" && clubs.get(i).getName().toLowerCase().contains(clubSearchKey.toLowerCase())) || clubSearchKey==""){
                     if(isSelected) cells.add(new OptionCell(clubs.get(i), isSelected));
                 }
             }
@@ -480,7 +525,7 @@ public class AnnouncementBlock extends LinearLayout{
                         break;
                     }
                 }
-                if((clubSearchKey!="" && clubs.get(i).getName().contains(clubSearchKey)) || clubSearchKey==""){
+                if((clubSearchKey!="" && clubs.get(i).getName().toLowerCase().contains(clubSearchKey.toLowerCase())) || clubSearchKey==""){
                     if(!isSelected) cells.add(new OptionCell(clubs.get(i), isSelected));
                 }
             }
@@ -552,6 +597,46 @@ public class AnnouncementBlock extends LinearLayout{
             }
         }
 
+    }
+
+    public class ErrorButton extends LinearLayout{
+
+        TextView message = new TextView(context);
+        ImageView icon = new ImageView(context);
+
+        public ErrorButton(){
+            super(context);
+            this.setOrientation(VERTICAL);
+            this.setLayoutParams(new LinearLayout.LayoutParams((int)(0.9 * bodyWidth), ViewGroup.LayoutParams.WRAP_CONTENT));
+            this.setGravity(Gravity.CENTER_HORIZONTAL);
+            this.setBackgroundColor(getResources().getColor(R.color.white));
+            this.setPadding(12,12,12,12);
+
+            message.setLayoutParams(new LinearLayout.LayoutParams((int)(0.6 * bodyWidth), ViewGroup.LayoutParams.WRAP_CONTENT));
+            message.setGravity(Gravity.CENTER_HORIZONTAL);
+            message.setTextColor(getResources().getColor(R.color.black));
+            message.setTextSize(STANDARD_TEXT_SIZE);
+            message.setText("Please connect the internet and press this to refresh");
+            this.addView(message);
+
+            icon.setLayoutParams(new LinearLayout.LayoutParams((int)(0.6 * bodyWidth), (int)(0.6 * bodyWidth)));
+            icon.setPadding(20,20,20,20);
+            icon.setImageResource(R.drawable.vacation);
+            this.addView(icon);
+
+            this.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    pullFromDatabase();
+                    if(filterShown){
+                        filter.loadCells();
+                    }
+                    else{
+                        loadAnnouncements();
+                    }
+                }
+            });
+        }
     }
 
     public LinearLayout.LayoutParams generateLinearParams (double width, double height){
