@@ -82,6 +82,8 @@ public class MainActivity extends AppCompatActivity{
     SharedPreferences preferences;
     SharedPreferences.Editor editor;
 
+    public boolean firstRun;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -109,6 +111,11 @@ public class MainActivity extends AppCompatActivity{
         AVOSCloud.useAVCloudCN();
         // 放在 SDK 初始化语句 AVOSCloud.initialize() 后面，只需要调用一次即可
         AVOSCloud.setDebugLogEnabled(true);
+
+        firstRun = preferences.getBoolean(getResources().getString(R.string.first_run_key), true);
+        //TODO: write any firstRun methods here
+
+        editor.putBoolean(getResources().getString(R.string.first_run_key), false);
 
         pageMode = false;
         pageModeHistory = false;
@@ -199,8 +206,8 @@ public class MainActivity extends AppCompatActivity{
             }
         });
 
-        sb = new ScheduleBlock(getApplication(), screenHeight, screenWidth, editor);
-        ab = new AnnouncementBlock(getApplicationContext(), new LinearLayout.LayoutParams(screenWidth, (int)(0.85*screenHeight)), editor);
+        sb = new ScheduleBlock(getApplication(), screenHeight, screenWidth, preferences, editor);
+        ab = new AnnouncementBlock(getApplicationContext(), new LinearLayout.LayoutParams(screenWidth, (int)(0.85*screenHeight)), preferences, editor);
 
         pageMode = false;
         pageModeHistory = true;
