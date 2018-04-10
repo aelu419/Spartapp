@@ -3,6 +3,7 @@ package hackthis.everythingthis;
 import android.app.SearchManager;
 import android.app.VoiceInteractor;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Typeface;
 import android.support.constraint.ConstraintLayout;
 import android.support.v7.widget.LinearLayoutCompat;
@@ -63,6 +64,8 @@ public class AnnouncementBlock extends LinearLayout{
     public ArrayList <String> filterTraits = new ArrayList<>(10);
     public String searchKey="";
 
+    public SharedPreferences.Editor edit;
+
     //UI vars
     LinearLayout.LayoutParams bodyParams;
     public float STANDARD_TEXT_SIZE;
@@ -86,9 +89,11 @@ public class AnnouncementBlock extends LinearLayout{
 
 
 
-    public AnnouncementBlock(Context viewContext, LayoutParams body){
+    public AnnouncementBlock(Context viewContext, LayoutParams body, SharedPreferences.Editor editor){
         super(viewContext);
         context = viewContext;
+
+        edit = editor;
 
         bodyParams = body;
         bodyHeight = body.height;

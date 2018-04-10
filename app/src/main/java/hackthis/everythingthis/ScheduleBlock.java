@@ -1,6 +1,7 @@
 package hackthis.everythingthis;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.Typeface;
@@ -80,16 +81,19 @@ public class ScheduleBlock extends LinearLayout {
     private final int maxDate365[] = {31,28,31,30,31,30,31,31,30,31,30,31};
     private final int maxDate366[] = {31,29,31,30,31,30,31,31,30,31,30,31};
 
+    //editor
+    SharedPreferences.Editor edit;
+
 
     //Dimensions
     private int DateViewCommonWidth;
 
-    public ScheduleBlock(Context context, int height, int width){
+    public ScheduleBlock(Context context, int height, int width, SharedPreferences.Editor editor){
         super(context);
 
-
-
         this.context = context;
+
+        edit = editor;
 
         //params
         screenHeight = height;

@@ -1,6 +1,7 @@
 package hackthis.everythingthis;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.Typeface;
@@ -77,6 +78,10 @@ public class MainActivity extends AppCompatActivity{
     private AnnouncementRefresher announcementRefresher = null;
     private boolean announcementRefresherRunning = false;
 
+    //data related vars
+    SharedPreferences preferences;
+    SharedPreferences.Editor editor;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -85,6 +90,9 @@ public class MainActivity extends AppCompatActivity{
         setContentView(R.layout.activity_main);
 
         getSupportActionBar().hide();
+
+        preferences = this.getPreferences(Context.MODE_PRIVATE);
+        editor = preferences.edit();
 
         //get access to internet
         StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
@@ -191,8 +199,8 @@ public class MainActivity extends AppCompatActivity{
             }
         });
 
-        sb = new ScheduleBlock(getApplicationContext(), screenHeight, screenWidth);
-        ab = new AnnouncementBlock(getApplicationContext(), new LinearLayout.LayoutParams(screenWidth, (int)(0.85*screenHeight)));
+        sb = new ScheduleBlock(getApplication(), screenHeight, screenWidth, editor);
+        ab = new AnnouncementBlock(getApplicationContext(), new LinearLayout.LayoutParams(screenWidth, (int)(0.85*screenHeight)), editor);
 
         pageMode = false;
         pageModeHistory = true;
