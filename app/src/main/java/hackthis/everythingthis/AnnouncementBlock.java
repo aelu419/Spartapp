@@ -1,56 +1,32 @@
 package hackthis.everythingthis;
 
-import android.app.SearchManager;
-import android.app.VoiceInteractor;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.graphics.Typeface;
-import android.support.annotation.NonNull;
-import android.support.constraint.ConstraintLayout;
 import android.support.v7.widget.LinearLayoutCompat;
-import android.support.v7.widget.SearchView;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.text.style.TextAppearanceSpan;
 import android.util.Log;
 import android.view.Gravity;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.support.v7.widget.Toolbar;
 import android.widget.ScrollView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.avos.avoscloud.AVException;
-import com.avos.avoscloud.AVOSCloud;
 import com.avos.avoscloud.AVObject;
 import com.avos.avoscloud.AVQuery;
-import com.avos.avoscloud.search.SearchActivity;
 
-import java.lang.reflect.Array;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Date;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 public class AnnouncementBlock extends LinearLayout{
     //status vars
@@ -59,13 +35,13 @@ public class AnnouncementBlock extends LinearLayout{
 
     boolean internetConnected = true;
 
-    public ArrayList<Announcement> announcements = new ArrayList<Announcement>();
+    public ArrayList<Announcement> announcements = new ArrayList<>();
 
     public ArrayList<String> defaultSubscribes = new ArrayList<>(10);
 
     public ArrayList<Club> clubs = new ArrayList<>(50);
 
-    public ArrayList <String> subscribed = new ArrayList<>(10);
+    public ArrayList <String> subscribed;
     public String searchKey="";
     public String clubSearchKey= "";
 
@@ -123,10 +99,10 @@ public class AnnouncementBlock extends LinearLayout{
         this.setGravity(Gravity.TOP);
 
         subscribed = new ArrayList<>(preferences.getStringSet(getResources().getString(R.string.subscribed_channels_key),
-                new HashSet<String>(defaultSubscribes)));
+                new HashSet<>(defaultSubscribes)));
 
         editor.putStringSet(getResources().getString(R.string.subscribed_channels_key),
-                new HashSet<String>(subscribed));
+                new HashSet<>(subscribed));
 
         searchBar = new SearchBar();
         this.addView(searchBar);
@@ -167,7 +143,7 @@ public class AnnouncementBlock extends LinearLayout{
         for(int i = 0; i < announcements.size(); i++){
             for(int j = 0; j < subscribed.size(); j++){
                 if(announcements.get(i).getClub().getName().toLowerCase().equals(subscribed.get(j).toLowerCase())){
-                    if((searchKey!="" && hasRelatedContent(announcements.get(i))) || searchKey=="")
+                    if((searchKey!=null && hasRelatedContent(announcements.get(i))) || searchKey==null)
                         filteredAnnouncement.add(announcements.get(i));
                     break;
                 }
@@ -181,19 +157,17 @@ public class AnnouncementBlock extends LinearLayout{
 
         sortByDates(contents);
 
-        for(int i = 0; i < contents.length; i ++){
-            list.addView(contents[i]);
+        for(Contents i : contents){
+            list.addView(i);
         }
     }
 
     public boolean hasRelatedContent (Announcement a){
-        if(a.getClub().getName().toString().toLowerCase().contains(searchKey.toLowerCase()))
+        if(a.getClub().getName().toLowerCase().contains(searchKey.toLowerCase()))
             return true;
         if(a.getAnnouncement().toLowerCase().contains(searchKey.toLowerCase()))
             return true;
-        if(a.title.toLowerCase().contains(searchKey.toLowerCase()))
-            return true;
-        return false;
+        return a.title.toLowerCase().contains(searchKey.toLowerCase());
     }
 
     public void sortByDates(Contents[] contents){
@@ -475,7 +449,7 @@ public class AnnouncementBlock extends LinearLayout{
             introText_1.setLayoutParams(introTextParams);
             introText_1.setTextSize(STANDARD_TEXT_SIZE);
             introText_1.setTextColor(AnnouncementBlock.this.getResources().getColor(R.color.black));
-            introText_1.setGravity(Gravity.LEFT);
+            introText_1.setGravity(Gravity.START);
             introText_1.setText("Select which of these school organizations to subscribe:");
             this.addView(introText_1);
 
@@ -501,7 +475,7 @@ public class AnnouncementBlock extends LinearLayout{
             cells.clear();
 
             for(int i = 0; i < clubs.size(); i++){
-                String temp = clubs.get(i).getName().toString();
+                String temp = clubs.get(i).getName();
                 boolean isSelected = false;
 
                 for(int j = 0; j < subscribed.size(); j++){
@@ -510,13 +484,14 @@ public class AnnouncementBlock extends LinearLayout{
                         break;
                     }
                 }
-                if((clubSearchKey!="" && clubs.get(i).getName().toLowerCase().contains(clubSearchKey.toLowerCase())) || clubSearchKey==""){
-                    if(isSelected) cells.add(new OptionCell(clubs.get(i), isSelected));
+                if((clubSearchKey!=null && clubs.get(i).getName().toLowerCase().contains(clubSearchKey.toLowerCase()))
+                        || clubSearchKey==null){
+                    if(isSelected) cells.add(new OptionCell(clubs.get(i), true));
                 }
             }
 
             for(int i = 0; i < clubs.size(); i++){
-                String temp = clubs.get(i).getName().toString();
+                String temp = clubs.get(i).getName();
                 boolean isSelected = false;
 
                 for(int j = 0; j < subscribed.size(); j++){
@@ -525,8 +500,10 @@ public class AnnouncementBlock extends LinearLayout{
                         break;
                     }
                 }
-                if((clubSearchKey!="" && clubs.get(i).getName().toLowerCase().contains(clubSearchKey.toLowerCase())) || clubSearchKey==""){
-                    if(!isSelected) cells.add(new OptionCell(clubs.get(i), isSelected));
+
+                if((clubSearchKey!=null && clubs.get(i).getName().toLowerCase().contains(clubSearchKey.toLowerCase()))
+                        || clubSearchKey==null){
+                    if(!isSelected) cells.add(new OptionCell(clubs.get(i), false));
                 }
             }
 
@@ -548,7 +525,7 @@ public class AnnouncementBlock extends LinearLayout{
 
                 this.setLayoutParams(optionCellLayout);
                 this.setOrientation(HORIZONTAL);
-                this.setGravity(Gravity.LEFT);
+                this.setGravity(Gravity.START);
 
                 nameBar = new TextView(context);
 
@@ -586,7 +563,7 @@ public class AnnouncementBlock extends LinearLayout{
                             }
 
                             editor.putStringSet(getResources().getString(R.string.subscribed_channels_key),
-                                    new HashSet<String>(subscribed));
+                                    new HashSet<>(subscribed));
 
                             isSelected = b;
 

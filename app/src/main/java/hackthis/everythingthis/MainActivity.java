@@ -2,60 +2,18 @@ package hackthis.everythingthis;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.graphics.Color;
-import android.graphics.PorterDuff;
-import android.graphics.Typeface;
-import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.StrictMode;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.LinearLayoutCompat;
 import android.util.DisplayMetrics;
 import android.util.Log;
-import android.util.TypedValue;
-import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
-import android.widget.FrameLayout;
-import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import com.avos.avoscloud.*;
-
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.StringTokenizer;
-
-import android.app.SearchManager;
-import android.content.Context;
-import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.SearchView;
-import android.support.v7.widget.Toolbar;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.view.View;
-import android.widget.Button;
-import android.widget.ImageButton;
-import android.widget.LinearLayout;
-import android.widget.TextView;
-import android.widget.Toast;
-
-import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity{
 
@@ -65,18 +23,18 @@ public class MainActivity extends AppCompatActivity{
 
     // schedule page vars
     private int screenWidth, screenHeight;
-    private ScheduleRefresher scheduleRefresher = null;
-    private boolean scheduleRefresherRunning = true;
-    private ScheduleBlock sb;
+    private static ScheduleRefresher scheduleRefresher = null;
+    private static boolean scheduleRefresherRunning = true;
+    private static ScheduleBlock sb;
 
     //main frame vars
     private LinearLayout body;
     private ImageView scheduleIcon, announcementIcon;
 
     //announcement page vars
-    private AnnouncementBlock ab;
-    private AnnouncementRefresher announcementRefresher = null;
-    private boolean announcementRefresherRunning = false;
+    private static AnnouncementBlock ab;
+    private static AnnouncementRefresher announcementRefresher = null;
+    private static boolean announcementRefresherRunning = false;
 
     //data related vars
     SharedPreferences preferences;
@@ -133,28 +91,6 @@ public class MainActivity extends AppCompatActivity{
             }
         });*/
     }
-
-/**
- *
- * Stuff to change to adapt to database
- * Line 47 mainly
- * the array called nextAnnouncements
- * Line 206
- *
- * just use control and f and search for database
- * most stuff to implement will be in those locations
- *
- * also right now the announcements are moving up by size%8 (which is two) which i have no clue how to fix without adding ghost announcements
- *
- * I was thinking for the filter screen we might as well use a spinner (dropdown) because it's more versatile
- * the spinner is already there we just need to set it to visible (R.id.filterDropdown)
- *
- * Todo:
- * make the next and prev page buttons turn gray or something when announcements run out (like if(announcementsToLoad=0) changeColorToGray)
- * add functions to set the title of an announcement
- * add a function to implement the time function (current time minus that time or whatever)
- * are we gonna do search? (we can just linear search all the announcements or something and show only the ones that have the thing the user's searching for)
- */
 
     @Override
     public void onStart(){
@@ -259,7 +195,7 @@ public class MainActivity extends AppCompatActivity{
         }
     }
 
-    public class ScheduleRefresher extends AsyncTask<Void, Void, Void> {
+    public static class ScheduleRefresher extends AsyncTask<Void, Void, Void> {
 
         @Override
         protected Void doInBackground(Void... params) {
@@ -299,7 +235,7 @@ public class MainActivity extends AppCompatActivity{
         }
     }
 
-    public class AnnouncementRefresher extends AsyncTask<Void, Void, Void> {
+    public static class AnnouncementRefresher extends AsyncTask<Void, Void, Void> {
 
         @Override
         protected Void doInBackground(Void... params) {
@@ -324,71 +260,4 @@ public class MainActivity extends AppCompatActivity{
         }
 
     }
-
-    //tries to get time from internet, if fails then set time as system time
-    private Date getTime() {
-        Date date = new Date();
-        String URL1 = "http://www.baidu.com";
-        String URL2 = "http://www.ntsc.ac.cn";
-        String URL3 = "http://www.beijing-time.org";
-        Log.i("Demo","current time source :");
-        try{
-            if (getWebDate(URL1) != null) {
-                Log.i("Demo",URL1);
-                date = getWebDate(URL1);
-            } else if (getWebDate(URL2) != null) {
-                Log.i("Demo",URL2);
-                date = getWebDate(URL2);
-            } else if (getWebDate(URL3) != null) {
-                Log.i("Demo",URL3);
-                date = getWebDate(URL3);
-            }
-            else {
-                Log.i("Demo", "System");
-            }
-        }
-        catch(Exception e){
-
-        }
-        return date;
-    }
-
-    //get time from internet with given url
-    private Date getWebDate(String url) {
-        Date temp;
-        Log.i("Demo","getting time from " + url);
-        URL u;
-        try {
-            u = new URL(url);
-        } catch (Exception e){
-            e.printStackTrace();
-            return null;
-        }
-        try{
-            HttpURLConnection connecter = (HttpURLConnection)u.openConnection();
-            connecter.connect();
-            temp = new Date(connecter.getDate());
-            connecter.disconnect();
-        }catch(Exception e){
-            e.printStackTrace();
-            return null;
-        }
-        Log.i("Demo","got time from " + url);
-        return temp;
-    }
-
-    private int getPixelsFromDp(int size){
-
-        DisplayMetrics metrics =new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getMetrics(metrics);
-        return(size * metrics.densityDpi) / DisplayMetrics.DENSITY_DEFAULT;
-
-    }
-
-    private int getDPFromPixel(int size){
-        DisplayMetrics metrics =new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getMetrics(metrics);
-        return(size * DisplayMetrics.DENSITY_DEFAULT) / metrics.densityDpi;
-    }
-
 }
