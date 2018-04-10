@@ -10,4 +10,7 @@
         <item>MUN</item>
         <item>Debate</item>
     </array>
+
+    <string name = "subscribed_channels_key">subscribed_channels</string>
+    <string name = "first_run_key">first_run</string>
 </resources>

@@ -81,19 +81,21 @@ public class ScheduleBlock extends LinearLayout {
     private final int maxDate365[] = {31,28,31,30,31,30,31,31,30,31,30,31};
     private final int maxDate366[] = {31,29,31,30,31,30,31,31,30,31,30,31};
 
-    //editor
-    SharedPreferences.Editor edit;
+    //preferences
+    public SharedPreferences preferences;
+    public SharedPreferences.Editor editor;
 
 
     //Dimensions
     private int DateViewCommonWidth;
 
-    public ScheduleBlock(Context context, int height, int width, SharedPreferences.Editor editor){
+    public ScheduleBlock(Context context, int height, int width, SharedPreferences PREFERENCES, SharedPreferences.Editor EDITOR){
         super(context);
 
         this.context = context;
 
-        edit = editor;
+        editor = EDITOR;
+        preferences = PREFERENCES;
 
         //params
         screenHeight = height;
