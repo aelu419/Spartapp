@@ -5,6 +5,7 @@ import android.app.VoiceInteractor;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Typeface;
+import android.support.annotation.NonNull;
 import android.support.constraint.ConstraintLayout;
 import android.support.v7.widget.LinearLayoutCompat;
 import android.support.v7.widget.SearchView;
@@ -36,8 +37,12 @@ import com.avos.avoscloud.search.SearchActivity;
 import java.lang.reflect.Array;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
 public class AnnouncementBlock extends LinearLayout{
     //status vars
@@ -45,6 +50,8 @@ public class AnnouncementBlock extends LinearLayout{
     boolean shown;
 
     public ArrayList<Announcement> announcements = new ArrayList<Announcement>();
+
+    public ArrayList<String> defaultSubscribes = new ArrayList<>(10);
 
     public Announcement[] nextAnnouncements = {
             //format: content, new Time(time), club (you can use null)
@@ -59,12 +66,14 @@ public class AnnouncementBlock extends LinearLayout{
             new Announcement("Cats", "a cat event", new Date(), new Club("cat club", "CAT"))
     };
 
-    public ArrayList<Club> subscribedChannels = new ArrayList<>(30);
+    public ArrayList<Club> clubs = new ArrayList<>(50);
 
-    public ArrayList <String> filterTraits = new ArrayList<>(10);
+    public ArrayList <String> subscribed = new ArrayList<>(10);
     public String searchKey="";
+    public String clubSearchKey= "";
 
-    public SharedPreferences.Editor edit;
+    public SharedPreferences preferences;
+    public SharedPreferences.Editor editor;
 
     //UI vars
     LinearLayout.LayoutParams bodyParams;
@@ -89,11 +98,15 @@ public class AnnouncementBlock extends LinearLayout{
 
 
 
-    public AnnouncementBlock(Context viewContext, LayoutParams body, SharedPreferences.Editor editor){
+    public AnnouncementBlock(Context viewContext, LayoutParams body, SharedPreferences PREFERENCES, SharedPreferences.Editor EDITOR){
         super(viewContext);
         context = viewContext;
 
-        edit = editor;
+        //TODO: change this to all the school related orgs online
+        defaultSubscribes.add("more dog club");
+
+        editor = EDITOR;
+        preferences = PREFERENCES;
 
         bodyParams = body;
         bodyHeight = body.height;
@@ -111,16 +124,21 @@ public class AnnouncementBlock extends LinearLayout{
         this.setOrientation(VERTICAL);
         this.setGravity(Gravity.TOP);
 
-        //TODO: delete this after pull method is complete
+        //TODO: delete this after pull method is complete, also notice that the second param is editKey, not manager
         announcements.clear();
         for(int i = 0; i < nextAnnouncements.length; i ++) {
             announcements.add(nextAnnouncements[i]);
         }
-        subscribedChannels.clear();
-        subscribedChannels.add(new Club("dog club", "DOG"));
-        subscribedChannels.add(new Club("more dog club","MOREDOG"));
-        subscribedChannels.add(new Club("cat club", "CAT"));
+        clubs.clear();
+        clubs.add(new Club("dog club", "DOG"));
+        clubs.add(new Club("more dog club","MOREDOG"));
+        clubs.add(new Club("cat club", "CAT"));
 
+        subscribed = new ArrayList<>(preferences.getStringSet(getResources().getString(R.string.subscribed_channels_key),
+                new HashSet<String>(defaultSubscribes)));
+
+        editor.putStringSet(getResources().getString(R.string.subscribed_channels_key),
+                new HashSet<String>(subscribed));
 
         searchBar = new SearchBar();
         this.addView(searchBar);
@@ -153,16 +171,12 @@ public class AnnouncementBlock extends LinearLayout{
         ArrayList<Announcement> filteredAnnouncement = new ArrayList<>(50);
 
         for(int i = 0; i < announcements.size(); i++){
-            boolean isFiltered = false;
-            for(int j = 0; j < filterTraits.size(); j++){
-                if(announcements.get(i).getClub().getName().toLowerCase().equals(filterTraits.get(j).toLowerCase())) {
-                    isFiltered = true;
+            for(int j = 0; j < subscribed.size(); j++){
+                if(announcements.get(i).getClub().getName().toLowerCase().equals(subscribed.get(j).toLowerCase())){
+                    if((searchKey!="" && hasRelatedContent(announcements.get(i))) || searchKey=="")
+                        filteredAnnouncement.add(announcements.get(i));
                     break;
                 }
-            }
-            if(!isFiltered) {
-                if((searchKey!="" && hasRelatedContent(announcements.get(i))) || searchKey=="")
-                    filteredAnnouncement.add(announcements.get(i));
             }
         }
 
@@ -311,7 +325,7 @@ public class AnnouncementBlock extends LinearLayout{
             //this.setBackgroundColor(getResources().getColor(R.color.background)); color too dark
 
             editText = new EditText(context);
-            editText.setHint("Search");
+            editText.setHint("Search Announcement");
             editText.setHintTextColor(getResources().getColor(R.color.purple));
             editText.setBackgroundColor(getResources().getColor(R.color.shaded_background));
             editText.setLayoutParams(generateLinearParams(0.65, 0.08));
@@ -332,8 +346,15 @@ public class AnnouncementBlock extends LinearLayout{
                 @Override
                 public void onTextChanged(CharSequence s, int start,
                                           int before, int count) {
-                    searchKey = editText.getText().toString();
-                    loadAnnouncements();
+                    if(!filterShown){
+                        searchKey = editText.getText().toString();
+                        loadAnnouncements();
+                    }
+                    else{
+                        clubSearchKey = editText.getText().toString();
+                        filter.loadCells();
+                    }
+
                 }
             };
             editText.addTextChangedListener(renewKey);
@@ -348,8 +369,14 @@ public class AnnouncementBlock extends LinearLayout{
                 @Override
                 public void onClick(View view) {
                     //TODO: call search method
-                    searchKey = editText.getText().toString();
-                    loadAnnouncements();
+                    if(!filterShown) {
+                        searchKey = editText.getText().toString();
+                        loadAnnouncements();
+                    }
+                    else{
+                        clubSearchKey = editText.getText().toString();
+                        filter.loadCells();
+                    }
                 }
             });
 
@@ -368,10 +395,12 @@ public class AnnouncementBlock extends LinearLayout{
                     if(filterShown){
                         filter = new AnnouncementFilterLayout();
                         bodyLayout.addView(filter);
+                        editText.setHint("Search Club");
                     }
                     else{
                         bodyLayout.addView(list);
                         loadAnnouncements();
+                        editText.setHint("Search Announcement");
                     }
 
 
@@ -406,31 +435,58 @@ public class AnnouncementBlock extends LinearLayout{
             introText_1.setTextSize(STANDARD_TEXT_SIZE);
             introText_1.setTextColor(AnnouncementBlock.this.getResources().getColor(R.color.black));
             introText_1.setGravity(Gravity.LEFT);
-            introText_1.setText("Select which of your subscribed channels to mute:");
+            introText_1.setText("Select which of these school organizations to subscribe:");
             this.addView(introText_1);
 
             cells = new ArrayList<>(30);
 
-            for(int i = 0; i < subscribedChannels.size(); i++){
-                String temp = subscribedChannels.get(i).getName().toString();
-                boolean isSelected = false;
-
-                for(int j = 0; j < filterTraits.size(); j++){
-                    if(filterTraits.get(j).equals(temp)){
-                        isSelected = true;
-                        break;
-                    }
-                }
-
-                cells.add(new OptionCell(subscribedChannels.get(i), isSelected));
-
-                this.addView(cells.get(i));
-            }
+            this.loadCells();
 
             pullFromDatabase();
 
             //TODO: complete introText_2 and time limit part, also implement time Period into loadAnnouncements()
             //TODO: idea: class TimeLimit (Date time, boolean larger) larger: true : filter ones larger than time
+        }
+
+        public void loadCells(){
+
+            for(OptionCell i : cells)
+                this.removeView(i);
+
+            cells.clear();
+
+            for(int i = 0; i < clubs.size(); i++){
+                String temp = clubs.get(i).getName().toString();
+                boolean isSelected = false;
+
+                for(int j = 0; j < subscribed.size(); j++){
+                    if(subscribed.get(j).equals(temp)){
+                        isSelected = true;
+                        break;
+                    }
+                }
+                if((clubSearchKey!="" && clubs.get(i).getName().contains(clubSearchKey)) || clubSearchKey==""){
+                    if(isSelected) cells.add(new OptionCell(clubs.get(i), isSelected));
+                }
+            }
+
+            for(int i = 0; i < clubs.size(); i++){
+                String temp = clubs.get(i).getName().toString();
+                boolean isSelected = false;
+
+                for(int j = 0; j < subscribed.size(); j++){
+                    if(subscribed.get(j).equals(temp)){
+                        isSelected = true;
+                        break;
+                    }
+                }
+                if((clubSearchKey!="" && clubs.get(i).getName().contains(clubSearchKey)) || clubSearchKey==""){
+                    if(!isSelected) cells.add(new OptionCell(clubs.get(i), isSelected));
+                }
+            }
+
+            for(OptionCell i : cells)
+                this.addView(i);
         }
 
         public class OptionCell extends LinearLayout{
@@ -454,7 +510,8 @@ public class AnnouncementBlock extends LinearLayout{
                 nameBar.setText(contentClub.getName());
                 nameBar.setLayoutParams(new LinearLayout.LayoutParams((int)(0.6*bodyWidth), ViewGroup.LayoutParams.WRAP_CONTENT));
                 nameBar.setPadding(8,8,8,8);
-                nameBar.setBackgroundColor(getResources().getColor(R.color.white));
+                nameBar.setBackgroundColor(isSelected ? getResources().getColor(R.color.purple) : getResources().getColor(R.color.white));
+                nameBar.setTextColor(isSelected ? getResources().getColor(R.color.white) : getResources().getColor(R.color.black));
                 nameBar.setTextSize(STANDARD_TEXT_SIZE);
                 this.addView(nameBar);
 
@@ -466,19 +523,29 @@ public class AnnouncementBlock extends LinearLayout{
                     @Override
                     public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                             if(!b){
-                                for(int i = 0; i < filterTraits.size(); i++){
-                                    if (filterTraits.get(i).equals(contentClub.getName())) {
-                                        filterTraits.remove(i);
+                                for(int i = 0; i < subscribed.size(); i++){
+                                    if (subscribed.get(i).equals(contentClub.getName())) {
+                                        subscribed.remove(i);
                                         i--;
                                     }
                                 }
+
+                                nameBar.setBackgroundColor(getResources().getColor(R.color.white));
+                                nameBar.setTextColor(getResources().getColor(R.color.black));
                             }
                             else{
-                                filterTraits.add(contentClub.getName());
+                                subscribed.add(contentClub.getName());
+
+                                nameBar.setBackgroundColor(getResources().getColor(R.color.purple));
+                                nameBar.setTextColor(getResources().getColor(R.color.white));
                             }
+
+                            editor.putStringSet(getResources().getString(R.string.subscribed_channels_key),
+                                    new HashSet<String>(subscribed));
+
                             isSelected = b;
 
-                        Log.d("announcement", filterTraits.toString());
+                        Log.d("announcement", subscribed.toString());
                     }
                 });
                 this.addView(box);

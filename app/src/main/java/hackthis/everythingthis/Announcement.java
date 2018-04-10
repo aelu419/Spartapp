@@ -4,11 +4,10 @@ import java.util.Date;
 
 class Club {
     private String name;
-    private String manager /*like the student or teacher that manages the club*/;
+    //TODO: write the method to get editKey
 
-    public Club(String name, String manager) {
+    public Club(String name, String editKey) {
         this.setName(name);
-        this.setManager(manager);
     }
     /**
      * there's a tab in the database with clubs we can implement or something
@@ -23,13 +22,6 @@ class Club {
         this.name = name;
     }
 
-    public String getManager() {
-        return manager;
-    }
-
-    public void setManager(String manager) {
-        this.manager = manager;
-    }
 }
 
 class Time {
