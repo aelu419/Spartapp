@@ -584,9 +584,11 @@ public class AnnouncementBlock extends LinearLayout{
         public ErrorButton(){
             super(context);
             this.setOrientation(VERTICAL);
-            this.setLayoutParams(new LinearLayout.LayoutParams((int)(0.9 * bodyWidth), ViewGroup.LayoutParams.WRAP_CONTENT));
+            LinearLayout.LayoutParams errorParams = new LinearLayout.LayoutParams((int)(0.9 * bodyWidth), ViewGroup.LayoutParams.WRAP_CONTENT);
+            errorParams.setMargins(0,50,0,50);
+            this.setLayoutParams(errorParams);
             this.setGravity(Gravity.CENTER_HORIZONTAL);
-            this.setBackgroundColor(getResources().getColor(R.color.white));
+            this.setBackground(AnnouncementBlock.this.getResources().getDrawable(R.drawable.error_background));
             this.setPadding(12,12,12,12);
 
             message.setLayoutParams(new LinearLayout.LayoutParams((int)(0.6 * bodyWidth), ViewGroup.LayoutParams.WRAP_CONTENT));
@@ -598,7 +600,7 @@ public class AnnouncementBlock extends LinearLayout{
 
             icon.setLayoutParams(new LinearLayout.LayoutParams((int)(0.6 * bodyWidth), (int)(0.6 * bodyWidth)));
             icon.setPadding(20,20,20,20);
-            icon.setImageResource(R.drawable.vacation);
+            icon.setImageResource(R.drawable.wifi_disconnected);
             this.addView(icon);
 
             this.setOnClickListener(new OnClickListener() {
