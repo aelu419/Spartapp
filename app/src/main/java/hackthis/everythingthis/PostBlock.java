@@ -2,7 +2,6 @@ package hackthis.everythingthis;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.support.v7.widget.LinearLayoutCompat;
 import android.text.InputType;
 import android.util.Log;
 import android.view.Gravity;
@@ -20,8 +19,7 @@ import android.widget.TextView;
 import com.avos.avoscloud.AVException;
 import com.avos.avoscloud.AVObject;
 import com.avos.avoscloud.AVQuery;
-
-import org.w3c.dom.Text;
+import com.avos.avoscloud.SaveCallback;
 
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -79,7 +77,7 @@ public class PostBlock extends LinearLayout {
         this.addView(Title);
 
         TextView titleText = new TextView(context);
-        titleText.setLayoutParams(new LinearLayout.LayoutParams((int)(0.85*bodyWidth-10), (int)(0.15*bodyHeight)));
+        titleText.setLayoutParams(new LinearLayout.LayoutParams((int)(0.85*bodyWidth-40), (int)(0.15*bodyHeight)));
         titleText.setTextSize(STANDARD_TEXT_SIZE + 4.0f);
         titleText.setText("Post Announcement");
         titleText.setGravity(Gravity.CENTER_VERTICAL);
@@ -89,7 +87,7 @@ public class PostBlock extends LinearLayout {
         LogOut = new ImageView(context);
         LogOut.setPadding(4,4,4,4);
         LogOut.setImageResource(R.drawable.logout_button);
-        LogOut.setLayoutParams(new LinearLayout.LayoutParams((int)(0.15*bodyWidth-10), (int)(0.15*bodyHeight)));
+        LogOut.setLayoutParams(new LinearLayout.LayoutParams((int)(0.15*bodyWidth), (int)(0.15*bodyHeight)));
         LogOut.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -148,15 +146,33 @@ public class PostBlock extends LinearLayout {
 
         pageMode = DRAFT;
 
-        editor.putBoolean(getResources().getString(R.string.has_draft_key), false);
-        editor.commit();
-
         Contents.removeAllViews();
 
         EditPage ep = new EditPage();
         Contents.addView(ep);
 
         //TODO: initialize post screen
+    }
+
+    public void submitPost(boolean successful){
+        pageMode = SEND;
+
+        Contents.removeAllViews();
+
+        TextView submit = new TextView(context);
+
+        submit.setTextColor(getResources().getColor(R.color.red));
+
+        if(successful) {
+            submit.setText("sent thing");
+        }
+        else{
+            submit.setText("failed to send thing");
+        }
+
+        //TODO: remember to delete draft after successfully submitting
+
+        Contents.addView(submit);
     }
 
     public boolean testInternetConnection(){
@@ -227,14 +243,16 @@ public class PostBlock extends LinearLayout {
             editTitle.setTextSize(STANDARD_TEXT_SIZE);
             editTitle.setTextColor(getResources().getColor(R.color.black));
             editTitle.setBackgroundColor(getResources().getColor(R.color.white));
-            editTitle.setPadding(8,8,8,8);
+            editTitle.setPadding(20,20,20,20);
+            if(hasDraft)
+                editTitle.setText(preferences.getString(getResources().getString(R.string.draft_title_key),""));
             this.addView(editTitle);
 
             subTitle = new TextView(context);
             subTitle.setLayoutParams(textParams);
             subTitle.setTextColor(getResources().getColor(R.color.colorPrimary));
             subTitle.setTextSize(STANDARD_TEXT_SIZE);
-            subTitle.setText(club.getName() + new SimpleDateFormat("MMMM - dd").format(date));
+            subTitle.setText(club.getName() + " " + new SimpleDateFormat("MMMM - dd").format(date));
             this.addView(subTitle);
 
             editBody = new EditText(context);
@@ -243,7 +261,9 @@ public class PostBlock extends LinearLayout {
             editBody.setTextSize(STANDARD_TEXT_SIZE);
             editBody.setTextColor(getResources().getColor(R.color.black));
             editBody.setBackgroundColor(getResources().getColor(R.color.white));
-            editBody.setPadding(8,8,8,8);
+            editBody.setPadding(20,20,20,20);
+            if(hasDraft)
+                editBody.setText(preferences.getString(getResources().getString(R.string.draft_body_key), ""));
             this.addView(editBody);
 
             footBar = new LinearLayout(context);
@@ -267,6 +287,31 @@ public class PostBlock extends LinearLayout {
                 @Override
                 public void onClick(View view) {
 
+
+
+                    try{
+                        AVObject product = new AVObject("Announcements");
+                        product.put("included", true);
+                        product.put("announcementTitle", editTitle.getText().toString());
+                        product.put("clubName", club.getName());
+                        product.put("announcementBody", editBody.getText().toString());
+                        product.put("createdAt", getTime());
+                        product.put("updatedAt",getTime());
+
+                        product.saveInBackground(new SaveCallback() {
+                            @Override
+                            public void done(AVException e) {
+                                if (e == null) {
+                                    submitPost(true);
+                                } else {
+                                    submitPost(false);
+                                }
+                            }
+                        });
+                    } catch (Exception E){
+                        submitPost(false);
+                    }
+
                 }
             });
 
@@ -282,7 +327,11 @@ public class PostBlock extends LinearLayout {
             save.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View view) {
-
+                    hasDraft = true;
+                    editor.putString(getResources().getString(R.string.draft_title_key),editTitle.getText().toString());
+                    editor.putString(getResources().getString(R.string.draft_body_key), editBody.getText().toString());
+                    editor.putBoolean(getResources().getString(R.string.has_draft_key),true);
+                    editor.commit();
                 }
             });
             footBar.addView(save);
@@ -297,7 +346,8 @@ public class PostBlock extends LinearLayout {
             clear.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View view) {
-
+                    editBody.setText("");
+                    editTitle.setText("");
                 }
             });
             footBar.addView(clear);
