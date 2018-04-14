@@ -154,7 +154,7 @@ public class AnnouncementBlock extends LinearLayout{
             contents[i] = new Contents(filteredAnnouncement.get(i));
         }
 
-        sortByDates(contents);
+        contents = sortByDates(contents);
 
         for(Contents i : contents){
             list.addView(i);
@@ -169,12 +169,13 @@ public class AnnouncementBlock extends LinearLayout{
         return a.title.toLowerCase().contains(searchKey.toLowerCase());
     }
 
-    public void sortByDates(Contents[] contents){
+    public Contents[] sortByDates(Contents[] contents){
         QuickSortAnnouncement(contents);
+        return contents;
     }
 
     public Contents[] QuickSortAnnouncement(Contents[] arr){
-        if(arr == null || arr.length<=2)
+        if(arr == null || arr.length<=1)
             return arr;
         int len = 0;
         Contents midValue = arr[0];
@@ -267,7 +268,7 @@ public class AnnouncementBlock extends LinearLayout{
 
     }
 
-    public class Contents extends LinearLayout{
+    public class Contents extends LinearLayout implements Comparable{
 
         public TextView titleText, subTitle, bodyText;
         public Announcement content;
@@ -311,6 +312,21 @@ public class AnnouncementBlock extends LinearLayout{
             bodyText.setTextColor(getResources().getColor(R.color.black));
             bodyText.setLayoutParams(textParams);
             bodyText.setGravity(Gravity.CENTER_HORIZONTAL);
+        }
+
+        public int compareTo(Object obj){
+            long temp = ((Contents)obj).content.getPostTime().getTime();
+            long thisTemp = this.content.getPostTime().getTime();
+
+            if(thisTemp > temp){
+                return 1;
+            }
+            else if (thisTemp == temp){
+                return 0;
+            }
+            else{
+                return -1;
+            }
         }
     }
 
