@@ -13,4 +13,10 @@
 
     <string name = "subscribed_channels_key">subscribed_channels</string>
     <string name = "first_run_key">first_run</string>
+
+    <string name = "login_name_key">login_name</string>
+    <string name = "login_password_key">login_password_key</string>
+    <string name = "draft_title_key">draft_title_key</string>
+    <string name = "draft_body_key">draft_body_key</string>
+    <string name = "has_draft_key">has_draft_key</string>
 </resources>

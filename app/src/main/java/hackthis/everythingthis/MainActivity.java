@@ -17,9 +17,9 @@ import com.avos.avoscloud.*;
 
 public class MainActivity extends AppCompatActivity{
 
-    //false = schedule, true = announcement
-    private boolean pageMode = false;
-    private boolean pageModeHistory = false;
+    //schedule:0 announcement:1 post:2
+    private int pageMode = 0;
+    private int pageModeHistory = 0;
 
     // schedule page vars
     private int screenWidth, screenHeight;
@@ -29,12 +29,15 @@ public class MainActivity extends AppCompatActivity{
 
     //main frame vars
     private LinearLayout body;
-    private ImageView scheduleIcon, announcementIcon;
+    private ImageView scheduleIcon, announcementIcon, postIcon;
 
     //announcement page vars
     private static AnnouncementBlock ab;
     private static AnnouncementRefresher announcementRefresher = null;
     private static boolean announcementRefresherRunning = false;
+
+    //post page vars
+    private static PostBlock pb;
 
     //data related vars
     SharedPreferences preferences;
@@ -75,9 +78,6 @@ public class MainActivity extends AppCompatActivity{
 
         editor.putBoolean(getResources().getString(R.string.first_run_key), false);
 
-        pageMode = false;
-        pageModeHistory = false;
-
         /*// 测试 SDK 是否正常工作的代码
         已测试，见数据库中androidTestObject项
         AVObject testObject = new AVObject("androidTestObject");
@@ -109,27 +109,38 @@ public class MainActivity extends AppCompatActivity{
 
         //initialize footer
         LinearLayout footer = findViewById(R.id.footer);
-        footer.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, (int)(0.075*screenHeight)));
-        footer.setPadding(0,(int)(0.01*screenHeight),0,(int)(0.01*screenHeight));
+        footer.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        //footer.setPadding(0,(int)(0.01*screenHeight),0,(int)(0.01*screenHeight));
 
         //initialize icon buttons
+
+        LinearLayout.LayoutParams footerButtonParams = new LinearLayout.LayoutParams((int)(0.15*screenWidth), ViewGroup.LayoutParams.WRAP_CONTENT);
+        footerButtonParams.setMargins((int)(0.01*screenWidth),0,(int)(0.01*screenWidth),0);
+
         scheduleIcon = findViewById(R.id.scheduleIcon);
-        LinearLayout.LayoutParams footerButtonParams = new LinearLayout.LayoutParams((int)(0.075*screenHeight),ViewGroup.LayoutParams.MATCH_PARENT);
-        footerButtonParams.setMargins((int)(0.04*screenHeight),0,(int)(0.04*screenHeight),0);
         scheduleIcon.setLayoutParams(footerButtonParams);
-        scheduleIcon.setPadding((int)(0.005*screenHeight),(int)(0.005*screenHeight),(int)(0.005*screenHeight),(int)(0.005*screenHeight));
+        scheduleIcon.setPadding(20,20,20,20);
+        scheduleIcon.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        scheduleIcon.setAdjustViewBounds(true);
 
 
         announcementIcon = findViewById(R.id.announcementIcon);
         announcementIcon.setLayoutParams(footerButtonParams);
-        announcementIcon.setPadding((int)(0.005*screenHeight),(int)(0.005*screenHeight),(int)(0.005*screenHeight),(int)(0.005*screenHeight));
+        announcementIcon.setPadding(20,20,20,20);
+        announcementIcon.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        announcementIcon.setAdjustViewBounds(true);
 
+        postIcon = findViewById(R.id.postIcon);
+        postIcon.setLayoutParams(footerButtonParams);
+        postIcon.setPadding(20,20,20,20);
+        postIcon.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        postIcon.setAdjustViewBounds(true);
 
 
         scheduleIcon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                pageMode = false;
+                pageMode = 0;
                 updatePageMode();
             }
         });
@@ -137,16 +148,24 @@ public class MainActivity extends AppCompatActivity{
         announcementIcon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                pageMode = true;
+                pageMode = 1;
+                updatePageMode();
+            }
+        });
+        postIcon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                pageMode = 2;
                 updatePageMode();
             }
         });
 
         sb = new ScheduleBlock(getApplication(), screenHeight, screenWidth, preferences, editor);
-        ab = new AnnouncementBlock(getApplicationContext(), new LinearLayout.LayoutParams(screenWidth, (int)(0.85*screenHeight)), preferences, editor);
+        ab = new AnnouncementBlock(getApplication(), new LinearLayout.LayoutParams(screenWidth, (int)(0.85*screenHeight)), preferences, editor);
+        pb = new PostBlock(getApplication(), new LinearLayout.LayoutParams(screenWidth, (int)(0.85*screenHeight)), preferences, editor);
 
-        pageMode = false;
-        pageModeHistory = true;
+        pageMode = 0;
+        pageModeHistory = 1;
 
         updatePageMode();
 
@@ -164,18 +183,28 @@ public class MainActivity extends AppCompatActivity{
                 }
             });
 
-            if (!pageMode) {
+            if (pageMode == 0) {
                 body.addView(sb);
+
                 scheduleIcon.setImageResource(R.drawable.schedule_selected);
                 announcementIcon.setImageResource(R.drawable.announcement);
+                postIcon.setImageResource(R.drawable.post);
                 //setContentView(R.layout.activity_main);
                 //getSupportActionBar().hide();
                 startScheduleRefresher();
-            } else {
+            } else if(pageMode == 1) {
                 body.addView(ab);
+
                 scheduleIcon.setImageResource(R.drawable.schedule);
                 announcementIcon.setImageResource(R.drawable.announcement_selected);
+                postIcon.setImageResource(R.drawable.post);
                 startAnnouncementRefresher();
+            } else if(pageMode == 2) {
+                body.addView(pb);
+
+                scheduleIcon.setImageResource(R.drawable.schedule);
+                announcementIcon.setImageResource(R.drawable.announcement);
+                postIcon.setImageResource(R.drawable.post_selected);
             }
             pageModeHistory = pageMode;
         }

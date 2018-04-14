@@ -31,7 +31,6 @@ import java.util.List;
 public class AnnouncementBlock extends LinearLayout{
     //status vars
     Context context;
-    boolean shown;
 
     boolean internetConnected = true;
 
@@ -243,7 +242,7 @@ public class AnnouncementBlock extends LinearLayout{
                 for(AVObject j : annList){
                     announcements.add(new Announcement(j.getString("announcementTitle"),
                             j.getString("announcementTitle"), j.getDate("createdAt"),
-                            new Club(j.getString("clubName"), "key")));
+                            new Club(j.getString("clubName"), j.getString("key"))));
                 }
             }
         }
@@ -259,7 +258,7 @@ public class AnnouncementBlock extends LinearLayout{
             clubs.clear();
             for(AVObject i : clubsList){
                 //TODO: add the key part
-                clubs.add(new Club(i.getString("name"), "key"));
+                clubs.add(new Club(i.getString("name"), i.getString("key")));
             }
         }
         catch(AVException e){
