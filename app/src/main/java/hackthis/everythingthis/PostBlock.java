@@ -50,6 +50,7 @@ public class PostBlock extends LinearLayout {
     public boolean hasDraft;
     public int pageMode;
     public Club club;
+    public EditPage ep;
 
     public PostBlock(Context CONTEXT, LinearLayout.LayoutParams BODYPARAMS, SharedPreferences PREFERENCES,
                      SharedPreferences.Editor EDITOR){
@@ -148,31 +149,30 @@ public class PostBlock extends LinearLayout {
 
         Contents.removeAllViews();
 
-        EditPage ep = new EditPage();
+        ep = new EditPage();
         Contents.addView(ep);
 
         //TODO: initialize post screen
     }
 
     public void submitPost(boolean successful){
-        pageMode = SEND;
 
         Contents.removeAllViews();
 
-        TextView submit = new TextView(context);
+        DialogPages dp;
 
-        submit.setTextColor(getResources().getColor(R.color.red));
-
-        if(successful) {
-            submit.setText("sent thing");
+        if(!successful) {
+            pageMode = SEND;
+            dp = new SendPage();
         }
         else{
-            submit.setText("failed to send thing");
+            pageMode = SAVE;
+            dp = new ErrorSavePage();
         }
 
         //TODO: remember to delete draft after successfully submitting
 
-        Contents.addView(submit);
+        Contents.addView(dp);
     }
 
     public boolean testInternetConnection(){
@@ -215,12 +215,121 @@ public class PostBlock extends LinearLayout {
         return true;
     }
 
+    public class DialogPages extends LinearLayout{
+
+        public TextView message;
+        public ImageView button1, button2;
+        public LinearLayout ButtonBox;
+
+        public DialogPages(){
+            super(context);
+            this.setLayoutParams(new LinearLayout.LayoutParams(bodyWidth, ViewGroup.LayoutParams.WRAP_CONTENT));
+            this.setPadding((int)(0.075*bodyWidth),10,(int)(0.075*bodyWidth),10);
+            this.setOrientation(VERTICAL);
+            this.setGravity(Gravity.START);
+            this.setBackgroundColor(getResources().getColor(R.color.background));
+
+            message = new TextView(context);
+            button1 = new ImageView(context);
+            button2 = new ImageView(context);
+            ButtonBox = new LinearLayout(context);
+
+            message.setTextColor(getResources().getColor(R.color.black));
+            message.setTextSize(STANDARD_TEXT_SIZE);
+            message.setPadding(20,20,20,20);
+
+            ButtonBox.setLayoutParams(new LinearLayout.LayoutParams((int)(0.85*bodyWidth), ViewGroup.LayoutParams.WRAP_CONTENT));
+            ButtonBox.setOrientation(HORIZONTAL);
+            ButtonBox.setGravity(Gravity.CENTER_HORIZONTAL);
+            ButtonBox.setPadding(10,10,10,10);
+
+            LinearLayout.LayoutParams buttonParams = new LinearLayout.LayoutParams((int)(0.33*bodyWidth), ViewGroup.LayoutParams.WRAP_CONTENT);
+            buttonParams.setMargins(20,0,20,0);
+
+
+            button1.setLayoutParams(buttonParams);
+            button1.setScaleType(ImageView.ScaleType.FIT_CENTER);
+            button1.setAdjustViewBounds(true);
+            button2.setLayoutParams(buttonParams);
+            button2.setScaleType(ImageView.ScaleType.FIT_CENTER);
+            button2.setAdjustViewBounds(true);
+
+            button1.setImageResource(R.drawable.button_background);
+            button2.setImageResource(R.drawable.button_background);
+
+            ButtonBox.addView(button1);
+            ButtonBox.addView(button2);
+
+            this.addView(message);
+            this.addView(ButtonBox);
+        }
+    }
+
+    public class SendPage extends DialogPages{
+        public SendPage(){
+            super();
+
+            hasDraft = false;
+            editor.putBoolean(getResources().getString(R.string.has_draft_key),false);
+            editor.putString(getResources().getString(R.string.draft_title_key),"");
+            editor.putString(getResources().getString(R.string.draft_body_key),"");
+            editor.commit();
+
+            message.setText("Announcement successfully uploaded");
+            button1.setImageResource(R.drawable.dia_abandon);
+            button1.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    startDraft();
+                }
+            });
+            button2.setImageResource(R.drawable.dia_log_out);
+            button2.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    logOut();
+                }
+            });
+        }
+    }
+
+    public class ErrorSavePage extends DialogPages{
+        public ErrorSavePage(){
+            super();
+            message.setText("An error has occured while sending");
+            button1.setImageResource(R.drawable.dia_save);
+            button1.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    hasDraft = true;
+                    editor.putBoolean(getResources().getString(R.string.has_draft_key),true);
+                    editor.putString(getResources().getString(R.string.draft_title_key),ep.editTitle.getText().toString());
+                    editor.putString(getResources().getString(R.string.draft_body_key),ep.editBody.getText().toString());
+                    editor.commit();
+                    startDraft();
+                }
+            });
+            button2.setImageResource(R.drawable.dia_abandon);
+            button2.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    hasDraft = false;
+                    editor.putBoolean(getResources().getString(R.string.has_draft_key),false);
+                    editor.putString(getResources().getString(R.string.draft_title_key),"");
+                    editor.putString(getResources().getString(R.string.draft_body_key),"");
+                    editor.commit();
+                    startDraft();
+                }
+            });
+        }
+    }
+
     public class EditPage extends LinearLayout{
         EditText editTitle, editBody;
         TextView subTitle;
         ImageButton submit, save, clear;
-        String titleText, bodyText;
         LinearLayout footBar;
+        TextView hintText;
         Date date;
 
         public EditPage(){
@@ -266,8 +375,15 @@ public class PostBlock extends LinearLayout {
                 editBody.setText(preferences.getString(getResources().getString(R.string.draft_body_key), ""));
             this.addView(editBody);
 
+            hintText = new TextView(context);
+            hintText.setLayoutParams(textParams);
+            hintText.setTextSize(STANDARD_TEXT_SIZE);
+            hintText.setTextColor(getResources().getColor(R.color.red));
+            hintText.setText("");
+            this.addView(hintText);
+
             footBar = new LinearLayout(context);
-            footBar.setLayoutParams(new LinearLayout.LayoutParams((int)(0.9*bodyWidth), ViewGroup.LayoutParams.WRAP_CONTENT));
+            footBar.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
             footBar.setOrientation(HORIZONTAL);
             footBar.setGravity(Gravity.CENTER_HORIZONTAL);
             footBar.setPadding(0,10,0,10);
@@ -287,29 +403,33 @@ public class PostBlock extends LinearLayout {
                 @Override
                 public void onClick(View view) {
 
+                    if(isValid()){
+                        try{
 
+                            if(!testInternetConnection())
+                                throw new Exception();
 
-                    try{
-                        AVObject product = new AVObject("Announcements");
-                        product.put("included", true);
-                        product.put("announcementTitle", editTitle.getText().toString());
-                        product.put("clubName", club.getName());
-                        product.put("announcementBody", editBody.getText().toString());
-                        product.put("createdAt", getTime());
-                        product.put("updatedAt",getTime());
+                            AVObject product = new AVObject("Announcements");
+                            product.put("included", true);
+                            product.put("announcementTitle", editTitle.getText().toString());
+                            product.put("clubName", club.getName());
+                            product.put("announcementBody", editBody.getText().toString());
+                            product.put("createdAt", getTime());
+                            product.put("updatedAt",getTime());
 
-                        product.saveInBackground(new SaveCallback() {
-                            @Override
-                            public void done(AVException e) {
-                                if (e == null) {
-                                    submitPost(true);
-                                } else {
-                                    submitPost(false);
+                            product.saveInBackground(new SaveCallback() {
+                                @Override
+                                public void done(AVException e) {
+                                    if (e == null) {
+                                        submitPost(true);
+                                    } else {
+                                        submitPost(false);
+                                    }
                                 }
-                            }
-                        });
-                    } catch (Exception E){
-                        submitPost(false);
+                            });
+                        } catch (Exception E){
+                            submitPost(false);
+                        }
                     }
 
                 }
@@ -327,11 +447,13 @@ public class PostBlock extends LinearLayout {
             save.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    hasDraft = true;
-                    editor.putString(getResources().getString(R.string.draft_title_key),editTitle.getText().toString());
-                    editor.putString(getResources().getString(R.string.draft_body_key), editBody.getText().toString());
-                    editor.putBoolean(getResources().getString(R.string.has_draft_key),true);
-                    editor.commit();
+                    if(isValid()) {
+                        hasDraft = true;
+                        editor.putString(getResources().getString(R.string.draft_title_key), editTitle.getText().toString());
+                        editor.putString(getResources().getString(R.string.draft_body_key), editBody.getText().toString());
+                        editor.putBoolean(getResources().getString(R.string.has_draft_key), true);
+                        editor.commit();
+                    }
                 }
             });
             footBar.addView(save);
@@ -353,12 +475,29 @@ public class PostBlock extends LinearLayout {
             footBar.addView(clear);
 
         }
+
+        public boolean isValid() {
+
+            Log.d("announcement","title: "+editTitle.getText().toString()+" "+new Boolean(editTitle.getText().toString().equals("")).toString());
+
+            if(editTitle.getText().toString().equals("")) {
+                hintText.setText("You have an invalid message! Please put in a title and some contents before saving or uploading");
+                return false;
+            }
+            if(editBody.getText().toString().equals("")) {
+                hintText.setText("You have an invalid message! Please put in a title and some contents before saving or uploading");
+                return false;
+            }
+            hintText.setText("");
+            return true;
+        }
     }
 
     public class LoginPage extends LinearLayout{
         public EditText nameText, passwordText;
         public TextView draftHint;
         public Button button1, button2;
+        public LinearLayout buttonBox;
         public CheckBox remember;
         public LoginPage(){
             super(context);
@@ -417,15 +556,23 @@ public class PostBlock extends LinearLayout {
             rememberText.setPadding(0,0,0,10);
             this.addView(rememberText);
 
+            buttonBox = new LinearLayout(context);
+            buttonBox.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT));
+            buttonBox.setGravity(Gravity.START);
+            buttonBox.setOrientation(HORIZONTAL);
+            this.addView(buttonBox);
+
+            LinearLayout.LayoutParams jiba = new LinearLayout.LayoutParams((int)(0.2*bodyWidth), (int)(0.1*bodyWidth));
+            jiba.setMargins(0,5,20,0);
+
             button1 = new Button(context);
             button1.setBackground(getResources().getDrawable(R.drawable.button_background));
-            button1.setLayoutParams(new LinearLayout.LayoutParams((int)(0.2*bodyWidth), (int)(0.1*bodyWidth)));
-            this.addView(button1);
+            button1.setLayoutParams(jiba);
+            buttonBox.addView(button1);
 
             button2 = new Button(context);
             button2.setBackground(getResources().getDrawable(R.drawable.button_background));
-            LinearLayout.LayoutParams jiba = new LinearLayout.LayoutParams((int)(0.2*bodyWidth), (int)(0.1*bodyWidth));
-            jiba.setMargins(0,5,0,0);
             button2.setLayoutParams(jiba);
 
 
@@ -434,9 +581,9 @@ public class PostBlock extends LinearLayout {
             button2.setTextSize(STANDARD_TEXT_SIZE+2.0f);
             button2.setTextColor(getResources().getColor(R.color.purple));
 
-            if(hasDraft){
+            if(preferences.getBoolean(getResources().getString(R.string.has_draft_key), false)){
                 button1.setText("continue");
-                this.addView(button2);
+                buttonBox.addView(button2);
                 button2.setText("abandon");
             }
             else{
@@ -446,7 +593,7 @@ public class PostBlock extends LinearLayout {
             button1.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    if(hasDraft){
+                    if(preferences.getBoolean(getResources().getString(R.string.has_draft_key), false)){
                         if(testLoginValidity(nameText.getText().toString(),passwordText.getText().toString()))
                         {
                             if (remember.isChecked()) {
@@ -502,6 +649,7 @@ public class PostBlock extends LinearLayout {
 
                         editor.putString(getResources().getString(R.string.draft_title_key),null);
                         editor.putString(getResources().getString(R.string.draft_body_key),null);
+                        editor.putBoolean(getResources().getString(R.string.has_draft_key),false);
                         editor.commit();
 
                         hasDraft = false;
