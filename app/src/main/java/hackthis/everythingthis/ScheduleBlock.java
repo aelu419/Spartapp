@@ -21,6 +21,7 @@ import android.widget.FrameLayout;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.avos.avoscloud.LogUtil;
@@ -67,13 +68,14 @@ public class ScheduleBlock extends LinearLayout {
     private LinearLayout bodyBlock;
     private ImageView fetch;
     private ImageView leftArrow, rightArrow;
+    private ScrollView bodyBlockHolder;
 
     public boolean isSet;
 
     TextView month;
 
     //ending time of periods
-    int p1, p2, p3, p4;
+    public int[] periodTimes;
 
     //month names
     private final String monthNames[] = {"January", "February", "March","April","May","June","July","August","September","October","November","December"};
@@ -114,7 +116,7 @@ public class ScheduleBlock extends LinearLayout {
         currentTime=getTime();
         browsingTime = Calendar.getInstance();
         browsingTime.setTime(currentTime);
-        setPeriodTimes();
+        setPeriodTimes(new GregorianCalendar(browsingTime.get(Calendar.YEAR), browsingTime.get(Calendar.MONTH), browsingTime.get(Calendar.DATE)));
         selectedDate = currentTime.getDate();
 
         //initialize header
@@ -205,12 +207,18 @@ public class ScheduleBlock extends LinearLayout {
 
         //initialize bodyBlock
         bodyBlock = new LinearLayout(context);
+        bodyBlockHolder = new ScrollView(context);
         LinearLayout.LayoutParams bodyBlockParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, ((int)(0.62*screenHeight)));
-        //bodyBlockParams.setMargins(0, (int)(0.03*screenHeight),0,0);
-        bodyBlock.setLayoutParams(bodyBlockParams);
+        bodyBlockHolder.setLayoutParams(bodyBlockParams);
+        bodyBlockHolder.setBackgroundColor(getResources().getColor(R.color.shaded_background));
+        bodyBlockHolder.setHorizontalScrollBarEnabled(false);
+        bodyBlockHolder.setVerticalScrollBarEnabled(true);
+
+        bodyBlock.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         bodyBlock.setOrientation(VERTICAL);
-        bodyBlock.setBackgroundColor(getResources().getColor(R.color.shaded_background));
-        this.addView(bodyBlock);
+
+        bodyBlockHolder.addView(bodyBlock);
+        this.addView(bodyBlockHolder);
 
         //download file from database
         //To be written
@@ -300,14 +308,14 @@ public class ScheduleBlock extends LinearLayout {
 
     public void readDemoFile(){
         subjectTable = new HashMap<>(0);
-        Subject chinese = new Subject("Chinese", "Yongkuan Zhang", "N404");
-        Subject studyHall = new Subject("Study Hall", "", "");
-        Subject calc = new Subject("AP Calculus BC","Qin Jing","N306");
-        Subject lang = new Subject("AP Lang", "James Cusack", "N408");
-        Subject history = new Subject("US History", "Andrew Dickerson", "N405");
-        Subject foda = new Subject("Foundations of Digital Art", "Angelito Balboa", "N 401");
-        Subject french = new Subject("French III", "Lisbeth Stammerjohann", "Library");
-        Subject physics = new Subject("AP Physics II", "Xiaobin Xu", "N315");
+        Subject chinese = new Subject("Chinese", "Yongkuan Zhang", "N404", 1);
+        Subject studyHall = new Subject("Study Hall", "", "", 3);
+        Subject calc = new Subject("AP Calculus BC","Qin Jing","N306", 5);
+        Subject lang = new Subject("AP Lang", "James Cusack", "N408", 7);
+        Subject history = new Subject("US History", "Andrew Dickerson", "N405",1);
+        Subject foda = new Subject("Foundations of Digital Art", "Angelito Balboa", "N 401",3);
+        Subject french = new Subject("French III", "Lisbeth Stammerjohann", "Library",5);
+        Subject physics = new Subject("AP Physics II", "Xiaobin Xu", "N315",7);
         subjectTable.put(1, new Subject[]{chinese, studyHall, calc, lang});
         subjectTable.put(2, new Subject[]{history, foda, calc, physics});
         subjectTable.put(3, new Subject[]{chinese, physics, lang, french});
@@ -320,36 +328,6 @@ public class ScheduleBlock extends LinearLayout {
         themeColorTable.put("AP Calculus BC", this.getResources().getColor(R.color.algebra));
         themeColorTable.put("US History", this.getResources().getColor(R.color.blue));
         themeColorTable.put("AP Lang", this.getResources().getColor(R.color.english));
-    }
-
-    public void readFile() throws IOException {
-        /*
-        * Assuming that input streams from the database are in the following format:
-        * (integer date) (String class1),(String class2),(String class3)...
-        * for example
-        * 23,AP physics,Mr.X,R311,History,Mr.Someone,Mars,English,Somebody,Room101,Advanced_Acting,Mr.Allen,BlackBox Theatre
-        * Note that spaces are allowed
-        * */
-        subjectTable = new HashMap<>(0);
-        FileInputStream in = null;
-
-        context.openFileInput(FILENAME);
-
-        BufferedReader reader = new BufferedReader( new InputStreamReader( in, "UTF-8" ) );
-        String line;
-        while( (line = reader.readLine()) != null ){
-            StringTokenizer tokenizer = new StringTokenizer( line );
-            int date = Integer.parseInt( tokenizer.nextToken() );
-            Subject[] subjects = new Subject[tokenizer.countTokens()/3];
-            for( int i = 0; i < tokenizer.countTokens()/3; i ++ ) {
-                Subject subject = new Subject(
-                        tokenizer.nextToken(),
-                        tokenizer.nextToken(),
-                        tokenizer.nextToken());
-                subjects[i] = subject;
-            }
-            subjectTable.put( date, subjects );
-        }
     }
 
     public void initializeDateBar(){
@@ -405,18 +383,25 @@ public class ScheduleBlock extends LinearLayout {
         //updates the colors and text to match the selected date
         Subject[] subjects = subjectTable.get(selectedDate);
         currentTime = getTime();
+        GregorianCalendar today = new GregorianCalendar();
+        today.setTime(currentTime);
         int hm = currentTime.getHours()*100+currentTime.getMinutes();
 
         Date tmr = new Date();
         tmr.setTime(currentTime.getTime()+24L*60L*60L*1000L);
+        GregorianCalendar tmrTemp = new GregorianCalendar();
+        tmrTemp.setTime(tmr);
+
+        GregorianCalendar temp = new GregorianCalendar(browsingTime.get(Calendar.YEAR), browsingTime.get(Calendar.MONTH), browsingTime.get(Calendar.DATE));
+        int fuckCalendarsWhyTheFuckDoesntWeekDayChangeAutomatically = temp.get(GregorianCalendar.DAY_OF_WEEK);
+        setPeriodTimes(new GregorianCalendar(browsingTime.get(Calendar.YEAR), browsingTime.get(Calendar.MONTH), browsingTime.get(Calendar.DATE)));
 
         //if the calendar does not yet exist
         if( subjects == null ) {
             bodyBlock.setGravity(Gravity.CENTER);
+            bodyBlock.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, (int)(0.62*screenHeight)));
             ImageView restImage = new ImageView(context);
 
-            GregorianCalendar temp = new GregorianCalendar(browsingTime.get(Calendar.YEAR), browsingTime.get(Calendar.MONTH), browsingTime.get(Calendar.DATE));
-            int fuckCalendarsWhyTheFuckDoesntWeekDayChangeAutomatically = temp.get(GregorianCalendar.DAY_OF_WEEK);
 
             TextView errorMessage = new TextView(context);
 
@@ -440,21 +425,28 @@ public class ScheduleBlock extends LinearLayout {
         }
         else {
             bodyBlock.setGravity(Gravity.TOP);
-            courseBlock[] blocks = new courseBlock[4];
-            boolean[] isMain = new boolean[4];
-            if (selectedDate == currentTime.getDate() && hm < p4) {
-                if (hm < p1) {
-                    Log.i("Demo", "period one1 is next");
-                    isMain[0] = true;
-                } else if (hm < p2) {
-                    Log.i("Demo", "period 2 is next");
-                    isMain[1] = true;
-                } else if (hm < p3) {
-                    isMain[2] = true;
-                } else{
-                    isMain[3] = true;
+            bodyBlock.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+            courseBlock[] blocks = new courseBlock[subjects.length];
+            boolean[] isMain = new boolean[subjects.length];
+            if (temp.get(GregorianCalendar.MONTH) == temp.get(GregorianCalendar.MONTH)
+                    && tmrTemp.get(GregorianCalendar.DATE) == temp.get(GregorianCalendar.DATE)) {
+                boolean foundFirst = false;
+                for(int i = 0; i < subjects.length; i++){
+                    if(periodTimes[subjects[i].period]>hm){
+                        if(!foundFirst) {
+                            foundFirst = true;
+                            isMain[i] = true;
+                        }
+                        else{
+                            isMain[i] = false;
+                        }
+                    }
+                    else{
+                        isMain[i] = false;
+                    }
                 }
-            } else if (selectedDate == tmr.getDate() && tmr.getMonth() == currentTime.getMonth()) {
+            } else if (tmrTemp.get(GregorianCalendar.MONTH) == temp.get(GregorianCalendar.MONTH)
+                    && tmrTemp.get(GregorianCalendar.DATE) == temp.get(GregorianCalendar.DATE)) {
                 Log.i("Demo", "tomorrow's period 1 is next");
                 isMain[0] = true;
 
@@ -462,7 +454,7 @@ public class ScheduleBlock extends LinearLayout {
                 Log.i("Demo", "no next periods in today");
             }
 
-            for(int i = 0; i < 4; i ++){
+            for(int i = 0; i < subjects.length; i ++){
                 blocks[i] = new courseBlock(context, isMain[i], subjects[i], i);
                 bodyBlock.addView(blocks[i]);
             }
@@ -493,12 +485,16 @@ public class ScheduleBlock extends LinearLayout {
         private final String name;
         private final String teacher;
         private final String room;
+        private final int period;
 
-        public Subject( String name, String teacher, String room ){
+        public Subject( String name, String teacher, String room, int PERIOD){
             this.name = name;
             this.teacher = teacher;
             this.room = room;
+            this.period = PERIOD;
         }
+
+        public int period(){return period;}
 
         public String name(){return name;}
         public String teacher(){return teacher;}
@@ -638,7 +634,8 @@ public class ScheduleBlock extends LinearLayout {
                 //set the background image
                 background.setLayoutParams(new FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.MATCH_PARENT));
                 background.setScaleType(ImageView.ScaleType.FIT_XY);
-                background.setImageResource(R.drawable.physics_background);
+                background.setImageResource(findDrawableWithString(Course.name));
+                background.setBackgroundColor(getResources().getColor(R.color.purple));
 
 
 
@@ -822,19 +819,31 @@ public class ScheduleBlock extends LinearLayout {
         return temp;
     }
 
-    public void setPeriodTimes(){
-        Log.i("Demo","period times set");
-        if(currentTime.getDay()==Calendar.WEDNESDAY){
-            p1=855;
-            p2=940;
-            p3=1210;
-            p4=1340;
+    public void setPeriodTimes(GregorianCalendar date){
+        periodTimes = new int[8];
+        if(date.get(GregorianCalendar.DAY_OF_WEEK)==Calendar.WEDNESDAY){
+            periodTimes = new int[]{835, 855, 920, 940, 1120, 1210, 1320, 1340};
         }
         else {
-            p1 = 935;
-            p2 = 1115;
-            p3 = 1350;
-            p4 = 1515;
+            periodTimes = new int[]{855, 935, 1035, 1115, 1205, 1350, 1435, 1515};
         }
+    }
+
+    public int findDrawableWithString(String source){
+        source = source.toLowerCase();
+        source = replaceSpace(source);
+        int id = context.getResources().getIdentifier("source", "drawable", context.getPackageName());
+        return id;
+    }
+
+    public static String replaceSpace(String str){
+        if(str.contains(" ")){
+            int index = str.indexOf(" ");
+            str = str.substring(0,index)+"_"+str.substring(index+1);
+            Log.d("Demo", str);
+            str = replaceSpace(str);
+            return str;
+        }
+        return str;
     }
 }

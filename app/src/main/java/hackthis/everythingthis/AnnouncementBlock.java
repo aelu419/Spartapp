@@ -103,6 +103,8 @@ public class AnnouncementBlock extends LinearLayout{
         editor.putStringSet(getResources().getString(R.string.subscribed_channels_key),
                 new HashSet<>(subscribed));
 
+        editor.commit();
+
         searchBar = new SearchBar();
         this.addView(searchBar);
 
@@ -579,6 +581,7 @@ public class AnnouncementBlock extends LinearLayout{
 
                             editor.putStringSet(getResources().getString(R.string.subscribed_channels_key),
                                     new HashSet<>(subscribed));
+                            editor.commit();
 
                             isSelected = b;
 

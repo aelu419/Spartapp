@@ -78,6 +78,8 @@ public class MainActivity extends AppCompatActivity{
 
         editor.putBoolean(getResources().getString(R.string.first_run_key), false);
 
+
+
         /*// 测试 SDK 是否正常工作的代码
         已测试，见数据库中androidTestObject项
         AVObject testObject = new AVObject("androidTestObject");
@@ -160,9 +162,11 @@ public class MainActivity extends AppCompatActivity{
             }
         });
 
+
         sb = new ScheduleBlock(getApplication(), screenHeight, screenWidth, preferences, editor);
         ab = new AnnouncementBlock(getApplication(), new LinearLayout.LayoutParams(screenWidth, (int)(0.85*screenHeight)), preferences, editor);
         pb = new PostBlock(getApplication(), new LinearLayout.LayoutParams(screenWidth, (int)(0.85*screenHeight)), preferences, editor);
+
 
         pageMode = 0;
         pageModeHistory = 1;
