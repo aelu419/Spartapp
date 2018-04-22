@@ -21,7 +21,6 @@ import com.avos.avoscloud.AVObject;
 import com.avos.avoscloud.AVQuery;
 import com.avos.avoscloud.SaveCallback;
 
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.text.SimpleDateFormat;
@@ -138,7 +137,6 @@ public class PostBlock extends LinearLayout {
         editor.putString(getResources().getString(R.string.login_name_key),"");
         editor.commit();
 
-        //TODO: call saveDraft page
         login(preferences.getBoolean(getResources().getString(R.string.has_draft_key), false));
     }
 
@@ -152,7 +150,6 @@ public class PostBlock extends LinearLayout {
         ep = new EditPage();
         Contents.addView(ep);
 
-        //TODO: initialize post screen
     }
 
     public void submitPost(boolean successful){
@@ -170,8 +167,6 @@ public class PostBlock extends LinearLayout {
             dp = new ErrorSavePage();
         }
 
-        //TODO: remember to delete draft after successfully submitting
-
         Contents.addView(dp);
     }
 
@@ -181,6 +176,7 @@ public class PostBlock extends LinearLayout {
             Log.d("announcement","try to connect");
             URL url = new URL("http://www.baidu.com");
             URLConnection connection = url.openConnection();
+            connection.setConnectTimeout(500);
             connection.connect();
         }catch (Exception e){
             Log.d("announcement","failed to connect");
@@ -194,6 +190,9 @@ public class PostBlock extends LinearLayout {
 
         if(name == null || passWord == null) return false;
 
+        if(!testInternetConnection())
+            return false;
+
         AVQuery clubQuery = new AVQuery("Clubs");
         clubQuery.whereMatches("name", name);
         String pw = "";
@@ -202,7 +201,6 @@ public class PostBlock extends LinearLayout {
             if(club == null) return false;
             pw = club.get(0).getString("key");
         } catch (AVException e){
-            reportInternetError();
             return false;
         }
 
@@ -335,7 +333,7 @@ public class PostBlock extends LinearLayout {
         public EditPage(){
             super(context);
 
-            date = getTime();
+            date = ScheduleBlock.getTime();
 
             this.setLayoutParams(new LinearLayout.LayoutParams(bodyWidth, ViewGroup.LayoutParams.WRAP_CONTENT));
             this.setPadding((int)(0.075*bodyWidth),10,(int)(0.075*bodyWidth),10);
@@ -414,8 +412,8 @@ public class PostBlock extends LinearLayout {
                             product.put("announcementTitle", editTitle.getText().toString());
                             product.put("clubName", club.getName());
                             product.put("announcementBody", editBody.getText().toString());
-                            product.put("createdAt", getTime());
-                            product.put("updatedAt",getTime());
+                            product.put("createdAt", date);
+                            product.put("updatedAt",date);
 
                             product.saveInBackground(new SaveCallback() {
                                 @Override
@@ -501,7 +499,6 @@ public class PostBlock extends LinearLayout {
         public CheckBox remember;
         public LoginPage(){
             super(context);
-            //TODO: finish according to design
             this.setLayoutParams(new LinearLayout.LayoutParams(bodyWidth, ViewGroup.LayoutParams.WRAP_CONTENT));
             this.setPadding((int)(0.075*bodyWidth),10,(int)(0.075*bodyWidth),10);
             this.setOrientation(VERTICAL);
@@ -667,95 +664,5 @@ public class PostBlock extends LinearLayout {
         }
     }
 
-    public void reportInternetError(){
-        //TODO: do it
-    }
-
-    public class ErrorButton extends LinearLayout{
-
-        TextView message = new TextView(context);
-        ImageView icon = new ImageView(context);
-
-        public ErrorButton(){
-            super(context);
-            this.setOrientation(VERTICAL);
-            LinearLayout.LayoutParams errorParams = new LinearLayout.LayoutParams((int)(0.9 * bodyWidth), ViewGroup.LayoutParams.WRAP_CONTENT);
-            errorParams.setMargins(0,50,0,50);
-            this.setLayoutParams(errorParams);
-            this.setGravity(Gravity.CENTER_HORIZONTAL);
-            this.setBackground(getResources().getDrawable(R.drawable.error_background));
-            this.setPadding(12,12,12,12);
-
-            message.setLayoutParams(new LinearLayout.LayoutParams((int)(0.6 * bodyWidth), ViewGroup.LayoutParams.WRAP_CONTENT));
-            message.setGravity(Gravity.CENTER_HORIZONTAL);
-            message.setTextColor(getResources().getColor(R.color.black));
-            message.setTextSize(STANDARD_TEXT_SIZE);
-            message.setText("Please connect the internet and press this to refresh");
-            this.addView(message);
-
-            icon.setLayoutParams(new LinearLayout.LayoutParams((int)(0.6 * bodyWidth), (int)(0.6 * bodyWidth)));
-            icon.setPadding(20,20,20,20);
-            icon.setImageResource(R.drawable.wifi_disconnected);
-            this.addView(icon);
-
-            this.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    //TODO: insert page refreshing method here
-                }
-            });
-        }
-    }
-
     //tries to get time from internet, if fails then set time as system time
-    private Date getTime() {
-        Date date = new Date();
-        String URL1 = "http://www.baidu.com";
-        String URL2 = "http://www.ntsc.ac.cn";
-        String URL3 = "http://www.beijing-time.org";
-        Log.i("Demo","current time source :");
-        try{
-            if (getWebDate(URL1) != null) {
-                Log.i("Demo",URL1);
-                date = getWebDate(URL1);
-            } else if (getWebDate(URL2) != null) {
-                Log.i("Demo",URL2);
-                date = getWebDate(URL2);
-            } else if (getWebDate(URL3) != null) {
-                Log.i("Demo",URL3);
-                date = getWebDate(URL3);
-            }
-            else {
-                Log.i("Demo", "System");
-            }
-        }
-        catch(Exception e){
-
-        }
-        return date;
-    }
-
-    //get time from internet with given url
-    private Date getWebDate(String url) {
-        Date temp;
-        Log.i("Demo","getting time from " + url);
-        URL u;
-        try {
-            u = new URL(url);
-        } catch (Exception e){
-            e.printStackTrace();
-            return null;
-        }
-        try{
-            HttpURLConnection connecter = (HttpURLConnection)u.openConnection();
-            connecter.connect();
-            temp = new Date(connecter.getDate());
-            connecter.disconnect();
-        }catch(Exception e){
-            e.printStackTrace();
-            return null;
-        }
-        Log.i("Demo","got time from " + url);
-        return temp;
-    }
 }

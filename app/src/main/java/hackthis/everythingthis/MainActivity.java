@@ -162,11 +162,12 @@ public class MainActivity extends AppCompatActivity{
             }
         });
 
-
         sb = new ScheduleBlock(getApplication(), screenHeight, screenWidth, preferences, editor);
+        Log.d("Demo","schedule block created");
         ab = new AnnouncementBlock(getApplication(), new LinearLayout.LayoutParams(screenWidth, (int)(0.85*screenHeight)), preferences, editor);
+        Log.d("Demo","announcement block created");
         pb = new PostBlock(getApplication(), new LinearLayout.LayoutParams(screenWidth, (int)(0.85*screenHeight)), preferences, editor);
-
+        Log.d("Demo","post block created");
 
         pageMode = 0;
         pageModeHistory = 1;
@@ -237,7 +238,7 @@ public class MainActivity extends AppCompatActivity{
 
                 publishProgress();
                 try {
-                    Thread.sleep(15000);
+                    Thread.sleep(30000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -274,10 +275,9 @@ public class MainActivity extends AppCompatActivity{
         protected Void doInBackground(Void... params) {
 
             while (announcementRefresherRunning) {
-
                 publishProgress();
                 try {
-                    Thread.sleep(15000);
+                    Thread.sleep(30000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
