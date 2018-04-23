@@ -7,11 +7,15 @@ import android.graphics.PorterDuff;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.support.v7.widget.LinearLayoutCompat;
+import android.text.InputType;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
@@ -28,10 +32,6 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 
-/**
- * Created by Alan Tao on 2018/3/20.
- */
-
 public class ScheduleBlock extends LinearLayout {
 
     public int scheduleHeight, scheduleWidth;
@@ -44,6 +44,8 @@ public class ScheduleBlock extends LinearLayout {
     private HashMap<Integer, Subject[]> subjectTable;
     private int screenWidth, screenHeight;
     private boolean leftArrowEnabled, rightArrowEnabled;
+    public boolean isLoggedIn;
+    private String PSname, PSpass;
 
     //IO
     private final String FILENAME = "schedule";
@@ -94,7 +96,6 @@ public class ScheduleBlock extends LinearLayout {
         scheduleHeight = (int)(0.85 * screenHeight);
         leftArrowEnabled = true;
         rightArrowEnabled = true;
-
 
         LinearLayout.LayoutParams scheduleParams = new LayoutParams(scheduleWidth, scheduleHeight);
         this.setLayoutParams(scheduleParams);
@@ -218,13 +219,56 @@ public class ScheduleBlock extends LinearLayout {
         readDemoFile();     //for demo purposes
 
         //initializing date selection bar
-        //This will trigger a chain of events
+        //        //This will trigger a chain of events
+        //
+        //        //see OnSelection()
+        //read stored powerschool settings
 
-        //see OnSelection()
+        //todo:initialize webview before here
+
+        PSname = preferences.getString(getResources().getString(R.string.ps_name_key),null);
+        PSpass = preferences.getString(getResources().getString(R.string.ps_pass_key),null);
+        login();
+
         updatePage();
+
+        initializeDateBar();
+    }
+
+    public void login(){
+        if(testPSLogin()){
+            isLoggedIn = true;
+            /*
+            todo: add this
+            editor.putString(getResources().getString(R.string.ps_name_key), PSname);
+            editor.putString(getResources().getString(R.string.ps_pass_key), PSpass);
+            editor.commit();
+            */
+        }
+        else{
+            isLoggedIn = false;
+            LoginScreen ls = new LoginScreen();
+            bodyBlock.addView(ls);
+        }
+    }
+
+    public boolean testPSLogin(){
+        if((PSname==null || PSname.equals("")) || (PSpass==null || PSpass.equals(""))) {
+            Log.d("Demo","logging in under mode"+false);
+            return false;
+        }
+        else{
+            //todo: replace this part to testing powerschool login with actual inputs
+            Log.d("Demo","logging in under mode"+true);
+            return true;
+        }
     }
 
     public void updatePage(){
+
+        if(!isLoggedIn){
+            return;
+        }
 
         Log.i("calendar",browsingTime.get(Calendar.YEAR)+" "+browsingTime.get(Calendar.MONTH)+" "+
                 browsingTime.get(Calendar.DATE)+" "+browsingTime.get(Calendar.DAY_OF_WEEK));
@@ -367,6 +411,11 @@ public class ScheduleBlock extends LinearLayout {
     }
 
     public void onSelection(){
+
+        if(!isLoggedIn){
+            return;
+        }
+
         //clears the existing contents in the body
         bodyBlock.removeAllViews();
 
@@ -585,7 +634,8 @@ public class ScheduleBlock extends LinearLayout {
                 this.setBackgroundResource(R.drawable.date_picker);
                 textView.setTextColor(Color.WHITE);
                 scroll();
-                onSelection();
+                if(isLoggedIn)
+                    onSelection();
             }else {
                 this.setBackgroundResource(R.drawable.date_picker_off);
                 textView.setTextColor(getContext().getResources().getColor(R.color.purple));
@@ -772,6 +822,119 @@ public class ScheduleBlock extends LinearLayout {
             }
         }
         return date;
+    }
+
+    public class LoginScreen extends LinearLayout{
+        public EditText nameText, passwordText;
+        public TextView draftHint;
+        public Button button1;
+        public LinearLayout buttonBox;
+        public CheckBox remember;
+        public LoginScreen(){
+            super(context);
+            this.setLayoutParams(new LinearLayout.LayoutParams(screenWidth, ViewGroup.LayoutParams.WRAP_CONTENT));
+            this.setPadding((int)(0.075*screenWidth),10,(int)(0.075*screenWidth),10);
+            this.setOrientation(VERTICAL);
+            this.setGravity(Gravity.LEFT);
+
+            LinearLayout.LayoutParams textParams = new LinearLayout.LayoutParams((int)(0.85*screenWidth), ViewGroup.LayoutParams.WRAP_CONTENT);
+            textParams.setMargins(0,10,0,10);
+
+            draftHint = new TextView(context);
+            draftHint.setLayoutParams(textParams);
+            draftHint.setTextColor(getResources().getColor(R.color.red));
+            this.addView(draftHint);
+
+            nameText = new EditText(context);
+            nameText.setHint("ID");
+            nameText.setLayoutParams(textParams);
+            nameText.setTextColor(getResources().getColor(R.color.black));
+            nameText.setBackgroundColor(getResources().getColor(R.color.white));
+            nameText.setPadding(8,8,8,8);
+            this.addView(nameText);
+
+            passwordText = new EditText(context);
+            passwordText.setInputType(InputType.TYPE_NUMBER_VARIATION_PASSWORD);
+            passwordText.setTextColor(getResources().getColor(R.color.black));
+            passwordText.setHint("PassWord");
+            passwordText.setLayoutParams(textParams);
+            passwordText.setBackgroundColor(getResources().getColor(R.color.white));
+            passwordText.setPadding(8,8,8,8);
+            this.addView(passwordText);
+
+            remember = new CheckBox(context);
+            remember.setChecked(false);
+            remember.setBackgroundColor(getResources().getColor(R.color.white));
+            remember.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+            this.addView(remember);
+
+            TextView rememberText = new TextView(context);
+            rememberText.setText("remember my login informations");
+            rememberText.setPadding(0,0,0,10);
+            this.addView(rememberText);
+
+            buttonBox = new LinearLayout(context);
+            buttonBox.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT));
+            buttonBox.setGravity(Gravity.START);
+            buttonBox.setOrientation(HORIZONTAL);
+            this.addView(buttonBox);
+
+            LinearLayout.LayoutParams jiba = new LinearLayout.LayoutParams((int)(0.2*screenWidth), (int)(0.1*screenWidth));
+            jiba.setMargins(0,5,20,0);
+
+            button1 = new Button(context);
+            button1.setBackground(getResources().getDrawable(R.drawable.button_background));
+            button1.setLayoutParams(jiba);
+            buttonBox.addView(button1);
+            button1.setTextColor(getResources().getColor(R.color.purple));
+            button1.setText("log in");
+
+            ImageView powerschoolIcon = new ImageView(context);
+            powerschoolIcon.setLayoutParams(new LinearLayout.LayoutParams((int)(0.85*screenWidth), ViewGroup.LayoutParams.WRAP_CONTENT));
+            powerschoolIcon.setPadding((int)(0.15*screenWidth),(int)(0.15*screenWidth),(int)(0.15*screenWidth),(int)(0.15*screenWidth));
+            powerschoolIcon.setImageResource(R.drawable.powerschool);
+            powerschoolIcon.setScaleType(ImageView.ScaleType.FIT_CENTER);
+            powerschoolIcon.setAdjustViewBounds(true);
+            this.addView(powerschoolIcon);
+
+            button1.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    PSname = nameText.getText().toString();
+                    PSpass = passwordText.getText().toString();
+                    Log.d("Demo","logging in with informations: name("+PSname+") pass("+PSpass+")");
+                    if(testPSLogin()){
+                        if(remember.isChecked()){
+                            editor.putString(getResources().getString(R.string.ps_name_key),
+                                    nameText.getText().toString());
+                            editor.putString(getResources().getString(R.string.ps_pass_key),
+                                    passwordText.getText().toString());
+                            editor.commit();
+                        }
+                        else{
+                            editor.putString(getResources().getString(R.string.ps_name_key),
+                                    null);
+                            editor.putString(getResources().getString(R.string.ps_pass_key),
+                                    null);
+                            editor.commit();
+                        }
+                        isLoggedIn = true;
+                        updatePage();
+                        bodyBlock.removeAllViews();
+                        onSelection();
+
+                    }
+                    else{
+                        draftHint.setText("Wrong ID or password, please re-enter!");
+                        nameText.setText("");
+                        passwordText.setText("");
+                        remember.setChecked(false);
+                    }
+                }
+            });
+        }
+
     }
 
     public static boolean testInternetConnection(){

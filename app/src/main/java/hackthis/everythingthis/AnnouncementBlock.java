@@ -257,6 +257,7 @@ public class AnnouncementBlock extends LinearLayout{
 
         try {
             clubQuery = new AVQuery<>("Clubs");
+            clubQuery.setLimit(1000);
             List<AVObject> clubsList = clubQuery.find();
             clubs.clear();
             for(AVObject i : clubsList){

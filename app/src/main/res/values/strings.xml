@@ -19,4 +19,6 @@
     <string name = "draft_title_key">draft_title_key</string>
     <string name = "draft_body_key">draft_body_key</string>
     <string name = "has_draft_key">has_draft_key</string>
+    <string name = "ps_name_key">pw_name_key</string>
+    <string name = "ps_pass_key">pw_pass_key</string>
 </resources>
