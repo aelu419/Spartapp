@@ -1,7 +1,15 @@
 package hackthis.everythingthis;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.support.v4.app.DialogFragment;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.StrictMode;
 import android.support.v7.app.AppCompatActivity;
@@ -14,6 +22,10 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 
 import com.avos.avoscloud.*;
+
+import java.net.URL;
+import java.net.URLConnection;
+
 
 public class MainActivity extends AppCompatActivity{
 
@@ -29,7 +41,7 @@ public class MainActivity extends AppCompatActivity{
 
     //main frame vars
     private LinearLayout body;
-    private ImageView scheduleIcon, announcementIcon, postIcon;
+    private ImageView scheduleIcon, announcementIcon, postIcon, updateIcon;
 
     //announcement page vars
     private static AnnouncementBlock ab;
@@ -42,6 +54,8 @@ public class MainActivity extends AppCompatActivity{
     //data related vars
     SharedPreferences preferences;
     SharedPreferences.Editor editor;
+    private static String versionName;
+    private static boolean isUpdated;
 
     public boolean firstRun;
 
@@ -138,6 +152,12 @@ public class MainActivity extends AppCompatActivity{
         postIcon.setScaleType(ImageView.ScaleType.FIT_CENTER);
         postIcon.setAdjustViewBounds(true);
 
+        updateIcon = findViewById(R.id.updateIcon);
+        updateIcon.setLayoutParams(footerButtonParams);
+        updateIcon.setPadding(20,20,20,20);
+        updateIcon.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        updateIcon.setAdjustViewBounds(true);
+
 
         scheduleIcon.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -162,6 +182,43 @@ public class MainActivity extends AppCompatActivity{
             }
         });
 
+        updateIcon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(!testInternetConnection()){
+                    //read local version code
+                    Log.d("Demo","failed to connect");
+                }
+                else{
+                    try {
+                        AVQuery versionQuery = new AVQuery("AndroidVersionInfo");
+                        AVObject versionObj = versionQuery.get("5adf2f749f545433342866ec");
+                        versionName = versionObj.getString("version_name");
+                        int versionCode = versionObj.getInt("version_code");
+
+                        int localVersionCode = 0;
+                        try {
+                            PackageInfo pInfo = getApplicationContext().getPackageManager().getPackageInfo(getPackageName(), 0);
+                            localVersionCode = pInfo.versionCode;
+                            Log.d("Demo","local version code is " + localVersionCode);
+                        } catch (PackageManager.NameNotFoundException e) {
+                            e.printStackTrace();
+                        }
+
+                        Log.d("Demo","connected and obtained version "+versionName+" with code "+versionCode);
+
+                        isUpdated = localVersionCode == versionCode;
+
+                        DialogFragment newFragment = new UpdateFragment();
+                        newFragment.show(getSupportFragmentManager(), "update");
+                    }
+                    catch(Exception e){
+                        //read local version code
+                    }
+                }
+            }
+        });
+
         sb = new ScheduleBlock(getApplication(), screenHeight, screenWidth, preferences, editor);
         Log.d("Demo","schedule block created");
         ab = new AnnouncementBlock(getApplication(), new LinearLayout.LayoutParams(screenWidth, (int)(0.85*screenHeight)), preferences, editor);
@@ -174,6 +231,56 @@ public class MainActivity extends AppCompatActivity{
 
         updatePageMode();
 
+    }
+
+    public static class UpdateFragment extends DialogFragment {
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            // Use the Builder class for convenient dialog construction
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            if(!isUpdated) {
+                builder.setMessage("A new version (" + versionName + ") is available. Do you want to redirect to its download page?")
+                        .setPositiveButton("yes", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://thisprogrammingclub.github.io/"));
+                                startActivity(browserIntent);
+                                dismiss();
+                            }
+                        })
+                        .setNegativeButton("no", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                dismiss();
+                            }
+                        });
+            }
+            else{
+                builder.setMessage("Your current version is already up to date.")
+                        .setPositiveButton("return", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                dismiss();
+                            }
+                        });
+            }
+            // Create the AlertDialog object and return it
+            return builder.create();
+        }
+    }
+
+    public static boolean testInternetConnection(){
+        try {
+            Log.d("Demo","try to connect (main activity)");
+            URL url = new URL("http://www.baidu.com");
+            URLConnection connection = url.openConnection();
+            connection.setConnectTimeout(2000);
+            connection.connect();
+        }catch (Exception e){
+            Log.d("Demo","failed to connect (called inside method)");
+            e.printStackTrace();
+            Log.d("Demo",Log.getStackTraceString(e.getCause()));
+            return false;
+        }
+
+        return true;
     }
 
     public void updatePageMode() {
@@ -293,4 +400,5 @@ public class MainActivity extends AppCompatActivity{
         }
 
     }
+
 }

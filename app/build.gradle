@@ -5,7 +5,7 @@ apply plugin: 'com.android.application'
 android {
     compileSdkVersion 26
     defaultConfig {
-        applicationId "hackthis.everythingthis"
+        applicationId "hackthis.spartapp"
         minSdkVersion 16
         targetSdkVersion 26
         versionCode 1
@@ -44,7 +44,7 @@ dependencies {
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
 
     //multi-dex
-    implementation 'com.android.support:multidex:1.0.0'
+    implementation 'com.android.support:multidex:1.0.3'
 
     //leanCloud sdk related
     implementation ('com.android.support:support-v4:21.0.3')

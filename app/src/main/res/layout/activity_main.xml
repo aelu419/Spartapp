@@ -37,6 +37,11 @@
             android:layout_width="30dp"
             android:layout_height="30dp"
             app:srcCompat="@drawable/post" />
+        <ImageView
+            android:id="@+id/updateIcon"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            app:srcCompat="@drawable/update" />
     </LinearLayout>
 
 </LinearLayout>
