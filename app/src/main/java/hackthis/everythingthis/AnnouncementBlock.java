@@ -607,14 +607,13 @@ public class AnnouncementBlock extends LinearLayout{
             errorParams.setMargins(0,50,0,50);
             this.setLayoutParams(errorParams);
             this.setGravity(Gravity.CENTER_HORIZONTAL);
-            this.setBackground(AnnouncementBlock.this.getResources().getDrawable(R.drawable.error_background));
             this.setPadding(12,12,12,12);
 
             message.setLayoutParams(new LinearLayout.LayoutParams((int)(0.6 * bodyWidth), ViewGroup.LayoutParams.WRAP_CONTENT));
             message.setGravity(Gravity.CENTER_HORIZONTAL);
             message.setTextColor(getResources().getColor(R.color.black));
             message.setTextSize(STANDARD_TEXT_SIZE);
-            message.setText("Please connect the internet and press this to refresh");
+            message.setText("Please connect to the internet");
             this.addView(message);
 
             icon.setLayoutParams(new LinearLayout.LayoutParams((int)(0.6 * bodyWidth), (int)(0.6 * bodyWidth)));

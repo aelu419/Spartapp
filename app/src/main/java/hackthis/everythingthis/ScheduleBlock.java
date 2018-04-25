@@ -33,8 +33,6 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 
 public class ScheduleBlock extends LinearLayout {
-
-    public int scheduleHeight, scheduleWidth;
     Context context;
     //Data
     private Calendar browsingTime;
@@ -42,6 +40,8 @@ public class ScheduleBlock extends LinearLayout {
     private int selectedDate;
     private HashMap<String, Integer> themeColorTable;
     private HashMap<Integer, Subject[]> subjectTable;
+    private ArrayList<String> subjectTypes;
+    private ArrayList<String[]> allSubjects;
     private int screenWidth, screenHeight;
     private boolean leftArrowEnabled, rightArrowEnabled;
     public boolean isLoggedIn;
@@ -89,15 +89,73 @@ public class ScheduleBlock extends LinearLayout {
         editor = EDITOR;
         preferences = PREFERENCES;
 
+        subjectTypes = new ArrayList<>(30);
+        allSubjects = new ArrayList<>(30);
+        subjectTypes.add("art");
+        allSubjects.add(new String[]{"ceramics", "easternart6", "easternart7", "easternart8", "easternarti", "easternartii", "foundationsofart", "foundationsofdigitalart", "introtosculpture", "paintingi", "paintingii", "paintingiii", "theartportfolio", "westernart6", "westernart7", "westernart8"});
+        subjectTypes.add("beginningguitar");
+        allSubjects.add(new String[]{"beginningguitar"});
+        subjectTypes.add("biology");
+        allSubjects.add(new String[]{"biology"});
+        subjectTypes.add("chinese");
+        allSubjects.add(new String[]{"apchinese", "chinese6a", "chinese6b", "chinese7a", "chinese7b", "chinese8a", "chinese8b", "chinese9a", "chinese9b", "chinese10a", "chinese10b", "chinese11a", "chinese11b", "chinese12a", "chinese12b"});
+        subjectTypes.add("choir");
+        allSubjects.add(new String[]{"choir"});
+        subjectTypes.add("computer");
+        allSubjects.add(new String[]{"apcomputersciencea", "desktoppublishing", "digitalphotography", "digitalvideo", "grade6computerfoundations", "grade7computerfoundations", "grade8computerfoundations", "introtocomputerscience", "mobileappdesign", "roboticsi", "roboticsii", "webdesign"});
+        subjectTypes.add("filmstudies");
+        allSubjects.add(new String[]{"filmstudyi", "filmstudyii"});
+        subjectTypes.add("french");
+        allSubjects.add(new String[]{"frenchlangi", "frenchlangii", "frenchlangiii", "frenchlangiv"});
+        subjectTypes.add("highschoolenrichment");
+        allSubjects.add(new String[]{"highschoolenrichment"});
+        subjectTypes.add("linguistics");
+        allSubjects.add(new String[]{"linguistics"});
+        subjectTypes.add("math");
+        allSubjects.add(new String[]{"advalgebraii", "advgeometry", "algebrai", "algebraii", "algebraiii", "algebraii/trignometry", "apcalculusab", "apcalculusbc","apstatistics", "appliedmath","calculus","geometry", "introtolinearalgebra", "math6", "math7", "precalculus"});
+        subjectTypes.add("music");
+        allSubjects.add(new String[]{"advband8", "band", "beginninginstrumentalmusic", "instrumentalmusicband6", "instrumentalmusicband7", "vocalmusic6", "vocalmusic7"});
+        subjectTypes.add("spanish");
+        allSubjects.add(new String[]{"spanishi", "spanishii", "spanishiii", "spanishiv", "bilingualtranslation"});
+        subjectTypes.add("steam");
+        allSubjects.add(new String[]{"steam", "steami", "steamii", "steamiii", "steamday"});
+        subjectTypes.add("chemistry");
+        allSubjects.add(new String[]{"apchemistry", "chemistry"});
+        subjectTypes.add("economics");
+        allSubjects.add(new String[]{"apmacroeconomics", "economics"});
+        subjectTypes.add("english");
+        allSubjects.add(new String[]{"langarts6", "langarts7", "langarts8", "englih9", "english10", "englih11", "englih12", "apenglishlanguage&composition", "apenglishliteraturecomposition"});
+        subjectTypes.add("history");
+        allSubjects.add(new String[]{"ancientworldhistory7", "apushistory", "apworldhistory", "arthistorymethods", "chinesehistory6", "chinesehistory7", "chinesehistory8", "chinesehistoryi", "chinesehistoryii", "Geography 6","medievalworldhistory8", "modernworldhistory", "ushistory",});
+        subjectTypes.add("socialstudy");
+        allSubjects.add(new String[]{"currentaffairs", "digitalethnography", "foundationsofmodernchina", "humanities", "philosophy"});
+        subjectTypes.add("physics");
+        allSubjects.add(new String[]{"apphysicsi", "apphysicsii", "earthandspacescience", "earthscience6", "lifescience7", "physicalscience8"});
+        subjectTypes.add("piano");
+        allSubjects.add(new String[]{"pianoi", "pianoii"});
+        subjectTypes.add("studyhall");
+        allSubjects.add(new String[]{"studyhall"});
+        subjectTypes.add("theater");
+        allSubjects.add(new String[]{"advacting", "classicalacting", "theater6", "theater7", "theater8"});
+        subjectTypes.add("genderstudies");
+        allSubjects.add(new String[]{"genderstudiesi"});
+        subjectTypes.add("els");
+        allSubjects.add(new String[]{"langsupport6", "langsupport7", "langsupport8", "langsupport9", "langsupport10"});
+        subjectTypes.add("health");
+        allSubjects.add(new String[]{"health7", "health8", "health9", "health10"});
+        subjectTypes.add("fitness");
+        allSubjects.add(new String[]{"advfitness"});
+        subjectTypes.add("sport");
+        allSubjects.add(new String[]{"outdooreducation", "pe6", "pe7", "pe8", "pe9", "sportsmanagement", "strengthtraining", "ultimatesports"});
+
+
         //params
         screenHeight = height;
         screenWidth = width;
-        scheduleWidth = screenWidth;
-        scheduleHeight = (int)(0.85 * screenHeight);
         leftArrowEnabled = true;
         rightArrowEnabled = true;
 
-        LinearLayout.LayoutParams scheduleParams = new LayoutParams(scheduleWidth, scheduleHeight);
+        LinearLayout.LayoutParams scheduleParams = new LayoutParams(screenWidth, screenHeight);
         this.setLayoutParams(scheduleParams);
         this.setOrientation(VERTICAL);
 
@@ -110,7 +168,7 @@ public class ScheduleBlock extends LinearLayout {
 
         //initialize header
         header = new LinearLayout(context);
-        LinearLayout.LayoutParams headerParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, ((int)(0.13*screenHeight)));
+        LinearLayout.LayoutParams headerParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, ((int)(0.15*screenHeight)));
         header.setLayoutParams(headerParams);
         header.setOrientation(HORIZONTAL);
         header.setGravity(Gravity.CENTER);
@@ -139,7 +197,7 @@ public class ScheduleBlock extends LinearLayout {
 
         header.addView( month );
 
-        LinearLayout.LayoutParams monthParams = new LayoutParams((int)(0.70*screenWidth), ((int)(0.13*screenHeight)));
+        LinearLayout.LayoutParams monthParams = new LayoutParams((int)(0.70*screenWidth), ((int)(0.15*screenHeight)));
         month.setPadding(0,0,0,0);
         month.setLayoutParams(monthParams);
         month.setGravity(Gravity.CENTER);
@@ -199,7 +257,7 @@ public class ScheduleBlock extends LinearLayout {
 
         bodyBlockHolder = new ScrollView(context);
 
-        bodyBlockHolder.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, (int)(0.62*screenHeight)));
+        bodyBlockHolder.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, (int)(0.76*screenHeight)));
         bodyBlockHolder.setBackgroundColor(getResources().getColor(R.color.shaded_background));
         bodyBlockHolder.setHorizontalScrollBarEnabled(false);
         bodyBlockHolder.setVerticalScrollBarEnabled(true);
@@ -703,56 +761,62 @@ public class ScheduleBlock extends LinearLayout {
             background = new ImageView(context);
 
             course.setText(Course.name());
-            extra.setText(Course.teacher()+" "+Course.room());
+            extra.setText(Course.teacher());
 
             if(isMain){
                 //set the dimensions of the frame
-                LinearLayout.LayoutParams lay = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, (int)(0.42*(int)(0.6*screenHeight)));
+                LinearLayout.LayoutParams lay = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, (int)(0.42*(int)(0.76 *screenHeight)));
                 lay.setMargins(4, 10, 4, 4);
                 this.setLayoutParams(lay);
+                //this.setBackground(getResources().getDrawable(R.drawable.button_background));
+
+                //set the bar image
+                bar.setLayoutParams(new LinearLayout.LayoutParams(25,ViewGroup.LayoutParams.MATCH_PARENT));
+                bar.setScaleType(ImageView.ScaleType.FIT_XY);
+                bar.setImageResource(R.drawable.rounded_edge_short);
+                bar.setColorFilter(Color.WHITE);
 
                 //set inner frame
                 description.setLayoutParams(new LinearLayout.LayoutParams((int)(0.8*screenWidth), ViewGroup.LayoutParams.MATCH_PARENT));
-
-                //set the bar image
-                bar.setLayoutParams(new FrameLayout.LayoutParams(25, ViewGroup.LayoutParams.MATCH_PARENT));
-                bar.setScaleType(ImageView.ScaleType.FIT_XY);
-                bar.setImageResource(R.drawable.rounded_edge_short);
-                bar.setColorFilter(getColor(Course.name()));
 
                 //set the background image
                 background.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT));
                 background.setScaleType(ImageView.ScaleType.FIT_XY);
                 background.setImageResource(findDrawableWithString(Course.name));
-                background.setBackgroundColor(getResources().getColor(R.color.purple));
+                background.setBackgroundColor(getResources().getColor(R.color.white));
+
+                description.setBackground(getResources().getDrawable(R.drawable.button_background));
 
                 //set textviews
                 FrameLayout.LayoutParams margin = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
                 margin.setMargins(2, 2, 2, 2);
                 course.setLayoutParams(margin);
-                course.setTextColor(Color.WHITE);
+                course.setTextColor(Color.BLACK);
                 course.setGravity(Gravity.TOP);
                 if(course.getText().length()>12)
-                    course.setTextSize(35.0f);
-                else
                     course.setTextSize(40.0f);
+                else
+                    course.setTextSize(45.0f);
 
                 extra.setLayoutParams(margin);
                 extra.setGravity(Gravity.BOTTOM);
-                extra.setTextColor(Color.WHITE);
+                extra.setTextColor(Color.BLACK);
                 if(extra.getText().length()>20)
-                    extra.setTextSize(22.0f);
+                    extra.setTextSize(24.0f);
                 else
-                    extra.setTextSize(26.0f);
+                    extra.setTextSize(30.0f);
 
                 //add components: linear{bar, frame{name, extra, background}}
                 description.addView(background);
                 description.addView(course);
                 description.addView(extra);
+
+                this.addView(bar);
+                this.addView(description);
             }
             else{
                 //set the dimensions of the frame
-                LinearLayout.LayoutParams lay = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, (int)(0.175*(int)(0.6*screenHeight)));
+                LinearLayout.LayoutParams lay = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, (int)(0.175*(int)(0.76*screenHeight)));
                 lay.setMargins(4, 10, 4, 4);
                 this.setLayoutParams(lay);
 
@@ -786,11 +850,13 @@ public class ScheduleBlock extends LinearLayout {
                     course.setTextSize(26.0f);
                 description.addView(background);
                 description.addView(course);
+
+
+                this.addView(bar);
+
+                this.addView(description);
             }
 
-            this.addView(bar);
-
-            this.addView(description);
         }
     }
 
@@ -831,46 +897,63 @@ public class ScheduleBlock extends LinearLayout {
         public CheckBox remember;
         public LoginScreen(){
             super(context);
-            this.setLayoutParams(new LinearLayout.LayoutParams(screenWidth, ViewGroup.LayoutParams.WRAP_CONTENT));
-            this.setPadding((int)(0.075*screenWidth),10,(int)(0.075*screenWidth),10);
+            this.setLayoutParams(new LinearLayout.LayoutParams(screenWidth, (int)(0.76*screenHeight)));
+            this.setPadding((int)(0.075*screenWidth),(int)(0.03*screenHeight),(int)(0.075*screenWidth),10);
             this.setOrientation(VERTICAL);
             this.setGravity(Gravity.LEFT);
+            this.setBackgroundColor(getResources().getColor(R.color.powerschool));
+
+            LinearLayout iconBox = new LinearLayout(context);
+            iconBox.setLayoutParams(new LinearLayout.LayoutParams((int)(0.85*screenWidth), ViewGroup.LayoutParams.WRAP_CONTENT));
+            iconBox.setGravity(Gravity.CENTER_HORIZONTAL);
+
+            ImageView powerschoolIcon = new ImageView(context);
+            powerschoolIcon.setLayoutParams(new LinearLayout.LayoutParams((int)(0.25*screenWidth), ViewGroup.LayoutParams.WRAP_CONTENT));
+            powerschoolIcon.setImageResource(R.drawable.powerschool);
+            powerschoolIcon.setScaleType(ImageView.ScaleType.FIT_CENTER);
+            powerschoolIcon.setAdjustViewBounds(true);
+
+            iconBox.addView(powerschoolIcon);
+            this.addView(iconBox);
 
             LinearLayout.LayoutParams textParams = new LinearLayout.LayoutParams((int)(0.85*screenWidth), ViewGroup.LayoutParams.WRAP_CONTENT);
             textParams.setMargins(0,10,0,10);
 
             draftHint = new TextView(context);
             draftHint.setLayoutParams(textParams);
-            draftHint.setTextColor(getResources().getColor(R.color.red));
+            draftHint.setTextColor(getResources().getColor(R.color.white));
             this.addView(draftHint);
 
             nameText = new EditText(context);
             nameText.setHint("ID");
             nameText.setLayoutParams(textParams);
-            nameText.setTextColor(getResources().getColor(R.color.black));
-            nameText.setBackgroundColor(getResources().getColor(R.color.white));
+            nameText.setTextColor(getResources().getColor(R.color.white));
+            nameText.setBackgroundColor(getResources().getColor(R.color.powerschool_shaded));
             nameText.setPadding(8,8,8,8);
             this.addView(nameText);
 
             passwordText = new EditText(context);
-            passwordText.setInputType(InputType.TYPE_NUMBER_VARIATION_PASSWORD);
-            passwordText.setTextColor(getResources().getColor(R.color.black));
-            passwordText.setHint("PassWord");
+            passwordText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+            passwordText.setTextColor(getResources().getColor(R.color.white));
+            passwordText.setHint("Password");
             passwordText.setLayoutParams(textParams);
-            passwordText.setBackgroundColor(getResources().getColor(R.color.white));
+            passwordText.setBackgroundColor(getResources().getColor(R.color.powerschool_shaded));
             passwordText.setPadding(8,8,8,8);
             this.addView(passwordText);
 
+            LinearLayout rememberBox = new LinearLayout(context);
+            rememberBox.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
             remember = new CheckBox(context);
             remember.setChecked(false);
-            remember.setBackgroundColor(getResources().getColor(R.color.white));
             remember.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-            this.addView(remember);
+            rememberBox.addView(remember);
 
             TextView rememberText = new TextView(context);
             rememberText.setText("remember my login informations");
             rememberText.setPadding(0,0,0,10);
-            this.addView(rememberText);
+            rememberBox.addView(rememberText);
+
+            this.addView(rememberBox);
 
             buttonBox = new LinearLayout(context);
             buttonBox.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
@@ -879,23 +962,15 @@ public class ScheduleBlock extends LinearLayout {
             buttonBox.setOrientation(HORIZONTAL);
             this.addView(buttonBox);
 
-            LinearLayout.LayoutParams jiba = new LinearLayout.LayoutParams((int)(0.2*screenWidth), (int)(0.1*screenWidth));
-            jiba.setMargins(0,5,20,0);
+            LinearLayout.LayoutParams buttonParam = new LinearLayout.LayoutParams((int)(0.2*screenWidth), (int)(0.1*screenWidth));
+            buttonParam.setMargins(0,5,20,0);
 
             button1 = new Button(context);
             button1.setBackground(getResources().getDrawable(R.drawable.button_background));
-            button1.setLayoutParams(jiba);
+            button1.setLayoutParams(buttonParam);
             buttonBox.addView(button1);
             button1.setTextColor(getResources().getColor(R.color.purple));
             button1.setText("log in");
-
-            ImageView powerschoolIcon = new ImageView(context);
-            powerschoolIcon.setLayoutParams(new LinearLayout.LayoutParams((int)(0.85*screenWidth), ViewGroup.LayoutParams.WRAP_CONTENT));
-            powerschoolIcon.setPadding((int)(0.15*screenWidth),(int)(0.15*screenWidth),(int)(0.15*screenWidth),(int)(0.15*screenWidth));
-            powerschoolIcon.setImageResource(R.drawable.powerschool);
-            powerschoolIcon.setScaleType(ImageView.ScaleType.FIT_CENTER);
-            powerschoolIcon.setAdjustViewBounds(true);
-            this.addView(powerschoolIcon);
 
             button1.setOnClickListener(new OnClickListener() {
                 @Override
@@ -990,19 +1065,52 @@ public class ScheduleBlock extends LinearLayout {
 
     public int findDrawableWithString(String source){
         source = source.toLowerCase();
-        source = replaceSpace(source);
-        int id = context.getResources().getIdentifier(source, "drawable", context.getPackageName());
+        source = trimName(source);
+        Log.d("coursefind",source);
+        int id = context.getResources().getIdentifier("course_"+binSearchSubjectType(source), "drawable", context.getPackageName());
         return id;
     }
 
-    public static String replaceSpace(String str){
-        if(str.contains(" ")){
-            int index = str.indexOf(" ");
-            str = str.substring(0,index)+"_"+str.substring(index+1);
-            Log.d("Demo", str);
-            str = replaceSpace(str);
-            return str;
+    public static String trimName(String str){
+        ArrayList<Character> temp = new ArrayList<>(20);
+        char[] charStr = str.toCharArray();
+        for(int i = 0; i < charStr.length; i++){
+            int ascii = (int)charStr[i];
+            if((ascii <= 90 && ascii >=65) || (ascii <= 122 && ascii >= 97) || (ascii <= 57 && ascii >= 48)){
+                temp.add(charStr[i]);
+            }
         }
-        return str;
+        char[] charTemp = new char[temp.size()];
+        for(int i = 0; i < temp.size(); i++){
+            charTemp[i] = temp.get(i);
+        }
+        return new String(charTemp);
+    }
+
+    public String binSearchSubjectType(String name){
+        for(int i = 0; i < allSubjects.size(); i++){
+            int low = 0, mid, high = allSubjects.get(i).length-1;
+
+            Log.d("coursefind","current course length "+allSubjects.get(i).length);
+
+            while(low<=high){
+                mid = (low + high)/2;
+                if(subjectTypes.get(i).equals("history")){
+                    Log.d("coursefind","current mid on "+allSubjects.get(i)[mid]);
+                }
+                if(allSubjects.get(i)[mid].equals(name)){
+                    Log.d("coursefind","returned with type"+subjectTypes.get(i));
+                    return subjectTypes.get(i);
+                }
+                else if(name.compareTo(allSubjects.get(i)[mid])<0){
+                    high = mid-1;
+                }
+                else{
+                    low = mid + 1;
+                }
+            }
+        }
+        Log.d("coursefind","returned with type none");
+        return "none";
     }
 }

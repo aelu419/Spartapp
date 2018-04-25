@@ -55,7 +55,6 @@ public class MainActivity extends AppCompatActivity{
     SharedPreferences preferences;
     SharedPreferences.Editor editor;
     private static String versionName;
-    private static boolean isUpdated;
 
     public boolean firstRun;
 
@@ -119,44 +118,68 @@ public class MainActivity extends AppCompatActivity{
         screenWidth = metrics.widthPixels;
         screenHeight = metrics.heightPixels;
 
+        if(!testInternetConnection()){
+            //read local version code
+            Log.d("Demo","failed to connect");
+        }
+        else{
+            try {
+                AVQuery versionQuery = new AVQuery("AndroidVersionInfo");
+                AVObject versionObj = versionQuery.get("5adf2f749f545433342866ec");
+                versionName = versionObj.getString("version_name");
+                int versionCode = versionObj.getInt("version_code");
+
+                int localVersionCode = 0;
+                try {
+                    PackageInfo pInfo = getApplicationContext().getPackageManager().getPackageInfo(getPackageName(), 0);
+                    localVersionCode = pInfo.versionCode;
+                    Log.d("Demo","local version code is " + localVersionCode);
+
+                    if(localVersionCode < versionCode){
+                        Log.d("Demo","connected and obtained version "+versionName+" with code "+versionCode);
+                        DialogFragment newFragment = new UpdateFragment();
+                        newFragment.show(getSupportFragmentManager(), "update");
+                    }
+                } catch (PackageManager.NameNotFoundException e) {
+                    e.printStackTrace();
+                }
+            }
+            catch(Exception e){
+                //read local version code
+            }
+        }
+
         //initialize body
         body = findViewById(R.id.body);
-        body.setLayoutParams(new LinearLayout.LayoutParams(screenWidth, (int)(0.85*screenHeight)));
+        body.setLayoutParams(new LinearLayout.LayoutParams(screenWidth, (int)(0.875*screenHeight)));
 
         //initialize footer
         LinearLayout footer = findViewById(R.id.footer);
-        footer.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        footer.setLayoutParams(new LinearLayout.LayoutParams(screenWidth, (int)(0.10*screenHeight)));
         //footer.setPadding(0,(int)(0.01*screenHeight),0,(int)(0.01*screenHeight));
 
         //initialize icon buttons
 
-        LinearLayout.LayoutParams footerButtonParams = new LinearLayout.LayoutParams((int)(0.15*screenWidth), ViewGroup.LayoutParams.WRAP_CONTENT);
-        footerButtonParams.setMargins((int)(0.01*screenWidth),0,(int)(0.01*screenWidth),0);
+        LinearLayout.LayoutParams footerButtonParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT);
 
         scheduleIcon = findViewById(R.id.scheduleIcon);
         scheduleIcon.setLayoutParams(footerButtonParams);
-        scheduleIcon.setPadding(20,20,20,20);
         scheduleIcon.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        scheduleIcon.setPadding(20,8,20,8);
         scheduleIcon.setAdjustViewBounds(true);
 
 
         announcementIcon = findViewById(R.id.announcementIcon);
         announcementIcon.setLayoutParams(footerButtonParams);
-        announcementIcon.setPadding(20,20,20,20);
         announcementIcon.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        announcementIcon.setPadding(20,10,20,10);
         announcementIcon.setAdjustViewBounds(true);
 
-        postIcon = findViewById(R.id.postIcon);
+        /*postIcon = findViewById(R.id.postIcon);
         postIcon.setLayoutParams(footerButtonParams);
-        postIcon.setPadding(20,20,20,20);
-        postIcon.setScaleType(ImageView.ScaleType.FIT_CENTER);
-        postIcon.setAdjustViewBounds(true);
-
-        updateIcon = findViewById(R.id.updateIcon);
-        updateIcon.setLayoutParams(footerButtonParams);
-        updateIcon.setPadding(20,20,20,20);
-        updateIcon.setScaleType(ImageView.ScaleType.FIT_CENTER);
-        updateIcon.setAdjustViewBounds(true);
+        postIcon.setPadding(20,10,20,10);
+        postIcon.setScaleType(ImageView.ScaleType.FIT_XY);
+        postIcon.setAdjustViewBounds(true);*/
 
 
         scheduleIcon.setOnClickListener(new View.OnClickListener() {
@@ -174,57 +197,21 @@ public class MainActivity extends AppCompatActivity{
                 updatePageMode();
             }
         });
-        postIcon.setOnClickListener(new View.OnClickListener() {
+        /*postIcon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 pageMode = 2;
                 updatePageMode();
             }
-        });
+        });*/
 
-        updateIcon.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if(!testInternetConnection()){
-                    //read local version code
-                    Log.d("Demo","failed to connect");
-                }
-                else{
-                    try {
-                        AVQuery versionQuery = new AVQuery("AndroidVersionInfo");
-                        AVObject versionObj = versionQuery.get("5adf2f749f545433342866ec");
-                        versionName = versionObj.getString("version_name");
-                        int versionCode = versionObj.getInt("version_code");
 
-                        int localVersionCode = 0;
-                        try {
-                            PackageInfo pInfo = getApplicationContext().getPackageManager().getPackageInfo(getPackageName(), 0);
-                            localVersionCode = pInfo.versionCode;
-                            Log.d("Demo","local version code is " + localVersionCode);
-                        } catch (PackageManager.NameNotFoundException e) {
-                            e.printStackTrace();
-                        }
-
-                        Log.d("Demo","connected and obtained version "+versionName+" with code "+versionCode);
-
-                        isUpdated = localVersionCode == versionCode;
-
-                        DialogFragment newFragment = new UpdateFragment();
-                        newFragment.show(getSupportFragmentManager(), "update");
-                    }
-                    catch(Exception e){
-                        //read local version code
-                    }
-                }
-            }
-        });
-
-        sb = new ScheduleBlock(getApplication(), screenHeight, screenWidth, preferences, editor);
+        sb = new ScheduleBlock(getApplication(), (int)(0.88*screenHeight), screenWidth, preferences, editor);
         Log.d("Demo","schedule block created");
         ab = new AnnouncementBlock(getApplication(), new LinearLayout.LayoutParams(screenWidth, (int)(0.85*screenHeight)), preferences, editor);
         Log.d("Demo","announcement block created");
-        pb = new PostBlock(getApplication(), new LinearLayout.LayoutParams(screenWidth, (int)(0.85*screenHeight)), preferences, editor);
-        Log.d("Demo","post block created");
+        /*pb = new PostBlock(getApplication(), new LinearLayout.LayoutParams(screenWidth, (int)(0.85*screenHeight)), preferences, editor);
+        Log.d("Demo","post block created");*/
 
         pageMode = 0;
         pageModeHistory = 1;
@@ -238,7 +225,6 @@ public class MainActivity extends AppCompatActivity{
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             // Use the Builder class for convenient dialog construction
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-            if(!isUpdated) {
                 builder.setMessage("A new version (" + versionName + ") is available. Do you want to redirect to its download page?")
                         .setPositiveButton("yes", new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
@@ -252,15 +238,6 @@ public class MainActivity extends AppCompatActivity{
                                 dismiss();
                             }
                         });
-            }
-            else{
-                builder.setMessage("Your current version is already up to date.")
-                        .setPositiveButton("return", new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-                                dismiss();
-                            }
-                        });
-            }
             // Create the AlertDialog object and return it
             return builder.create();
         }
@@ -300,7 +277,7 @@ public class MainActivity extends AppCompatActivity{
 
                 scheduleIcon.setImageResource(R.drawable.schedule_selected);
                 announcementIcon.setImageResource(R.drawable.announcement);
-                postIcon.setImageResource(R.drawable.post);
+                //postIcon.setImageResource(R.drawable.post);
                 //setContentView(R.layout.activity_main);
                 //getSupportActionBar().hide();
                 startScheduleRefresher();
@@ -309,14 +286,14 @@ public class MainActivity extends AppCompatActivity{
 
                 scheduleIcon.setImageResource(R.drawable.schedule);
                 announcementIcon.setImageResource(R.drawable.announcement_selected);
-                postIcon.setImageResource(R.drawable.post);
-                startAnnouncementRefresher();
+                //postIcon.setImageResource(R.drawable.post);
+                //startAnnouncementRefresher();
             } else if(pageMode == 2) {
-                body.addView(pb);
+                //body.addView(pb);
 
                 scheduleIcon.setImageResource(R.drawable.schedule);
                 announcementIcon.setImageResource(R.drawable.announcement);
-                postIcon.setImageResource(R.drawable.post_selected);
+                //postIcon.setImageResource(R.drawable.post_selected);
             }
             pageModeHistory = pageMode;
         }
