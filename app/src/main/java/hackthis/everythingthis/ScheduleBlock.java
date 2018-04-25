@@ -127,6 +127,7 @@ public class ScheduleBlock extends LinearLayout {
         fetch.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
+                if(!isLoggedIn) return;
                 //TODO: insert fetching stuff here
             }
         });
@@ -238,12 +239,9 @@ public class ScheduleBlock extends LinearLayout {
     public void login(){
         if(testPSLogin()){
             isLoggedIn = true;
-            /*
-            todo: add this
             editor.putString(getResources().getString(R.string.ps_name_key), PSname);
             editor.putString(getResources().getString(R.string.ps_pass_key), PSpass);
             editor.commit();
-            */
         }
         else{
             isLoggedIn = false;
