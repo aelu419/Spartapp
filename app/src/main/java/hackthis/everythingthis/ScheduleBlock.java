@@ -119,7 +119,7 @@ public class ScheduleBlock extends LinearLayout {
 
         //initialize fetch button
         fetch = new ImageView(context);
-        fetch.setImageResource(R.drawable.fetch_enabled);
+        fetch.setImageResource(R.drawable.fetch);
         LinearLayout.LayoutParams fetchParams = new LinearLayout.LayoutParams(((int)(0.15*screenWidth)), ViewGroup.LayoutParams.WRAP_CONTENT);
         fetch.setPadding((int)(0.04*screenWidth),0,(int)(0.04*screenWidth),0);
         fetch.setLayoutParams(fetchParams);
@@ -242,6 +242,7 @@ public class ScheduleBlock extends LinearLayout {
             editor.putString(getResources().getString(R.string.ps_name_key), PSname);
             editor.putString(getResources().getString(R.string.ps_pass_key), PSpass);
             editor.commit();
+            fetch.setImageResource(R.drawable.fetch_enabled);
         }
         else{
             isLoggedIn = false;
@@ -917,6 +918,7 @@ public class ScheduleBlock extends LinearLayout {
                                     null);
                             editor.commit();
                         }
+                        fetch.setImageResource(R.drawable.fetch_enabled);
                         isLoggedIn = true;
                         updatePage();
                         bodyBlock.removeAllViews();
