@@ -41,7 +41,7 @@ public class MainActivity extends AppCompatActivity{
 
     //main frame vars
     private LinearLayout body;
-    private ImageView scheduleIcon, announcementIcon, postIcon, updateIcon;
+    private ImageView scheduleIcon, announcementIcon, postIcon;
 
     //announcement page vars
     private static AnnouncementBlock ab;
@@ -165,21 +165,21 @@ public class MainActivity extends AppCompatActivity{
         scheduleIcon = findViewById(R.id.scheduleIcon);
         scheduleIcon.setLayoutParams(footerButtonParams);
         scheduleIcon.setScaleType(ImageView.ScaleType.FIT_CENTER);
-        scheduleIcon.setPadding(20,8,20,8);
+        scheduleIcon.setPadding(30,20,30,20);
         scheduleIcon.setAdjustViewBounds(true);
 
 
         announcementIcon = findViewById(R.id.announcementIcon);
         announcementIcon.setLayoutParams(footerButtonParams);
         announcementIcon.setScaleType(ImageView.ScaleType.FIT_CENTER);
-        announcementIcon.setPadding(20,10,20,10);
+        announcementIcon.setPadding(30,20,30,20);
         announcementIcon.setAdjustViewBounds(true);
 
-        /*postIcon = findViewById(R.id.postIcon);
+        postIcon = findViewById(R.id.postIcon);
         postIcon.setLayoutParams(footerButtonParams);
-        postIcon.setPadding(20,10,20,10);
+        postIcon.setPadding(30,20,30,20);
         postIcon.setScaleType(ImageView.ScaleType.FIT_XY);
-        postIcon.setAdjustViewBounds(true);*/
+        postIcon.setAdjustViewBounds(true);
 
 
         scheduleIcon.setOnClickListener(new View.OnClickListener() {
@@ -197,21 +197,21 @@ public class MainActivity extends AppCompatActivity{
                 updatePageMode();
             }
         });
-        /*postIcon.setOnClickListener(new View.OnClickListener() {
+        postIcon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 pageMode = 2;
                 updatePageMode();
             }
-        });*/
+        });
 
 
         sb = new ScheduleBlock(getApplication(), (int)(0.88*screenHeight), screenWidth, preferences, editor);
         Log.d("Demo","schedule block created");
         ab = new AnnouncementBlock(getApplication(), new LinearLayout.LayoutParams(screenWidth, (int)(0.85*screenHeight)), preferences, editor);
         Log.d("Demo","announcement block created");
-        /*pb = new PostBlock(getApplication(), new LinearLayout.LayoutParams(screenWidth, (int)(0.85*screenHeight)), preferences, editor);
-        Log.d("Demo","post block created");*/
+        pb = new PostBlock(getApplication(), new LinearLayout.LayoutParams(screenWidth, (int)(0.85*screenHeight)), preferences, editor);
+        Log.d("Demo","post block created");
 
         pageMode = 0;
         pageModeHistory = 1;
@@ -277,23 +277,21 @@ public class MainActivity extends AppCompatActivity{
 
                 scheduleIcon.setImageResource(R.drawable.schedule_selected);
                 announcementIcon.setImageResource(R.drawable.announcement);
-                //postIcon.setImageResource(R.drawable.post);
-                //setContentView(R.layout.activity_main);
-                //getSupportActionBar().hide();
+                postIcon.setImageResource(R.drawable.post);
                 startScheduleRefresher();
             } else if(pageMode == 1) {
                 body.addView(ab);
 
                 scheduleIcon.setImageResource(R.drawable.schedule);
                 announcementIcon.setImageResource(R.drawable.announcement_selected);
-                //postIcon.setImageResource(R.drawable.post);
-                //startAnnouncementRefresher();
+                postIcon.setImageResource(R.drawable.post);
+                startAnnouncementRefresher();
             } else if(pageMode == 2) {
-                //body.addView(pb);
+                body.addView(pb);
 
                 scheduleIcon.setImageResource(R.drawable.schedule);
                 announcementIcon.setImageResource(R.drawable.announcement);
-                //postIcon.setImageResource(R.drawable.post_selected);
+                postIcon.setImageResource(R.drawable.post_selected);
             }
             pageModeHistory = pageMode;
         }

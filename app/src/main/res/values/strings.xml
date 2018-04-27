@@ -21,4 +21,5 @@
     <string name = "has_draft_key">has_draft_key</string>
     <string name = "ps_name_key">pw_name_key</string>
     <string name = "ps_pass_key">pw_pass_key</string>
+    <string name = "last_refresh_time_key">last_refresh_time_key</string>
 </resources>

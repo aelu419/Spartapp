@@ -348,6 +348,7 @@ public class AnnouncementBlock extends LinearLayout{
         //inside toolbar:
         ImageView searchButton;
         ImageView filterButton;
+        ImageView refreshButton;
         EditText editText;
 
         public SearchBar(){
@@ -363,7 +364,7 @@ public class AnnouncementBlock extends LinearLayout{
             editText.setHint("Search Announcement");
             editText.setHintTextColor(getResources().getColor(R.color.purple));
             editText.setBackgroundColor(getResources().getColor(R.color.shaded_background));
-            editText.setLayoutParams(generateLinearParams(0.65, 0.08));
+            editText.setLayoutParams(generateLinearParams(0.5, 0.08));
             editText.setPadding(8,8,8,8);
             editText.setTextColor(getResources().getColor(R.color.black));
             TextWatcher renewKey = new TextWatcher() {
@@ -415,6 +416,20 @@ public class AnnouncementBlock extends LinearLayout{
             });
 
             this.addView(searchButton);
+
+            refreshButton = new ImageView(context);
+            refreshButton.setLayoutParams(new LinearLayoutCompat.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, (int)(0.08*bodyHeight)));
+            refreshButton.setImageResource(R.drawable.fetch_enabled);
+            refreshButton.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if(!filterShown){
+                        loadAnnouncements();
+                    }
+                }
+            });
+
+            this.addView(refreshButton);
 
             filterButton = new ImageView(context);
             filterButton.setLayoutParams(new LinearLayoutCompat.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, (int)(0.08*bodyHeight)));

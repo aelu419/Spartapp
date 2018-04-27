@@ -185,7 +185,7 @@ public class ScheduleBlock extends LinearLayout {
         fetch.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(!isLoggedIn) return;
+                login();
                 //TODO: insert fetching stuff here
             }
         });
@@ -295,17 +295,22 @@ public class ScheduleBlock extends LinearLayout {
     }
 
     public void login(){
-        if(testPSLogin()){
-            isLoggedIn = true;
-            editor.putString(getResources().getString(R.string.ps_name_key), PSname);
-            editor.putString(getResources().getString(R.string.ps_pass_key), PSpass);
-            editor.commit();
-            fetch.setImageResource(R.drawable.fetch_enabled);
+        try {
+            throw new Exception();
+            //todo:add fetch-success testing
         }
-        else{
-            isLoggedIn = false;
-            LoginScreen ls = new LoginScreen();
-            bodyBlock.addView(ls);
+        catch(Exception e) {
+            if(preferences.getString(getResources().getString(R.string.ps_name_key),null) == null
+                    ||preferences.getString(getResources().getString(R.string.ps_pass_key),null) == null) {
+                LoginScreen ls = new LoginScreen(true);
+                bodyBlock.removeAllViews();
+                bodyBlock.addView(ls);
+            }
+            else{
+                LoginScreen ls = new LoginScreen(false);
+                bodyBlock.removeAllViews();
+                bodyBlock.addView(ls);
+            }
         }
     }
 
@@ -315,7 +320,6 @@ public class ScheduleBlock extends LinearLayout {
             return false;
         }
         else{
-            //todo: replace this part to testing powerschool login with actual inputs
             Log.d("Demo","logging in under mode"+true);
             return true;
         }
@@ -894,8 +898,7 @@ public class ScheduleBlock extends LinearLayout {
         public TextView draftHint;
         public Button button1;
         public LinearLayout buttonBox;
-        public CheckBox remember;
-        public LoginScreen(){
+        public LoginScreen(boolean firstLogin){
             super(context);
             this.setLayoutParams(new LinearLayout.LayoutParams(screenWidth, (int)(0.76*screenHeight)));
             this.setPadding((int)(0.075*screenWidth),(int)(0.03*screenHeight),(int)(0.075*screenWidth),10);
@@ -919,10 +922,13 @@ public class ScheduleBlock extends LinearLayout {
             LinearLayout.LayoutParams textParams = new LinearLayout.LayoutParams((int)(0.85*screenWidth), ViewGroup.LayoutParams.WRAP_CONTENT);
             textParams.setMargins(0,10,0,10);
 
-            draftHint = new TextView(context);
-            draftHint.setLayoutParams(textParams);
-            draftHint.setTextColor(getResources().getColor(R.color.white));
-            this.addView(draftHint);
+            if(!firstLogin) {
+                draftHint = new TextView(context);
+                draftHint.setLayoutParams(textParams);
+                draftHint.setTextColor(getResources().getColor(R.color.white));
+                draftHint.setText("Wrong ID or password, please re-enter!");
+                this.addView(draftHint);
+            }
 
             nameText = new EditText(context);
             nameText.setHint("ID");
@@ -940,20 +946,6 @@ public class ScheduleBlock extends LinearLayout {
             passwordText.setBackgroundColor(getResources().getColor(R.color.powerschool_shaded));
             passwordText.setPadding(8,8,8,8);
             this.addView(passwordText);
-
-            LinearLayout rememberBox = new LinearLayout(context);
-            rememberBox.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-            remember = new CheckBox(context);
-            remember.setChecked(false);
-            remember.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-            rememberBox.addView(remember);
-
-            TextView rememberText = new TextView(context);
-            rememberText.setText("remember my login informations");
-            rememberText.setPadding(0,0,0,10);
-            rememberBox.addView(rememberText);
-
-            this.addView(rememberBox);
 
             buttonBox = new LinearLayout(context);
             buttonBox.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
@@ -978,34 +970,16 @@ public class ScheduleBlock extends LinearLayout {
                     PSname = nameText.getText().toString();
                     PSpass = passwordText.getText().toString();
                     Log.d("Demo","logging in with informations: name("+PSname+") pass("+PSpass+")");
-                    if(testPSLogin()){
-                        if(remember.isChecked()){
-                            editor.putString(getResources().getString(R.string.ps_name_key),
-                                    nameText.getText().toString());
-                            editor.putString(getResources().getString(R.string.ps_pass_key),
-                                    passwordText.getText().toString());
-                            editor.commit();
-                        }
-                        else{
-                            editor.putString(getResources().getString(R.string.ps_name_key),
-                                    null);
-                            editor.putString(getResources().getString(R.string.ps_pass_key),
-                                    null);
-                            editor.commit();
-                        }
+                        editor.putString(getResources().getString(R.string.ps_name_key),
+                                nameText.getText().toString());
+                        editor.putString(getResources().getString(R.string.ps_pass_key),
+                                passwordText.getText().toString());
+                        editor.commit();
                         fetch.setImageResource(R.drawable.fetch_enabled);
                         isLoggedIn = true;
                         updatePage();
                         bodyBlock.removeAllViews();
                         onSelection();
-
-                    }
-                    else{
-                        draftHint.setText("Wrong ID or password, please re-enter!");
-                        nameText.setText("");
-                        passwordText.setText("");
-                        remember.setChecked(false);
-                    }
                 }
             });
         }
