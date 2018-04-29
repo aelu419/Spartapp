@@ -2,6 +2,8 @@ package hackthis.everythingthis;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.BroadcastReceiver;
+import android.content.IntentFilter;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.support.v4.app.DialogFragment;
@@ -67,7 +69,7 @@ public class MainActivity extends AppCompatActivity{
 
         getSupportActionBar().hide();
 
-        preferences = this.getPreferences(Context.MODE_PRIVATE);
+        preferences = this.getSharedPreferences(getResources().getString(R.string.preferences_key),Context.MODE_PRIVATE);
         editor = preferences.edit();
 
         //get access to internet
@@ -86,6 +88,9 @@ public class MainActivity extends AppCompatActivity{
         // 放在 SDK 初始化语句 AVOSCloud.initialize() 后面，只需要调用一次即可
         AVOSCloud.setDebugLogEnabled(true);
 
+        AVInstallation.getCurrentInstallation().saveInBackground();
+
+        PushService.setDefaultPushCallback(this, MainActivity.class);
         firstRun = preferences.getBoolean(getResources().getString(R.string.first_run_key), true);
         //TODO: write any firstRun methods here
 
@@ -165,19 +170,19 @@ public class MainActivity extends AppCompatActivity{
         scheduleIcon = findViewById(R.id.scheduleIcon);
         scheduleIcon.setLayoutParams(footerButtonParams);
         scheduleIcon.setScaleType(ImageView.ScaleType.FIT_CENTER);
-        scheduleIcon.setPadding(30,20,30,20);
+        scheduleIcon.setPadding(30,30,30,30);
         scheduleIcon.setAdjustViewBounds(true);
 
 
         announcementIcon = findViewById(R.id.announcementIcon);
         announcementIcon.setLayoutParams(footerButtonParams);
         announcementIcon.setScaleType(ImageView.ScaleType.FIT_CENTER);
-        announcementIcon.setPadding(30,20,30,20);
+        announcementIcon.setPadding(30,30,30,30);
         announcementIcon.setAdjustViewBounds(true);
 
         postIcon = findViewById(R.id.postIcon);
         postIcon.setLayoutParams(footerButtonParams);
-        postIcon.setPadding(30,20,30,20);
+        postIcon.setPadding(30,30,30,30);
         postIcon.setScaleType(ImageView.ScaleType.FIT_XY);
         postIcon.setAdjustViewBounds(true);
 
@@ -208,16 +213,42 @@ public class MainActivity extends AppCompatActivity{
 
         sb = new ScheduleBlock(getApplication(), (int)(0.88*screenHeight), screenWidth, preferences, editor);
         Log.d("Demo","schedule block created");
-        ab = new AnnouncementBlock(getApplication(), new LinearLayout.LayoutParams(screenWidth, (int)(0.85*screenHeight)), preferences, editor);
+        ab = new AnnouncementBlock(getApplication(), new LinearLayout.LayoutParams(screenWidth, (int)(0.88*screenHeight)), preferences, editor);
         Log.d("Demo","announcement block created");
-        pb = new PostBlock(getApplication(), new LinearLayout.LayoutParams(screenWidth, (int)(0.85*screenHeight)), preferences, editor);
+        pb = new PostBlock(getApplication(), new LinearLayout.LayoutParams(screenWidth, (int)(0.88*screenHeight)), preferences, editor);
         Log.d("Demo","post block created");
+
+        registerReceiver(announcementUpdateReceiver, new IntentFilter("updateAnnouncements"));
 
         pageMode = 0;
         pageModeHistory = 1;
 
         updatePageMode();
 
+    }
+
+    BroadcastReceiver announcementUpdateReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            // internet lost alert dialog method call from here...
+            try {
+                Log.d("pushannon","announcement update receiver received intent with action "+intent.getAction());
+                if (intent.getAction().equals("updateAnnouncements"))
+                    if (ab != null) {
+                        ab.loadAnnouncements();
+                    } else {
+
+                    }
+            }
+            catch (Exception E){
+                Log.d("pushannon","announcement update receiver threw exception",E);
+            }
+        }
+    };
+
+    public void onDestroy(){
+        super.onDestroy();
+        unregisterReceiver(announcementUpdateReceiver);
     }
 
     public static class UpdateFragment extends DialogFragment {

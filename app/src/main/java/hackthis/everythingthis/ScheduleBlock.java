@@ -167,6 +167,7 @@ public class ScheduleBlock extends LinearLayout {
         selectedDate = currentTime.getDate();
 
         //initialize header
+        //{fetch button---left arrow---month---right arrow}
         header = new LinearLayout(context);
         LinearLayout.LayoutParams headerParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, ((int)(0.15*screenHeight)));
         header.setLayoutParams(headerParams);
@@ -178,8 +179,8 @@ public class ScheduleBlock extends LinearLayout {
         //initialize fetch button
         fetch = new ImageView(context);
         fetch.setImageResource(R.drawable.fetch);
-        LinearLayout.LayoutParams fetchParams = new LinearLayout.LayoutParams(((int)(0.15*screenWidth)), ViewGroup.LayoutParams.WRAP_CONTENT);
-        fetch.setPadding((int)(0.04*screenWidth),0,(int)(0.04*screenWidth),0);
+        LinearLayout.LayoutParams fetchParams = new LinearLayout.LayoutParams(((int)(0.075*screenWidth)), ViewGroup.LayoutParams.WRAP_CONTENT);
+        fetch.setPadding(5,0,5,0);
         fetch.setLayoutParams(fetchParams);
 
         fetch.setOnClickListener(new OnClickListener() {
@@ -192,29 +193,16 @@ public class ScheduleBlock extends LinearLayout {
 
         header.addView(fetch);
 
-        //initialize month textview
-        month = new TextView(context);
-
-        header.addView( month );
-
-        LinearLayout.LayoutParams monthParams = new LayoutParams((int)(0.70*screenWidth), ((int)(0.15*screenHeight)));
-        month.setPadding(0,0,0,0);
-        month.setLayoutParams(monthParams);
-        month.setGravity(Gravity.CENTER);
-        month.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-        month.setTextColor(getResources().getColor(R.color.purple));
-
-        month.setTextSize(TypedValue.COMPLEX_UNIT_PX,(int)(month.getLayoutParams().height * 0.4));
-
-
         //initialize arrows
         leftArrow = new ImageView(context);
         rightArrow = new ImageView(context);
         LinearLayout.LayoutParams arrowParams = new LinearLayout.LayoutParams((int)(0.075*screenWidth), ViewGroup.LayoutParams.WRAP_CONTENT);
         leftArrow.setLayoutParams(arrowParams);
-        rightArrow.setLayoutParams(arrowParams);
+        rightArrow.setLayoutParams(new LinearLayout.LayoutParams((int)(0.15*screenWidth), ViewGroup.LayoutParams.WRAP_CONTENT));
         leftArrow.setPadding(10+(int)(0.01*screenWidth),0,5+(int)(0.01*screenWidth),0);
-        rightArrow.setPadding(5+(int)(0.01*screenWidth),0,10+(int)(0.01*screenWidth),0);
+        rightArrow.setPadding(5+(int)(0.01*screenWidth),0,10+(int)(0.085*screenWidth),0);
+        leftArrow.setImageResource(R.drawable.arrow_left_disabled);
+        rightArrow.setImageResource(R.drawable.arrow_right_disabled);
         leftArrow.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -236,6 +224,21 @@ public class ScheduleBlock extends LinearLayout {
         });
 
         header.addView(leftArrow);
+
+        //initialize month textview
+        month = new TextView(context);
+
+        header.addView( month );
+
+        LinearLayout.LayoutParams monthParams = new LayoutParams((int)(0.7*screenWidth), ((int)(0.15*screenHeight)));
+        month.setPadding(0,0,0,0);
+        month.setLayoutParams(monthParams);
+        month.setGravity(Gravity.CENTER);
+        month.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+        month.setTextColor(getResources().getColor(R.color.purple));
+
+        month.setTextSize(TypedValue.COMPLEX_UNIT_PX,(int)(month.getLayoutParams().height * 0.4));
+
         header.addView(rightArrow);
 
         //initialize dateSpinner
@@ -302,12 +305,12 @@ public class ScheduleBlock extends LinearLayout {
         catch(Exception e) {
             if(preferences.getString(getResources().getString(R.string.ps_name_key),null) == null
                     ||preferences.getString(getResources().getString(R.string.ps_pass_key),null) == null) {
-                LoginScreen ls = new LoginScreen(true);
+                LoginScreen ls = new LoginScreen();
                 bodyBlock.removeAllViews();
                 bodyBlock.addView(ls);
             }
             else{
-                LoginScreen ls = new LoginScreen(false);
+                LoginScreen ls = new LoginScreen();
                 bodyBlock.removeAllViews();
                 bodyBlock.addView(ls);
             }
@@ -895,10 +898,9 @@ public class ScheduleBlock extends LinearLayout {
 
     public class LoginScreen extends LinearLayout{
         public EditText nameText, passwordText;
-        public TextView draftHint;
         public Button button1;
         public LinearLayout buttonBox;
-        public LoginScreen(boolean firstLogin){
+        public LoginScreen(){
             super(context);
             this.setLayoutParams(new LinearLayout.LayoutParams(screenWidth, (int)(0.76*screenHeight)));
             this.setPadding((int)(0.075*screenWidth),(int)(0.03*screenHeight),(int)(0.075*screenWidth),10);
@@ -921,14 +923,6 @@ public class ScheduleBlock extends LinearLayout {
 
             LinearLayout.LayoutParams textParams = new LinearLayout.LayoutParams((int)(0.85*screenWidth), ViewGroup.LayoutParams.WRAP_CONTENT);
             textParams.setMargins(0,10,0,10);
-
-            if(!firstLogin) {
-                draftHint = new TextView(context);
-                draftHint.setLayoutParams(textParams);
-                draftHint.setTextColor(getResources().getColor(R.color.white));
-                draftHint.setText("Wrong ID or password, please re-enter!");
-                this.addView(draftHint);
-            }
 
             nameText = new EditText(context);
             nameText.setHint("ID");

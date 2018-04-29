@@ -17,9 +17,14 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.avos.avoscloud.AVException;
+import com.avos.avoscloud.AVInstallation;
 import com.avos.avoscloud.AVObject;
+import com.avos.avoscloud.AVPush;
 import com.avos.avoscloud.AVQuery;
 import com.avos.avoscloud.SaveCallback;
+import com.avos.avoscloud.SendCallback;
+
+import org.json.JSONObject;
 
 import java.net.URL;
 import java.net.URLConnection;
@@ -158,7 +163,7 @@ public class PostBlock extends LinearLayout {
 
         DialogPages dp;
 
-        if(!successful) {
+        if(successful) {
             pageMode = SEND;
             dp = new SendPage();
         }
@@ -419,13 +424,41 @@ public class PostBlock extends LinearLayout {
                                 @Override
                                 public void done(AVException e) {
                                     if (e == null) {
-                                        submitPost(true);
+
                                     } else {
-                                        submitPost(false);
+
                                     }
                                 }
                             });
+
+                            AVPush push = new AVPush();
+                            JSONObject jsonObject = new JSONObject();
+                            jsonObject.put("action", "spartapp.notification");
+                            jsonObject.put("content", editTitle.getText().toString());
+                            jsonObject.put("clubname",club.getName());
+
+                            AVInstallation.getCurrentInstallation().saveInBackground();
+
+                            push.setData(jsonObject);
+                            push.setPushToAndroid(true);
+                            push.sendInBackground(new SendCallback() {
+                                @Override
+                                public void done(AVException e) {
+                                    if(e==null){
+                                        //pushsuccess
+                                        Log.d("pushannon","push success");
+                                    }
+                                    else{
+                                        Log.d("pushannon","exception",e);
+                                        Log.d("pushannon","push.sendinbackground exception threw");
+                                    }
+                                }
+                            });
+
+                            submitPost(true);
+
                         } catch (Exception E){
+                            Log.d("pushannon","main try-catch exception threw exception:\n",E);
                             submitPost(false);
                         }
                     }

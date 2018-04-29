@@ -420,6 +420,7 @@ public class AnnouncementBlock extends LinearLayout{
             refreshButton = new ImageView(context);
             refreshButton.setLayoutParams(new LinearLayoutCompat.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, (int)(0.08*bodyHeight)));
             refreshButton.setImageResource(R.drawable.fetch_enabled);
+            refreshButton.setPadding(0,20,0,20);
             refreshButton.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View view) {
