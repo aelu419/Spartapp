@@ -91,7 +91,7 @@ public class AnnouncementBlock extends LinearLayout{
         optionCellLayout = new LinearLayout.LayoutParams((int)(0.75 * bodyWidth), ViewGroup.LayoutParams.WRAP_CONTENT);
         optionCellLayout.setMargins(0,8,0,8);
 
-        STANDARD_TEXT_SIZE = (float)(0.02*bodyHeight);
+        STANDARD_TEXT_SIZE = 16.0f;
 
         this.setLayoutParams(bodyParams);
         this.setOrientation(VERTICAL);
@@ -156,7 +156,7 @@ public class AnnouncementBlock extends LinearLayout{
             contents[i] = new Contents(filteredAnnouncement.get(i));
         }
 
-        contents = sortByDates(contents);
+        contents = QSContentHelper(contents);
 
         for(Contents i : contents){
             list.addView(i);
@@ -171,45 +171,42 @@ public class AnnouncementBlock extends LinearLayout{
         return a.title.toLowerCase().contains(searchKey.toLowerCase());
     }
 
-    public Contents[] sortByDates(Contents[] contents){
-        QuickSortAnnouncement(contents);
-        return contents;
+    public Contents[] QSContentHelper(Contents[] arr){
+        QuickSortContents(arr, 0, arr.length-1);
+        return arr;
     }
 
-    public Contents[] QuickSortAnnouncement(Contents[] arr){
-        if(arr == null || arr.length<=1)
-            return arr;
-        int len = 0;
-        Contents midValue = arr[0];
-        for(int i = 1; i < arr.length; i++){
-
-			if((arr[i].content).compareTo(midValue.content)>=0)
-				len++;
+    public void QuickSortContents(Contents[] arr, int low, int high){
+        for(int k = low; k <= high; k++){
         }
-        Contents[] tempLeft = new Contents[len];
-        Contents[] tempRight = new Contents[arr.length - 1 - len];
-        int m1 = 0, m2 = 0;
-        for(int i = 1; i < arr.length; i++){
-			if((arr[i].content).compareTo(midValue.content)>=0)
-				tempLeft[m1++] = arr[i];
-			else{
-				tempRight[m2++] = arr[i];
-			}
+        if(arr==null || high-low <1 || high<=low){
+            return;
         }
-
-        tempLeft = QuickSortAnnouncement(tempLeft);
-        tempRight = QuickSortAnnouncement(tempRight);
-
-        for(int i = 0; i < arr.length; i++){
-            if(i < len)
-                arr[i] = tempLeft[i];
-            else if(i>len)
-                arr[i] = tempRight[i - len - 1];
-            else
-                arr[i] = midValue;
+        Contents midValue = arr[low];
+        int i = low, j = high;
+        while(true){
+            while(i<j && arr[j].content.getPostTime().getTime()
+                    <=midValue.content.getPostTime().getTime()){
+                j--;
+            }
+            while(i<j && arr[i].content.getPostTime().getTime()
+                    >=midValue.content.getPostTime().getTime()){
+                i++;
+            }
+            if(i<j){
+                Contents temp = arr[i];
+                arr[i] = arr[j];
+                arr[j] = temp;
+            }
+            else{
+                Contents temp = arr[low];
+                arr[low] = arr[i];
+                arr[i] = temp;
+                break;
+            }
         }
-
-        return arr;
+        QuickSortContents(arr, low, i-1);
+        QuickSortContents(arr, i+1, high);
     }
 
 

@@ -70,7 +70,7 @@ public class PostBlock extends LinearLayout {
         this.setOrientation(VERTICAL);
         this.setGravity(Gravity.START);
 
-        STANDARD_TEXT_SIZE = (float)(0.02*bodyHeight);
+        STANDARD_TEXT_SIZE = 16.0f;
 
         Title = new LinearLayout(context);
         LinearLayout.LayoutParams tableParams = new LinearLayout.LayoutParams(bodyWidth, (int)(0.15*bodyHeight));
@@ -565,7 +565,7 @@ public class PostBlock extends LinearLayout {
             this.addView(nameText);
 
             passwordText = new EditText(context);
-            passwordText.setInputType(InputType.TYPE_NUMBER_VARIATION_PASSWORD);
+            passwordText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
             passwordText.setTextColor(getResources().getColor(R.color.black));
             passwordText.setHint("Club Key");
             passwordText.setTextSize(STANDARD_TEXT_SIZE);
