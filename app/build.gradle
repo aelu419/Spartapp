@@ -6,7 +6,7 @@ android {
     compileSdkVersion 26
     defaultConfig {
         applicationId "hackthis.spartapp"
-        minSdkVersion 16
+        minSdkVersion 26
         targetSdkVersion 26
         versionCode 1
         versionName "1.0"
@@ -43,6 +43,7 @@ dependencies {
     androidTestImplementation 'com.android.support.test:runner:1.0.1'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
 
+    compile 'org.apache.commons:commons-lang3:3.4'
     //multi-dex
     implementation 'com.android.support:multidex:1.0.3'
 

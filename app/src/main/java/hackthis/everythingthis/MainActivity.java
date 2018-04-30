@@ -1,7 +1,9 @@
 package hackthis.everythingthis;
 
+import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.IntentFilter;
 import android.content.pm.PackageInfo;
@@ -20,13 +22,35 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.ValueCallback;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
 import com.avos.avoscloud.*;
 
+import org.apache.commons.lang3.StringEscapeUtils;
+
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.PrintWriter;
 import java.net.URL;
 import java.net.URLConnection;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.StringTokenizer;
 
 
 public class MainActivity extends AppCompatActivity{
@@ -168,23 +192,23 @@ public class MainActivity extends AppCompatActivity{
         LinearLayout.LayoutParams footerButtonParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT);
 
         scheduleIcon = findViewById(R.id.scheduleIcon);
-        scheduleIcon.setLayoutParams(footerButtonParams);
-        scheduleIcon.setScaleType(ImageView.ScaleType.FIT_CENTER);
-        scheduleIcon.setPadding(30,30,30,30);
-        scheduleIcon.setAdjustViewBounds(true);
+     //   scheduleIcon.setLayoutParams(footerButtonParams);
+     //   scheduleIcon.setScaleType(ImageView.ScaleType.FIT_CENTER);
+    //    scheduleIcon.setPadding(30,30,30,30);
+    //    scheduleIcon.setAdjustViewBounds(true);
 
 
         announcementIcon = findViewById(R.id.announcementIcon);
-        announcementIcon.setLayoutParams(footerButtonParams);
-        announcementIcon.setScaleType(ImageView.ScaleType.FIT_CENTER);
-        announcementIcon.setPadding(30,30,30,30);
-        announcementIcon.setAdjustViewBounds(true);
+     //   announcementIcon.setLayoutParams(footerButtonParams);
+     //   announcementIcon.setScaleType(ImageView.ScaleType.FIT_CENTER);
+      //  announcementIcon.setPadding(30,30,30,30);
+      //  announcementIcon.setAdjustViewBounds(true);
 
         postIcon = findViewById(R.id.postIcon);
-        postIcon.setLayoutParams(footerButtonParams);
-        postIcon.setPadding(30,30,30,30);
-        postIcon.setScaleType(ImageView.ScaleType.FIT_XY);
-        postIcon.setAdjustViewBounds(true);
+      //  postIcon.setLayoutParams(footerButtonParams);
+       // postIcon.setPadding(30,30,30,30);
+     //   postIcon.setScaleType(ImageView.ScaleType.FIT_XY);
+     //   postIcon.setAdjustViewBounds(true);
 
 
         scheduleIcon.setOnClickListener(new View.OnClickListener() {
@@ -406,5 +430,6 @@ public class MainActivity extends AppCompatActivity{
         }
 
     }
+
 
 }

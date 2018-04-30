@@ -3,7 +3,9 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/Spartapp.iml" filepath="$PROJECT_DIR$/Spartapp.iml" />
+      <module fileurl="file://D:\app\Spartapp\Spartapp.iml" filepath="D:\app\Spartapp\Spartapp.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://D:\app\Spartapp\app\app.iml" filepath="D:\app\Spartapp\app\app.iml" />
     </modules>
   </component>
 </project>

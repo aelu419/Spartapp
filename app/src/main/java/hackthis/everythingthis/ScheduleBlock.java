@@ -1,6 +1,9 @@
 package hackthis.everythingthis;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
@@ -13,6 +16,9 @@ import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.ValueCallback;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -23,14 +29,35 @@ import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import com.avos.avoscloud.AVException;
+import com.avos.avoscloud.AVObject;
+import com.avos.avoscloud.AVQuery;
+
+import org.apache.commons.lang3.StringEscapeUtils;
+
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.PrintWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.StringTokenizer;
 
 public class ScheduleBlock extends LinearLayout {
     Context context;
@@ -39,7 +66,7 @@ public class ScheduleBlock extends LinearLayout {
     private Date currentTime;
     private int selectedDate;
     private HashMap<String, Integer> themeColorTable;
-    private HashMap<Integer, Subject[]> subjectTable;
+    private HashMap<String, Subject[]> subjectTable;
     private ArrayList<String> subjectTypes;
     private ArrayList<String[]> allSubjects;
     private int screenWidth, screenHeight;
@@ -178,20 +205,26 @@ public class ScheduleBlock extends LinearLayout {
 
         //initialize fetch button
         fetch = new ImageView(context);
-        fetch.setImageResource(R.drawable.fetch);
+        fetch.setImageResource(R.drawable.fetch_enabled);
         LinearLayout.LayoutParams fetchParams = new LinearLayout.LayoutParams(((int)(0.075*screenWidth)), ViewGroup.LayoutParams.WRAP_CONTENT);
         fetch.setPadding(5,0,5,0);
+        fetchParams.setMargins(130,0,0,0);
         fetch.setLayoutParams(fetchParams);
-
         fetch.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
                 login();
+                isLoggedIn=true;
                 //TODO: insert fetching stuff here
             }
         });
 
         header.addView(fetch);
+
+        //initialize month textview
+        month = new TextView(context);
+
+        header.addView( month );
 
         //initialize arrows
         leftArrow = new ImageView(context);
@@ -225,10 +258,7 @@ public class ScheduleBlock extends LinearLayout {
 
         header.addView(leftArrow);
 
-        //initialize month textview
-        month = new TextView(context);
 
-        header.addView( month );
 
         LinearLayout.LayoutParams monthParams = new LayoutParams((int)(0.7*screenWidth), ((int)(0.15*screenHeight)));
         month.setPadding(0,0,0,0);
@@ -290,8 +320,13 @@ public class ScheduleBlock extends LinearLayout {
 
         PSname = preferences.getString(getResources().getString(R.string.ps_name_key),null);
         PSpass = preferences.getString(getResources().getString(R.string.ps_pass_key),null);
-        login();
-
+        try {
+            subjectTable = getSchedule();
+            isLoggedIn = true;
+        }
+        catch(Exception e){
+            login();
+        }
         updatePage();
 
         initializeDateBar();
@@ -301,6 +336,7 @@ public class ScheduleBlock extends LinearLayout {
         try {
             throw new Exception();
             //todo:add fetch-success testing
+
         }
         catch(Exception e) {
             if(preferences.getString(getResources().getString(R.string.ps_name_key),null) == null
@@ -331,6 +367,7 @@ public class ScheduleBlock extends LinearLayout {
     public void updatePage(){
 
         if(!isLoggedIn){
+            fetch.setImageResource(R.drawable.fetch_enabled);
             return;
         }
 
@@ -414,12 +451,12 @@ public class ScheduleBlock extends LinearLayout {
         Subject foda = new Subject("Foundations of Digital Art", "Angelito Balboa", "N 401");
         Subject french = new Subject("French III", "Lisbeth Stammerjohann", "Library");
         Subject physics = new Subject("AP Physics II", "Xiaobin Xu", "N315");
-        subjectTable.put(1, new Subject[]{chinese, studyHall, calc, lang});
-        subjectTable.put(2, new Subject[]{history, foda, calc, physics});
-        subjectTable.put(3, new Subject[]{chinese, physics, lang, french});
-        subjectTable.put(4, new Subject[]{calc, lang, history, physics});
-        subjectTable.put(5, new Subject[]{chinese, foda, lang, french});
-        subjectTable.put(6, new Subject[]{history, physics, calc, studyHall});
+        subjectTable.put("2018-04-01", new Subject[]{chinese, studyHall, calc, lang});
+        subjectTable.put("2018-04-02", new Subject[]{history, foda, calc, physics});
+        subjectTable.put("2018-04-03", new Subject[]{chinese, physics, lang, french});
+        subjectTable.put("2018-04-04", new Subject[]{calc, lang, history, physics});
+        subjectTable.put("2018-04-05", new Subject[]{chinese, foda, lang, french});
+        subjectTable.put("2018-04-06", new Subject[]{history, physics, calc, studyHall});
         //colors
         themeColorTable = new HashMap<>(0);
         themeColorTable.put("AP Physics II", this.getResources().getColor(R.color.orange));
@@ -485,8 +522,13 @@ public class ScheduleBlock extends LinearLayout {
 
         Log.d("Demo","starting onSelection");
 
+        int month = browsingTime.get(Calendar.MONTH)+1;
+        int yr =  browsingTime.get(Calendar.YEAR);
+        String m = month<10?"0"+Integer.toString(month):Integer.toString(month);
+        String d = selectedDate<10?"0"+Integer.toString(selectedDate):Integer.toString(selectedDate);
         //updates the colors and text to match the selected date
-        Subject[] subjects = subjectTable.get(selectedDate);
+        Log.d("DATEPARSE", Integer.toString(yr)+"-"+m+"-"+d);
+        Subject[] subjects = subjectTable.get(Integer.toString(yr)+"-"+m+"-"+d);
         //TODO: change this to get from browsingTime
         Log.d("Demo","getting subjects from "+selectedDate);
 
@@ -500,7 +542,7 @@ public class ScheduleBlock extends LinearLayout {
                 }
                 else{
                     if(i!=subjects.length-1) {
-                        if (subjects[i] == subjects[i + 1]) {
+                        if (subjects[i].equals(subjects[i + 1])) {
 
                         } else {
                             subjectsTrimmed.add(subjects[i]);
@@ -559,8 +601,9 @@ public class ScheduleBlock extends LinearLayout {
                 errorMessage.setText("ENJOY YOUR DAY OFF");
                 restImage.setImageResource(R.drawable.vacation);
             }
-
-            restImage.setLayoutParams(new LinearLayout.LayoutParams((int)(0.7*screenWidth),(int)(0.7*screenWidth)));
+            LinearLayout.LayoutParams restParams = new LinearLayout.LayoutParams((int)(0.7*screenWidth),(int)(0.7*screenWidth));
+            restParams.setMargins(0, 140, 0, 0);
+            restImage.setLayoutParams(restParams);
             bodyBlock.addView(restImage);
             bodyBlock.addView(errorMessage);
         }
@@ -602,6 +645,7 @@ public class ScheduleBlock extends LinearLayout {
         Log.d("Demo","ending onSelection");
     }
 
+
     public int getColor( String subjectName ){
         if( themeColorTable.containsKey(subjectName) )
             return themeColorTable.get(subjectName);
@@ -619,33 +663,6 @@ public class ScheduleBlock extends LinearLayout {
         dateScroll.addView( new DateSeperator( context, DateViewCommonWidth ) );
     }
 
-    //Simple immutable struct for class name & teacher & room
-    public class Subject{
-
-        private final String name;
-        private final String teacher;
-        private final String room;
-
-        public Subject( String name, String teacher, String room){
-            this.name = name;
-            this.teacher = teacher;
-            this.room = room;
-        }
-
-        public String name(){return name;}
-        public String teacher(){return teacher;}
-        public String room(){return room;}
-
-        public boolean equals(Object obj){
-            Subject temp = (Subject)obj;
-            if(temp.name().equals(this.name)){
-                return true;
-            }
-            return false;
-        }
-
-        public String toString(){return name;}
-    }
 
     //Encapsulated class for date selection buttons
     public class DateView extends FrameLayout implements View.OnClickListener {
@@ -800,7 +817,7 @@ public class ScheduleBlock extends LinearLayout {
                 course.setLayoutParams(margin);
                 course.setTextColor(Color.BLACK);
                 course.setGravity(Gravity.TOP);
-                if(course.getText().length()>12)
+                if(course.getText().length()>15)
                     course.setTextSize(40.0f);
                 else
                     course.setTextSize(45.0f);
@@ -961,6 +978,8 @@ public class ScheduleBlock extends LinearLayout {
             button1.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View view) {
+
+
                     PSname = nameText.getText().toString();
                     PSpass = passwordText.getText().toString();
                     Log.d("Demo","logging in with informations: name("+PSname+") pass("+PSpass+")");
@@ -969,11 +988,11 @@ public class ScheduleBlock extends LinearLayout {
                         editor.putString(getResources().getString(R.string.ps_pass_key),
                                 passwordText.getText().toString());
                         editor.commit();
-                        fetch.setImageResource(R.drawable.fetch_enabled);
-                        isLoggedIn = true;
-                        updatePage();
-                        bodyBlock.removeAllViews();
-                        onSelection();
+                        try{
+                            openWebView(PSname, PSpass);}
+                            catch(Exception e){
+                            Log.d("DEV","KMS");
+                            }
                 }
             });
         }
@@ -1080,5 +1099,318 @@ public class ScheduleBlock extends LinearLayout {
         }
         Log.d("coursefind","returned with type none");
         return "none";
+    }
+
+    public HashMap<String, Subject[]> getSchedule() throws Exception{
+        HashMap<String, Subject[]> schedule = new HashMap<>(0);
+
+            HashMap<String, Integer> dateDay = getDateDayPairs();
+
+            HashMap<Integer, Subject[]> weeklySchedule = readWeeklySchedule();
+
+            for(Map.Entry<String, Integer> keyValuePair : dateDay.entrySet()){
+                String date = keyValuePair.getKey();
+                Integer day = keyValuePair.getValue();
+                if(day != -1)
+                    schedule.put(date, weeklySchedule.get(day));
+                else
+                    schedule.put(date, null);
+            }
+
+        return schedule;
+    }
+
+    public HashMap<String, Integer> getDateDayPairs()throws AVException, ParseException {
+        HashMap<String, Integer> dateDay = null;
+
+        AVQuery query = new AVQuery("UpdateCalendar");
+        List<AVObject> qList = query.find();
+        Boolean update = qList.get(0).getBoolean("pendingUpdate");
+        String startOfYear = qList.get(0).getString("yearStart");
+        if(update){
+            dateDay = fetchDateDayPairs(startOfYear);
+            writeDateDayPairs(dateDay);
+        }
+        else{
+            try{
+                dateDay = readDateDayPairs();
+                Log.d("WKD", "read from file");
+            }catch(IOException e){
+                dateDay = fetchDateDayPairs(startOfYear);
+                writeDateDayPairs(dateDay);
+            }
+        }
+        return dateDay;
+    }
+
+    public void writeDateDayPairs(HashMap<String, Integer> dateDay){
+        //File file = new File("DateDayPairs.dat");
+        //Log.d("WKD", new Boolean(file.canWrite()).toString());
+        try {
+            FileOutputStream f = context.openFileOutput("date_day.dat", context.MODE_PRIVATE);
+            ObjectOutputStream s = new ObjectOutputStream(f);
+            s.writeObject(dateDay);
+            s.close();
+            Log.d("WKD", "output success");
+        }
+        catch(FileNotFoundException e){Log.d("WKD", "witchcraft");}
+        catch(IOException e){Log.d("WKD", "unknown powers");}
+    }
+
+    public HashMap<String, Integer> readDateDayPairs() throws IOException{
+        try {
+            FileInputStream f = context.openFileInput("date_day.dat");
+            ObjectInputStream s = new ObjectInputStream(f);
+            HashMap<String, Integer> dateDay = (HashMap<String, Integer>)s.readObject();
+            s.close();
+            Log.d("WKD", "input success");
+            return dateDay;
+        }
+        catch(ClassNotFoundException e){Log.d("WKD", "classnotfound");}
+        return null;
+    }
+
+    public HashMap<String, Integer> fetchDateDayPairs(String startOfYear) throws ParseException, AVException {
+        HashMap<String, Integer> dateDay = new HashMap<>(0);
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        Calendar c = Calendar.getInstance();
+        c.setTime(sdf.parse(startOfYear));
+        List<AVObject> schoolDays = getWkDayList();
+        for(AVObject schoolDay : schoolDays){
+            String time = sdf.format(c.getTime());
+            Integer day = schoolDay.getInt("dayInCycle");
+            dateDay.put(time, day);
+            c.add(Calendar.DATE, 1);
+            Log.d("WKD_", time  + " " + day);
+        }
+        return dateDay;
+    }
+
+    public List<AVObject> getWkDayList()throws AVException {
+        AVQuery calendar = new AVQuery("DayCycle");
+        calendar.limit(1000);
+        List<AVObject> schoolDays = calendar.find();
+        schoolDays.sort(new AVObjectComparator());
+        Log.d("WKD_", new Integer(schoolDays.size()).toString());
+        return schoolDays;
+
+ /*       AVQuery calendar = new AVQuery("Calendar");
+        List<AVObject> schoolDays = calendar.find();
+        schoolDays.sort(new AVObjectComparator());
+        int schoolDayCount = -1;
+        int days = -1;
+        for(AVObject schoolDay : schoolDays){
+            for(Boolean isDay : (List<Boolean>)schoolDay.getList("weeklyCalendar")) {
+                AVObject schoolday = new AVObject("DayCycle");
+                schoolday.put("daysSince", days);
+                if (isDay){
+                    schoolday.put("dayInCycle", schoolDayCount % 6 + 1);
+                    schoolDayCount ++;
+                }
+                else {
+                    schoolday.put("dayInCycle", -1);
+                }
+                days++;
+                schoolday.saveInBackground();
+                //Log.d("WKD", new Boolean(isDay).toString() + " " + new Integer(schoolDayCount%6+1));
+            }
+        }
+        return null;*/
+    }
+
+    class AVObjectComparator implements Comparator<AVObject> {
+        @Override
+        public int compare(AVObject obj1, AVObject obj2){
+            return obj1.getInt("daysSince") - obj2.getInt("daysSince");
+        }
+
+    }
+
+    public void openWebView(String account, String password) throws InterruptedException{
+        final String account_ = account;
+        final String password_ = password;
+        final WebView webView = new WebView(context.getApplicationContext());
+        Log.d("HTML", "declared webView");
+        webView.getSettings().setJavaScriptEnabled(true);
+        Log.d("HTML", "added webView");
+        webView.loadUrl("https://power.this.edu.cn/public/home.html");
+        Log.d("HTML", "loaded url");
+
+        webView.setWebViewClient(new WebViewClient() {
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+                Log.d("HTML", url + " onpagefinished()");
+                webView.evaluateJavascript("document.getElementById('fieldAccount').value='"+account_+"'", null);
+                webView.evaluateJavascript("document.getElementById('fieldPassword').value='"+password_+"'", null);
+                webView.evaluateJavascript("document.getElementById('btn-enter').click();",
+                        new ValueCallback<String>() {
+                            public void onReceiveValue(String html) {
+                                webView.evaluateJavascript(
+                                        "(function() { return ('<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>'); })();",
+                                        new ValueCallback<String>() {
+                                            @Override
+                                            public void onReceiveValue(String html_) {
+                                                try{
+                                                    String html = StringEscapeUtils.unescapeJava(html_);
+                                                    Log.d("HTML", html);
+                                                    writeWeeklySchedule(html);
+                                                }
+                                                catch(Exception e){
+                                                    Log.d("HTML", "escape failed");
+                                                }
+                                            }
+                                        });
+                            }
+                        });
+
+            }
+        });
+
+    }
+
+    public void writeWeeklySchedule(String html) throws Exception{
+        HashMap<Integer, Subject[]> schedule = fetchSchedule(html);
+        Log.d("HTML_OUT", "called");
+        if(schedule.get(1)==null) return;
+
+        FileOutputStream f = context.openFileOutput("week_schedule.dat", context.MODE_PRIVATE);
+        Log.d("HTML_OUT", "output found");
+        PrintWriter out = new PrintWriter(f);
+        for(int i = 1; i < 7; i ++) {
+            Subject[] day = schedule.get(i);
+            for (Subject subject : day) {
+                out.write(subject.name() + "?" + subject.teacher() + "?" + subject.room() + "?");
+                Log.d("HTML_OUT", subject.name() + "?" + subject.teacher() + "?" + subject.room() + "?");
+            }
+            out.write("\n");
+        }
+        out.close();
+        Log.d("HTML_OUT", "output success");
+        triggerRebirth(context.getApplicationContext());
+    }
+
+    public HashMap<Integer, Subject[]> readWeeklySchedule() throws Exception{
+        Log.d("HTML_IN", "called");
+        FileInputStream f = context.openFileInput("week_schedule.dat");
+        Log.d("HTML_IN", "found");
+        BufferedReader in = new BufferedReader(new InputStreamReader(f));
+        Log.d("HTML_IN", "buffer on");
+        HashMap<Integer, Subject[]> schedule = new HashMap<>(0);
+        String line;
+        int dayInCycle = 1;
+        while((line = in.readLine())!=null){
+            StringTokenizer tizer = new StringTokenizer(line, "?");
+            Subject[] daySchedule = new Subject[8];
+            for(int period = 0; period < 8; period ++){
+                String name = tizer.nextToken();
+                String teacher = tizer.nextToken();
+                String room = tizer.nextToken();
+                Subject subject = new Subject(name, teacher, room);
+                Log.d("HTML_IN",subject.name() + "," + subject.teacher() + "," + subject.room() + ",");
+                daySchedule[period] = subject;
+            }
+            schedule.put(dayInCycle, daySchedule);
+            dayInCycle ++;
+        }
+        in.close();
+        return schedule;
+    }
+
+    public static HashMap<Integer, Subject[]> fetchSchedule(String html) throws IOException, InterruptedException {
+
+        String pageSource = html;
+
+        HashMap<Integer, Subject[]> schedule = new HashMap<Integer, Subject[]>(0);
+
+        int inx = 0;
+        String afterLastCcid = pageSource;
+
+        Log.d("HTML", "parsing...\n");
+        Log.d("HTML", new Integer(pageSource.indexOf("ccid")).toString());
+        while( (inx = afterLastCcid.indexOf("ccid")) != -1 ) {
+
+            afterLastCcid = afterLastCcid.substring(inx+4);
+
+            //extract period info
+            int inxOfTd = afterLastCcid.indexOf("<td>");
+            int inxOfEndTd = afterLastCcid.indexOf("</td>");
+            String periodSeq = afterLastCcid.substring(inxOfTd+4, inxOfEndTd);
+
+            //extract class info
+            int inxStart = afterLastCcid.indexOf("<td");
+            for(int i = 0; i < 15; i ++)
+                inxStart += afterLastCcid.substring(inxStart+1).indexOf("<td") + 1;
+            int inxOfQuote = afterLastCcid.substring(inxStart).indexOf(";")+inxStart;
+            String className = afterLastCcid.substring(inxStart + 17, inxOfQuote-5);
+            Log.d("BUH", className);
+            int InxOfAnd;
+            if((InxOfAnd = className.indexOf("&")) != -1)
+                className = className.substring(0, InxOfAnd) + className.substring(InxOfAnd+6);
+
+            //extract teacher info
+            int inxOfDetails = afterLastCcid.indexOf("Details about");
+            int inxOfClsBtn = afterLastCcid.indexOf("class=\"button mini");
+            String teacherName = afterLastCcid.substring(inxOfDetails + 14, inxOfClsBtn - 2);
+
+            //extract room info
+            int inxOfRm = afterLastCcid.indexOf("Rm:");
+            String roomNum = afterLastCcid.substring(inxOfRm + 3, inxOfRm + 8);
+
+            //System.out.println(periodSeq + " " + className + " " + teacherName + " " + roomNum);
+
+            //parse period
+            //Log.d("HTML", "still parsing1");
+
+            String periodInfo = periodSeq;
+            while(true) {
+                //Log.d("HTML", "still parsing2");
+                String days = periodInfo.substring(periodInfo.indexOf("(")+1, periodInfo.indexOf(")"));
+                Log.w("HTML", days);
+                for(int i = 0; i * 2 < days.length(); i ++) {
+                    int dayNum = days.charAt(i*2) - 48;
+                    Subject period = new Subject(className, teacherName, roomNum);
+
+                    int pN, pC, pNe, pCe;
+                    try {
+                        pN = Integer.parseInt(periodInfo.substring(0, 1));
+                        pC = periodInfo.substring(1, 2).equals("A") ? 0 : 1;
+                        pNe = Integer.parseInt(periodInfo.substring(3, 4));
+                        pCe = periodInfo.substring(4, 5).equals("A") ? 0 : 1;
+                    }
+                    catch(NumberFormatException e) {
+                        break;
+                    }
+
+                    if(!schedule.containsKey(new Integer(dayNum))){
+                        schedule.put(new Integer(dayNum), new Subject[8]);
+                    }
+                    schedule.get(new Integer(dayNum))[(pN-1)*2 + pC] = period;
+                    schedule.get(new Integer(dayNum))[(pNe-1)*2 + pCe] = period;
+                }
+
+                int endInx = periodInfo.indexOf(")");
+                //Log.w("HTML", new Integer(endInx).toString());
+                try {
+                    periodInfo = periodInfo.substring(endInx + 2);
+                }
+                catch(StringIndexOutOfBoundsException e) {
+                    break;
+                }
+            }
+
+        }
+        Log.d("HTML", "done parsing");
+        return schedule;
+    }
+
+    public static void triggerRebirth(Context context) {
+        Intent mStartActivity = new Intent(context, MainActivity.class);
+        Log.d("EASTER", "how long will this go on...");
+        int mPendingIntentId = 123456;
+        PendingIntent mPendingIntent = PendingIntent.getActivity(context, mPendingIntentId,    mStartActivity, PendingIntent.FLAG_CANCEL_CURRENT);
+        AlarmManager mgr = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
+        mgr.set(AlarmManager.RTC, System.currentTimeMillis() + 100, mPendingIntent);
+        System.exit(0);
     }
 }
