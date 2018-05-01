@@ -420,21 +420,6 @@ public class AnnouncementBlock extends LinearLayout{
 
             this.addView(searchButton);
 
-            refreshButton = new ImageView(context);
-            refreshButton.setLayoutParams(new LinearLayoutCompat.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, (int)(0.08*bodyHeight)));
-            refreshButton.setImageResource(R.drawable.fetch_enabled);
-            refreshButton.setPadding(0,20,0,20);
-            refreshButton.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    if(!filterShown){
-                        loadAnnouncements();
-                    }
-                }
-            });
-
-            this.addView(refreshButton);
-
             filterButton = new ImageView(context);
             filterButton.setLayoutParams(new LinearLayoutCompat.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, (int)(0.08*bodyHeight)));
             filterButton.setImageResource(R.drawable.filter_icon);
@@ -562,13 +547,14 @@ public class AnnouncementBlock extends LinearLayout{
 
                 this.setLayoutParams(optionCellLayout);
                 this.setOrientation(HORIZONTAL);
-                this.setGravity(Gravity.START);
+                this.setGravity(Gravity.LEFT);
 
                 nameBar = new TextView(context);
 
                 nameBar.setText(contentClub.getName());
-                nameBar.setLayoutParams(new LinearLayout.LayoutParams((int)(0.6*bodyWidth), ViewGroup.LayoutParams.WRAP_CONTENT));
-                nameBar.setPadding(8,8,8,8);
+                nameBar.setGravity(Gravity.CENTER_VERTICAL);
+                nameBar.setLayoutParams(new LinearLayout.LayoutParams((int)(0.6*bodyWidth), ViewGroup.LayoutParams.MATCH_PARENT));
+                nameBar.setPadding(8,2,8,2);
                 nameBar.setBackgroundColor(isSelected ? getResources().getColor(R.color.purple) : getResources().getColor(R.color.white));
                 nameBar.setTextColor(isSelected ? getResources().getColor(R.color.white) : getResources().getColor(R.color.black));
                 nameBar.setTextSize(STANDARD_TEXT_SIZE);
@@ -576,8 +562,8 @@ public class AnnouncementBlock extends LinearLayout{
 
                 box = new CheckBox(context);
                 box.setChecked(isSelected);
-                box.setLayoutParams(new LinearLayout.LayoutParams((int)(0.15*bodyWidth), ViewGroup.LayoutParams.MATCH_PARENT));
-                box.setBackgroundColor(getResources().getColor(R.color.shaded_background));
+                box.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT));
+                box.setBackgroundColor(getResources().getColor(R.color.white));
                 box.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                     @Override
                     public void onCheckedChanged(CompoundButton compoundButton, boolean b) {

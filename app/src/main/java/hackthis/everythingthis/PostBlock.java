@@ -567,12 +567,14 @@ public class PostBlock extends LinearLayout {
             nameText.setTextColor(getResources().getColor(R.color.black));
             nameText.setBackgroundColor(getResources().getColor(R.color.white));
             nameText.setPadding(8,8,8,8);
+            nameText.setHintTextColor(getResources().getColor(R.color.purple));
             this.addView(nameText);
 
             passwordText = new EditText(context);
             passwordText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
             passwordText.setTextColor(getResources().getColor(R.color.black));
             passwordText.setHint("Club Key");
+            passwordText.setHintTextColor(getResources().getColor(R.color.purple));
             passwordText.setTextSize(STANDARD_TEXT_SIZE);
             passwordText.setLayoutParams(textParams);
             passwordText.setBackgroundColor(getResources().getColor(R.color.white));
@@ -588,6 +590,7 @@ public class PostBlock extends LinearLayout {
             TextView rememberText = new TextView(context);
             rememberText.setText("remember my login informations");
             rememberText.setTextSize(STANDARD_TEXT_SIZE);
+            rememberText.setTextColor(getResources().getColor(R.color.black));
             rememberText.setPadding(0,0,0,10);
             this.addView(rememberText);
 
