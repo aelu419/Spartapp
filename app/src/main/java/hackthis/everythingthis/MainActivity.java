@@ -1,5 +1,6 @@
 package hackthis.everythingthis;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.BroadcastReceiver;
@@ -14,7 +15,6 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.StrictMode;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -29,7 +29,7 @@ import java.net.URL;
 import java.net.URLConnection;
 
 
-public class MainActivity extends AppCompatActivity{
+public class MainActivity extends Activity {
 
     //schedule:0 announcement:1 post:2
     private int pageMode = 0;
@@ -67,7 +67,7 @@ public class MainActivity extends AppCompatActivity{
 
         setContentView(R.layout.activity_main);
 
-        getSupportActionBar().hide();
+        //getActionBar().hide();
 
         preferences = this.getSharedPreferences(getResources().getString(R.string.preferences_key),Context.MODE_PRIVATE);
         editor = preferences.edit();
@@ -141,10 +141,23 @@ public class MainActivity extends AppCompatActivity{
                     Log.d("VER","local version code is " + localVersionCode);
 
                     if(localVersionCode < versionCode){
+                        AlertDialog.Builder alertBuilder = new AlertDialog.Builder(this);
+                        alertBuilder.setPositiveButton("yes", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://thisprogrammingclub.github.io/"));
+                                startActivity(browserIntent);
+                            }
+                        }).setNegativeButton("no", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+
+                            }
+                        }).setMessage("A new version (" + versionName + ") is available. Do you want to redirect to its download page?")
+                                .setCancelable(true);
                         Log.d("VER","connected and obtained version "+versionName+" with code "+versionCode);
-                        DialogFragment newFragment = new UpdateFragment();
-                        newFragment.show(getSupportFragmentManager(), "update");
+                        AlertDialog dialog = alertBuilder.create();
+                        dialog.show();
                     }
+
                 } catch (PackageManager.NameNotFoundException e) {
                     e.printStackTrace();
                 }
@@ -155,11 +168,11 @@ public class MainActivity extends AppCompatActivity{
         }
 
         //initialize body
-        body = findViewById(R.id.body);
+        body = (LinearLayout)findViewById(R.id.body);
         body.setLayoutParams(new LinearLayout.LayoutParams(screenWidth, (int)(0.875*screenHeight)));
 
         //initialize footer
-        LinearLayout footer = findViewById(R.id.footer);
+        LinearLayout footer = (LinearLayout)findViewById(R.id.footer);
         footer.setLayoutParams(new LinearLayout.LayoutParams(screenWidth, (int)(0.10*screenHeight)));
         //footer.setPadding(0,(int)(0.01*screenHeight),0,(int)(0.01*screenHeight));
 
@@ -167,20 +180,20 @@ public class MainActivity extends AppCompatActivity{
 
         LinearLayout.LayoutParams footerButtonParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT);
 
-        scheduleIcon = findViewById(R.id.scheduleIcon);
+        scheduleIcon = (ImageView)findViewById(R.id.scheduleIcon);
            scheduleIcon.setLayoutParams(footerButtonParams);
            scheduleIcon.setScaleType(ImageView.ScaleType.FIT_CENTER);
             scheduleIcon.setPadding((int)(0.025*screenHeight),(int)(0.025*screenHeight),(int)(0.025*screenHeight),(int)(0.025*screenHeight));
             scheduleIcon.setAdjustViewBounds(true);
 
 
-        announcementIcon = findViewById(R.id.announcementIcon);
+        announcementIcon = (ImageView)findViewById(R.id.announcementIcon);
            announcementIcon.setLayoutParams(footerButtonParams);
            announcementIcon.setScaleType(ImageView.ScaleType.FIT_CENTER);
           announcementIcon.setPadding((int)(0.025*screenHeight),(int)(0.025*screenHeight),(int)(0.025*screenHeight),(int)(0.025*screenHeight));
           announcementIcon.setAdjustViewBounds(true);
 
-        postIcon = findViewById(R.id.postIcon);
+        postIcon = (ImageView)findViewById(R.id.postIcon);
            postIcon.setLayoutParams(footerButtonParams);
            postIcon.setPadding((int)(0.025*screenHeight),(int)(0.025*screenHeight),(int)(0.025*screenHeight),(int)(0.025*screenHeight));
            postIcon.setScaleType(ImageView.ScaleType.FIT_XY);
@@ -227,6 +240,29 @@ public class MainActivity extends AppCompatActivity{
 
     }
 
+    public static class UpdateFragment extends DialogFragment {
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            // Use the Builder class for convenient dialog construction
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            builder.setMessage("A new version (" + versionName + ") is available. Do you want to redirect to its download page?")
+                    .setPositiveButton("yes", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://thisprogrammingclub.github.io/"));
+                            startActivity(browserIntent);
+                            dismiss();
+                        }
+                    })
+                    .setNegativeButton("no", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            dismiss();
+                        }
+                    });
+            // Create the AlertDialog object and return it
+            return builder.create();
+        }
+    }
+
     BroadcastReceiver announcementUpdateReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -249,29 +285,6 @@ public class MainActivity extends AppCompatActivity{
     public void onDestroy(){
         super.onDestroy();
         unregisterReceiver(announcementUpdateReceiver);
-    }
-
-    public static class UpdateFragment extends DialogFragment {
-        @Override
-        public Dialog onCreateDialog(Bundle savedInstanceState) {
-            // Use the Builder class for convenient dialog construction
-            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-            builder.setMessage("A new version (" + versionName + ") is available. Do you want to redirect to its download page?")
-                    .setPositiveButton("yes", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://thisprogrammingclub.github.io/"));
-                            startActivity(browserIntent);
-                            dismiss();
-                        }
-                    })
-                    .setNegativeButton("no", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            dismiss();
-                        }
-                    });
-            // Create the AlertDialog object and return it
-            return builder.create();
-        }
     }
 
     public static boolean testInternetConnection(){

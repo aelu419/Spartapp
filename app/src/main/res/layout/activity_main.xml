@@ -26,8 +26,7 @@
             android:layout_width="30dp"
             android:layout_height="30dp"
             android:layout_marginTop="5dp"
-            android:paddingTop="5dp"
-            app:srcCompat="@drawable/schedule" />
+            android:paddingTop="5dp"/>
 
         <ImageView
             android:id="@+id/announcementIcon"
@@ -35,8 +34,7 @@
             android:layout_height="30dp"
             android:layout_marginLeft="65dp"
             android:layout_marginTop="5dp"
-            android:paddingTop="5dp"
-            app:srcCompat="@drawable/announcement" />
+            android:paddingTop="5dp"/>
 
         <ImageView
             android:id="@+id/postIcon"
@@ -44,8 +42,7 @@
             android:layout_height="30dp"
             android:layout_marginLeft="65dp"
             android:layout_marginTop="5dp"
-            android:paddingTop="5dp"
-            app:srcCompat="@drawable/post" />
+            android:paddingTop="5dp"/>
     </LinearLayout>
 
 </LinearLayout>
