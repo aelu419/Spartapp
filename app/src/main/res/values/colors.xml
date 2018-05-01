@@ -6,8 +6,6 @@
     <color name="purple">#9D43B4</color>
     <color name="orange">#F5A623</color>
     <color name="blue">#4A90E2</color>
-    <color name="algebra">#8B572A</color>
-    <color name="english">#4A4A4A</color>
     <color name="background">#f3f3f3</color>
     <color name="shaded_background">#e6e6e6</color>
     <color name = "black">#191919</color>
@@ -16,4 +14,45 @@
 
     <color name = "powerschool">#304565</color>
     <color name = "powerschool_shaded">#202030</color>
+
+    <!--language related-->
+    <color name = "chinese">#ffaa00</color>
+    <color name = "french">#ffaa00</color>
+    <color name = "linguistics">#ffaa00</color>
+    <color name = "els">#ffaa00</color>
+    <color name = "spanish">#ffaa00</color>
+    <color name = "english">#ffaa00</color>
+
+    <!--fine arts-->
+    <color name = "art">#14a700</color>
+    <color name = "filmstudies">#14a700</color>
+
+    <!--performing arts-->
+    <color name = "music">#66ff66</color>
+    <color name = "choir">#66ff66</color>
+    <color name = "theater">#66ff66</color>
+    <color name = "piano">#66ff66</color>
+
+    <!--social study related-->
+    <color name = "history">#ff0000</color>
+    <color name = "genderstudies">#ff0000</color>
+    <color name = "socialstudy">#ff0000</color>
+    <color name = "economics">#ff0000</color>
+
+    <!--sciency stuff-->
+    <color name = "biology">#023979</color>
+    <color name = "computer">#023979</color>
+    <color name = "math">#023979</color>
+    <color name = "steam">#023979</color>
+    <color name = "chemistry">#023979</color>
+    <color name = "physics">#023979</color>
+
+    <!--pe-->
+    <color name = "health">#ffaa99</color>
+    <color name = "fitness">#ffaa99</color>
+    <color name = "sport">#ffaa99</color>
+
+    <!--other-->
+    <color name = "highschoolenrichment">#666</color>
+    <color name = "studyhall">#666</color>
 </resources>

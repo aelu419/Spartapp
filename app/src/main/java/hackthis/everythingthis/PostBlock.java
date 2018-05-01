@@ -70,7 +70,12 @@ public class PostBlock extends LinearLayout {
         this.setOrientation(VERTICAL);
         this.setGravity(Gravity.START);
 
-        STANDARD_TEXT_SIZE = 16.0f;
+        if(bodyWidth <= 1080){
+            STANDARD_TEXT_SIZE = 12.0f;
+        }
+        else{
+            STANDARD_TEXT_SIZE = 14.0f;
+        }
 
         Title = new LinearLayout(context);
         LinearLayout.LayoutParams tableParams = new LinearLayout.LayoutParams(bodyWidth, (int)(0.15*bodyHeight));

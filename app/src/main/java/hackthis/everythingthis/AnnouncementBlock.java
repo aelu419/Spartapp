@@ -91,7 +91,12 @@ public class AnnouncementBlock extends LinearLayout{
         optionCellLayout = new LinearLayout.LayoutParams((int)(0.75 * bodyWidth), ViewGroup.LayoutParams.WRAP_CONTENT);
         optionCellLayout.setMargins(0,8,0,8);
 
-        STANDARD_TEXT_SIZE = 16.0f;
+        if(bodyWidth <= 1080){
+            STANDARD_TEXT_SIZE = 12.0f;
+        }
+        else{
+            STANDARD_TEXT_SIZE = 14.0f;
+        }
 
         this.setLayoutParams(bodyParams);
         this.setOrientation(VERTICAL);

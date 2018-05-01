@@ -44,6 +44,7 @@ import java.io.PrintWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -455,11 +456,13 @@ public class ScheduleBlock extends LinearLayout {
         subjectTable.put("2018-04-05", new Subject[]{chinese, foda, lang, french});
         subjectTable.put("2018-04-06", new Subject[]{history, physics, calc, studyHall});
         //colors
+        /*
         themeColorTable = new HashMap<>(0);
         themeColorTable.put("AP Physics II", this.getResources().getColor(R.color.orange));
         themeColorTable.put("AP Calculus BC", this.getResources().getColor(R.color.algebra));
         themeColorTable.put("US History", this.getResources().getColor(R.color.blue));
         themeColorTable.put("AP Lang", this.getResources().getColor(R.color.english));
+        */
     }
 
     public void initializeDateBar(){
@@ -529,7 +532,9 @@ public class ScheduleBlock extends LinearLayout {
             time.setTime(time.getTime()+24L*60L*60L*1000L);
             cal = new GregorianCalendar();
             cal.setTime(time);
-            if(getFromTable(cal)!=null){
+            if(getFromTable(cal).length!=0){
+                Log.d("Demo","found tomorrow:"+cal.get(Calendar.YEAR)+ cal.get(Calendar.MONTH)+
+                        cal.get(Calendar.DATE));
                 return cal;
             }
         }while(cal.get(Calendar.MONTH)<Calendar.JULY || cal.get(Calendar.YEAR)<currentTime.getYear());
@@ -547,12 +552,14 @@ public class ScheduleBlock extends LinearLayout {
 
         Log.d("Demo","starting onSelection");
 
+        currentTime = getTime();
+
         GregorianCalendar todayTemp = new GregorianCalendar();
         todayTemp.setTime(currentTime);
-        boolean todayIsSchoolDay = getFromTable(todayTemp) == null;
-        Log.d("Demo", "today is "+todayIsSchoolDay+" a school day");
-        currentTime = getTime();
+        Subject[] currentTimeSubjects = getFromTable(todayTemp);
+        boolean todayIsSchoolDay = currentTimeSubjects!=null && currentTimeSubjects.length!=0;
         int hm = currentTime.getHours()*100+currentTime.getMinutes();
+        Log.d("Demo", "today is "+todayIsSchoolDay+" a school day");
 
         Subject[] subjects = getFromTable(browsingTime);
 
@@ -668,10 +675,7 @@ public class ScheduleBlock extends LinearLayout {
 
 
     public int getColor( String subjectName ){
-        if( themeColorTable.containsKey(subjectName) )
-            return themeColorTable.get(subjectName);
-        else
-            return Color.BLACK;
+        return context.getResources().getIdentifier(subjectName, "color", context.getPackageName());
     }
 
     public void addDateView( int date ){
@@ -794,9 +798,6 @@ public class ScheduleBlock extends LinearLayout {
         public courseBlock(Context context, boolean b, Subject Course, int blockNumber){
             super(context);
 
-
-            Log.d("Demo", "initializing subject "+blockNumber+" "+b);
-
             this.setId(blockNumber);
             this.setOrientation(LinearLayout.HORIZONTAL);
             this.setGravity(Gravity.CENTER_HORIZONTAL);
@@ -811,7 +812,13 @@ public class ScheduleBlock extends LinearLayout {
             background = new ImageView(context);
 
             course.setText(Course.name());
+            course.setTypeface(null, Typeface.BOLD);
             extra.setText(Course.teacher());
+
+            String type = Course.name();
+            type = binSearchSubjectType(trimName(type.toLowerCase()));
+
+            Log.d("Demo", "initializing course: "+course.getText()+" (type: "+type+")");
 
             if(isMain){
                 //set the dimensions of the frame
@@ -832,7 +839,7 @@ public class ScheduleBlock extends LinearLayout {
                 //set the background image
                 background.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT));
                 background.setScaleType(ImageView.ScaleType.FIT_XY);
-                background.setImageResource(findDrawableWithString(Course.name));
+                background.setImageResource(findDrawableWithString(type));
                 background.setBackgroundColor(getResources().getColor(R.color.white));
 
                 description.setBackground(getResources().getDrawable(R.drawable.button_background));
@@ -878,7 +885,7 @@ public class ScheduleBlock extends LinearLayout {
                 bar.setLayoutParams(new LinearLayout.LayoutParams(25,ViewGroup.LayoutParams.MATCH_PARENT));
                 bar.setScaleType(ImageView.ScaleType.FIT_XY);
                 bar.setImageResource(R.drawable.rounded_edge_short);
-                bar.setColorFilter(getColor(Course.name()));
+                bar.setColorFilter(getResources().getColor(getColor(type)));
 
 
                 //set the background image
@@ -893,7 +900,7 @@ public class ScheduleBlock extends LinearLayout {
                 margin.setMargins(5, 5, 5, 5);
                 course.setLayoutParams(margin);
                 course.setGravity(Gravity.CENTER_VERTICAL);
-                course.setTextColor(getColor(Course.name()));
+                course.setTextColor(getResources().getColor(getColor(type)));
                 if(course.getText().length()>15)
                     course.setTextSize(20.0f);
                 else
@@ -905,6 +912,8 @@ public class ScheduleBlock extends LinearLayout {
                 this.addView(bar);
 
                 this.addView(description);
+
+                Log.d("Demo", "\tfinished with"+course.getText()+" (type: "+type+")");
             }
 
         }
@@ -943,6 +952,7 @@ public class ScheduleBlock extends LinearLayout {
         public EditText nameText, passwordText;
         public Button button1;
         public LinearLayout buttonBox;
+        public TextView hint;
         public LoginScreen(){
             super(context);
             this.setLayoutParams(new LinearLayout.LayoutParams(screenWidth, (int)(0.76*screenHeight)));
@@ -966,6 +976,12 @@ public class ScheduleBlock extends LinearLayout {
 
             LinearLayout.LayoutParams textParams = new LinearLayout.LayoutParams((int)(0.85*screenWidth), ViewGroup.LayoutParams.WRAP_CONTENT);
             textParams.setMargins(0,10,0,10);
+
+            hint = new TextView(context);
+            hint.setText("");
+            hint.setTextColor(getResources().getColor(R.color.white));
+            hint.setLayoutParams(textParams);
+            this.addView(hint);
 
             nameText = new EditText(context);
             nameText.setHint("ID");
@@ -1015,6 +1031,7 @@ public class ScheduleBlock extends LinearLayout {
                             passwordText.getText().toString());
                     editor.commit();
                     try{
+                        hint.setText("downloading schedule, please wait....");
                         openWebView(PSname, PSpass);}
                     catch(Exception e){
                         Log.d("DEV","KMS");
@@ -1077,15 +1094,14 @@ public class ScheduleBlock extends LinearLayout {
     }
 
     public int findDrawableWithString(String source){
-        source = source.toLowerCase();
-        source = trimName(source);
         Log.d("coursefind",source);
-        int id = context.getResources().getIdentifier("course_"+binSearchSubjectType(source), "drawable", context.getPackageName());
+        int id = context.getResources().getIdentifier("course_"+source, "drawable", context.getPackageName());
         return id;
     }
 
     public static String trimName(String str){
         ArrayList<Character> temp = new ArrayList<>(20);
+        Log.d("trim",str);
         char[] charStr = str.toCharArray();
         for(int i = 0; i < charStr.length; i++){
             int ascii = (int)charStr[i];
@@ -1097,21 +1113,22 @@ public class ScheduleBlock extends LinearLayout {
         for(int i = 0; i < temp.size(); i++){
             charTemp[i] = temp.get(i);
         }
+        Log.d("trim","\tfinished with"+new String(charTemp));
         return new String(charTemp);
     }
 
     public String binSearchSubjectType(String name){
+        Log.d("Demo","-binsearch for "+name);
+        //the chinese exclusion
+        if(name.contains("chinese")){
+            return "chinese";
+        }
         for(int i = 0; i < allSubjects.size(); i++){
             int low = 0, mid, high = allSubjects.get(i).length-1;
 
-            Log.d("coursefind","current course length "+allSubjects.get(i).length);
-
             while(low<=high){
                 mid = (low + high)/2;
-                if(subjectTypes.get(i).equals("history")){
-                    Log.d("coursefind","current mid on "+allSubjects.get(i)[mid]);
-                }
-                if(allSubjects.get(i)[mid].equals(name)){
+                if(name.contains(allSubjects.get(i)[mid])){
                     Log.d("coursefind","returned with type"+subjectTypes.get(i));
                     return subjectTypes.get(i);
                 }
@@ -1470,7 +1487,7 @@ public class ScheduleBlock extends LinearLayout {
         Intent mStartActivity = new Intent(context, MainActivity.class);
         Log.d("EASTER", "how long will this go on...");
         int mPendingIntentId = 123456;
-        PendingIntent mPendingIntent = PendingIntent.getActivity(context, mPendingIntentId,    mStartActivity, PendingIntent.FLAG_CANCEL_CURRENT);
+        PendingIntent mPendingIntent = PendingIntent.getActivity(context, mPendingIntentId, mStartActivity, PendingIntent.FLAG_CANCEL_CURRENT);
         AlarmManager mgr = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
         mgr.set(AlarmManager.RTC, System.currentTimeMillis() + 100, mPendingIntent);
         System.exit(0);
