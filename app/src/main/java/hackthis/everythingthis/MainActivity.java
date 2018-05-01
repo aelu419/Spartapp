@@ -125,7 +125,7 @@ public class MainActivity extends AppCompatActivity{
 
         if(!testInternetConnection()){
             //read local version code
-            Log.d("Demo","failed to connect");
+            Log.d("VER","failed to connect");
         }
         else{
             try {
@@ -138,10 +138,10 @@ public class MainActivity extends AppCompatActivity{
                 try {
                     PackageInfo pInfo = getApplicationContext().getPackageManager().getPackageInfo(getPackageName(), 0);
                     localVersionCode = pInfo.versionCode;
-                    Log.d("Demo","local version code is " + localVersionCode);
+                    Log.d("VER","local version code is " + localVersionCode);
 
                     if(localVersionCode < versionCode){
-                        Log.d("Demo","connected and obtained version "+versionName+" with code "+versionCode);
+                        Log.d("VER","connected and obtained version "+versionName+" with code "+versionCode);
                         DialogFragment newFragment = new UpdateFragment();
                         newFragment.show(getSupportFragmentManager(), "update");
                     }

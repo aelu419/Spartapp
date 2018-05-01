@@ -368,6 +368,7 @@ public class AnnouncementBlock extends LinearLayout{
             editText.setBackgroundColor(getResources().getColor(R.color.shaded_background));
             editText.setLayoutParams(generateLinearParams(0.5, 0.08));
             editText.setPadding(8,8,8,8);
+            editText.setTextSize(STANDARD_TEXT_SIZE);
             editText.setTextColor(getResources().getColor(R.color.black));
             TextWatcher renewKey = new TextWatcher() {
 
