@@ -63,10 +63,7 @@ public class ScheduleBlock extends LinearLayout {
     private Calendar browsingTime;
     private Date currentTime;
     private int selectedDate;
-    private HashMap<String, Integer> themeColorTable;
     private HashMap<String, Subject[]> subjectTable;
-    private ArrayList<String> subjectTypes;
-    private ArrayList<String[]> allSubjects;
     private int screenWidth, screenHeight;
     private boolean leftArrowEnabled, rightArrowEnabled;
     public boolean isLoggedIn;
@@ -113,66 +110,7 @@ public class ScheduleBlock extends LinearLayout {
 
         editor = EDITOR;
         preferences = PREFERENCES;
-
-        subjectTypes = new ArrayList<>(30);
-        allSubjects = new ArrayList<>(30);
-        subjectTypes.add("art");
-        allSubjects.add(new String[]{"ceramics", "easternart6", "easternart7", "easternart8", "easternarti", "easternartii", "foundationsofart", "foundationsofdigitalart", "introtosculpture", "paintingi", "paintingii", "paintingiii", "theartportfolio", "westernart6", "westernart7", "westernart8"});
-        subjectTypes.add("beginningguitar");
-        allSubjects.add(new String[]{"beginningguitar"});
-        subjectTypes.add("biology");
-        allSubjects.add(new String[]{"biology"});
-        subjectTypes.add("chinese");
-        allSubjects.add(new String[]{"apchinese", "chinese6a", "chinese6b", "chinese7a", "chinese7b", "chinese8a", "chinese8b", "chinese9a", "chinese9b", "chinese10a", "chinese10b", "chinese11a", "chinese11b", "chinese12a", "chinese12b"});
-        subjectTypes.add("choir");
-        allSubjects.add(new String[]{"choir"});
-        subjectTypes.add("computer");
-        allSubjects.add(new String[]{"apcomputersciencea", "desktoppublishing", "digitalphotography", "digitalvideo", "grade6computerfoundations", "grade7computerfoundations", "grade8computerfoundations", "introtocomputerscience", "mobileappdesign", "roboticsi", "roboticsii", "webdesign"});
-        subjectTypes.add("filmstudies");
-        allSubjects.add(new String[]{"filmstudyi", "filmstudyii"});
-        subjectTypes.add("french");
-        allSubjects.add(new String[]{"frenchlangi", "frenchlangii", "frenchlangiii", "frenchlangiv"});
-        subjectTypes.add("highschoolenrichment");
-        allSubjects.add(new String[]{"highschoolenrichment"});
-        subjectTypes.add("linguistics");
-        allSubjects.add(new String[]{"linguistics"});
-        subjectTypes.add("math");
-        allSubjects.add(new String[]{"advalgebraii", "advgeometry", "algebrai", "algebraii", "algebraiii", "algebraii/trignometry", "apcalculusab", "apcalculusbc","apstatistics", "appliedmath","calculus","geometry", "introtolinearalgebra", "math6", "math7", "precalculus"});
-        subjectTypes.add("music");
-        allSubjects.add(new String[]{"advband8", "band", "beginninginstrumentalmusic", "instrumentalmusicband6", "instrumentalmusicband7", "vocalmusic6", "vocalmusic7"});
-        subjectTypes.add("spanish");
-        allSubjects.add(new String[]{"spanishi", "spanishii", "spanishiii", "spanishiv", "bilingualtranslation"});
-        subjectTypes.add("steam");
-        allSubjects.add(new String[]{"steam", "steami", "steamii", "steamiii", "steamday"});
-        subjectTypes.add("chemistry");
-        allSubjects.add(new String[]{"apchemistry", "chemistry"});
-        subjectTypes.add("economics");
-        allSubjects.add(new String[]{"apmacroeconomics", "economics"});
-        subjectTypes.add("english");
-        allSubjects.add(new String[]{"langarts6", "langarts7", "langarts8", "englih9", "english10", "englih11", "englih12", "apenglishlanguage&composition", "apenglishliteraturecomposition"});
-        subjectTypes.add("history");
-        allSubjects.add(new String[]{"ancientworldhistory7", "apushistory", "apworldhistory", "arthistorymethods", "chinesehistory6", "chinesehistory7", "chinesehistory8", "chinesehistoryi", "chinesehistoryii", "Geography 6","medievalworldhistory8", "modernworldhistory", "ushistory",});
-        subjectTypes.add("socialstudy");
-        allSubjects.add(new String[]{"currentaffairs", "digitalethnography", "foundationsofmodernchina", "humanities", "philosophy"});
-        subjectTypes.add("physics");
-        allSubjects.add(new String[]{"apphysicsi", "apphysicsii", "earthandspacescience", "earthscience6", "lifescience7", "physicalscience8"});
-        subjectTypes.add("piano");
-        allSubjects.add(new String[]{"pianoi", "pianoii"});
-        subjectTypes.add("studyhall");
-        allSubjects.add(new String[]{"studyhall"});
-        subjectTypes.add("theater");
-        allSubjects.add(new String[]{"advacting", "classicalacting", "theater6", "theater7", "theater8"});
-        subjectTypes.add("genderstudies");
-        allSubjects.add(new String[]{"genderstudiesi"});
-        subjectTypes.add("els");
-        allSubjects.add(new String[]{"langsupport6", "langsupport7", "langsupport8", "langsupport9", "langsupport10"});
-        subjectTypes.add("health");
-        allSubjects.add(new String[]{"health7", "health8", "health9", "health10"});
-        subjectTypes.add("fitness");
-        allSubjects.add(new String[]{"advfitness"});
-        subjectTypes.add("sport");
-        allSubjects.add(new String[]{"outdooreducation", "pe6", "pe7", "pe8", "pe9", "sportsmanagement", "strengthtraining", "ultimatesports"});
-
+        isLoggedIn = false;
 
         //params
         screenHeight = height;
@@ -213,7 +151,6 @@ public class ScheduleBlock extends LinearLayout {
             public void onClick(View view) {
                 login();
                 isLoggedIn=true;
-                //TODO: insert fetching stuff here
             }
         });
 
@@ -255,8 +192,6 @@ public class ScheduleBlock extends LinearLayout {
         });
 
         header.addView(leftArrow);
-
-
 
         LinearLayout.LayoutParams monthParams = new LayoutParams((int)(0.7*screenWidth), ((int)(0.15*screenHeight)));
         month.setPadding(0,0,0,0);
@@ -301,30 +236,14 @@ public class ScheduleBlock extends LinearLayout {
         bodyBlockHolder.addView(bodyBlock);
 
         this.addView(bodyBlockHolder);
-        //download file from database
-        //To be written
 
-        //input data
-        //readFile();       //pre-written method for reading downloaded schedule
-        readDemoFile();     //for demo purposes
-
-        //initializing date selection bar
-        //        //This will trigger a chain of events
-        //
-        //        //see OnSelection()
-        //read stored powerschool settings
-
-        //todo:initialize webview before here
+        //readDemoFile();
 
         PSname = preferences.getString(getResources().getString(R.string.ps_name_key),null);
         PSpass = preferences.getString(getResources().getString(R.string.ps_pass_key),null);
-        try {
-            subjectTable = getSchedule();
-            isLoggedIn = true;
-        }
-        catch(Exception e){
-            login();
-        }
+
+        login();
+
         updatePage();
 
         initializeDateBar();
@@ -332,34 +251,16 @@ public class ScheduleBlock extends LinearLayout {
 
     public void login(){
         try {
-            throw new Exception();
-            //todo:add fetch-success testing
-
+            subjectTable = getSchedule();
+            isLoggedIn = true;
         }
         catch(Exception e) {
-            if(preferences.getString(getResources().getString(R.string.ps_name_key),null) == null
-                    ||preferences.getString(getResources().getString(R.string.ps_pass_key),null) == null) {
-                LoginScreen ls = new LoginScreen();
-                bodyBlock.removeAllViews();
-                bodyBlock.addView(ls);
-            }
-            else{
-                LoginScreen ls = new LoginScreen();
-                bodyBlock.removeAllViews();
-                bodyBlock.addView(ls);
-            }
+            LoginScreen ls = new LoginScreen();
+            bodyBlock.removeAllViews();
+            bodyBlock.addView(ls);
         }
-    }
 
-    public boolean testPSLogin(){
-        if((PSname==null || PSname.equals("")) || (PSpass==null || PSpass.equals(""))) {
-            Log.d("Demo","logging in under mode"+false);
-            return false;
-        }
-        else{
-            Log.d("Demo","logging in under mode"+true);
-            return true;
-        }
+        Log.d("Demo","login finished function");
     }
 
     public void updatePage(){
@@ -437,32 +338,6 @@ public class ScheduleBlock extends LinearLayout {
             dateList.get(selectedDate - 1).toggle();
             isSet = false;
         }
-    }
-
-    public void readDemoFile(){
-        subjectTable = new HashMap<>(0);
-        Subject chinese = new Subject("Chinese", "Yongkuan Zhang", "N404");
-        Subject studyHall = new Subject("Study Hall", "", "");
-        Subject calc = new Subject("AP Calculus BC","Qin Jing","N306");
-        Subject lang = new Subject("AP Lang", "James Cusack", "N408");
-        Subject history = new Subject("US History", "Andrew Dickerson", "N405");
-        Subject foda = new Subject("Foundations of Digital Art", "Angelito Balboa", "N 401");
-        Subject french = new Subject("French III", "Lisbeth Stammerjohann", "Library");
-        Subject physics = new Subject("AP Physics II", "Xiaobin Xu", "N315");
-        subjectTable.put("2018-04-01", new Subject[]{chinese, studyHall, calc, lang});
-        subjectTable.put("2018-04-02", new Subject[]{history, foda, calc, physics});
-        subjectTable.put("2018-04-03", new Subject[]{chinese, physics, lang, french});
-        subjectTable.put("2018-04-04", new Subject[]{calc, lang, history, physics});
-        subjectTable.put("2018-04-05", new Subject[]{chinese, foda, lang, french});
-        subjectTable.put("2018-04-06", new Subject[]{history, physics, calc, studyHall});
-        //colors
-        /*
-        themeColorTable = new HashMap<>(0);
-        themeColorTable.put("AP Physics II", this.getResources().getColor(R.color.orange));
-        themeColorTable.put("AP Calculus BC", this.getResources().getColor(R.color.algebra));
-        themeColorTable.put("US History", this.getResources().getColor(R.color.blue));
-        themeColorTable.put("AP Lang", this.getResources().getColor(R.color.english));
-        */
     }
 
     public void initializeDateBar(){
@@ -547,12 +422,16 @@ public class ScheduleBlock extends LinearLayout {
             return;
         }
 
+        Log.i("timing","onselection onselection called"+new Date().getTime());
+        long TIME = new Date().getTime();
+
         //clears the existing contents in the body
         bodyBlock.removeAllViews();
 
         Log.d("Demo","starting onSelection");
 
         currentTime = getTime();
+        Log.i("timing","onselection onselection -got time"+(new Date().getTime()-TIME));
 
         GregorianCalendar todayTemp = new GregorianCalendar();
         todayTemp.setTime(currentTime);
@@ -655,8 +534,6 @@ public class ScheduleBlock extends LinearLayout {
                     } else {
                         isMain[0] = true;
                     }
-
-
                 } else {
                     Log.i("Demo", "no next periods in today");
                 }
@@ -664,18 +541,14 @@ public class ScheduleBlock extends LinearLayout {
             else {
                 Log.i("Demo", "no next periods in today");
             }
-
+            Log.i("timing","onselection add block begins"+(new Date().getTime() - TIME));
             for (int i = 0; i < subjectsTrimmed.size(); i++) {
                 blocks[i] = new courseBlock(context, isMain[i], subjectsTrimmed.get(i), i);
                 bodyBlock.addView(blocks[i]);
             }
+            Log.i("timing","onselection add block ended"+(new Date().getTime() - TIME));
         }
         Log.d("Demo","ending onSelection");
-    }
-
-
-    public int getColor( String subjectName ){
-        return context.getResources().getIdentifier(subjectName, "color", context.getPackageName());
     }
 
     public void addDateView( int date ){
@@ -815,9 +688,10 @@ public class ScheduleBlock extends LinearLayout {
             course.setTypeface(null, Typeface.BOLD);
             extra.setText(Course.teacher());
 
-            String type = Course.name();
-            type = binSearchSubjectType(trimName(type.toLowerCase()));
+            String type = Course.type();
 
+            //long TIME = new Date().getTime();
+            //Log.i("Demo","initialization started"+(new Date().getTime()-TIME));
             Log.d("Demo", "initializing course: "+course.getText()+" (type: "+type+")");
 
             if(isMain){
@@ -839,7 +713,8 @@ public class ScheduleBlock extends LinearLayout {
                 //set the background image
                 background.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT));
                 background.setScaleType(ImageView.ScaleType.FIT_XY);
-                background.setImageResource(findDrawableWithString(type));
+                background.setImageResource(Course.imageInt);
+                //background.setImageResource(findDrawableWithString(type));
                 background.setBackgroundColor(getResources().getColor(R.color.white));
 
                 description.setBackground(getResources().getDrawable(R.drawable.button_background));
@@ -885,7 +760,7 @@ public class ScheduleBlock extends LinearLayout {
                 bar.setLayoutParams(new LinearLayout.LayoutParams(25,ViewGroup.LayoutParams.MATCH_PARENT));
                 bar.setScaleType(ImageView.ScaleType.FIT_XY);
                 bar.setImageResource(R.drawable.rounded_edge_short);
-                bar.setColorFilter(getResources().getColor(getColor(type)));
+                bar.setColorFilter(getResources().getColor(Course.colorInt));
 
 
                 //set the background image
@@ -900,7 +775,7 @@ public class ScheduleBlock extends LinearLayout {
                 margin.setMargins(5, 5, 5, 5);
                 course.setLayoutParams(margin);
                 course.setGravity(Gravity.CENTER_VERTICAL);
-                course.setTextColor(getResources().getColor(getColor(type)));
+                course.setTextColor(getResources().getColor(Course.colorInt));
                 if(course.getText().length()>15)
                     course.setTextSize(20.0f);
                 else
@@ -912,9 +787,9 @@ public class ScheduleBlock extends LinearLayout {
                 this.addView(bar);
 
                 this.addView(description);
-
-                Log.d("Demo", "\tfinished with"+course.getText()+" (type: "+type+")");
             }
+
+            //Log.i("Demo","intialization for "+Course.name()+" finished at "+(new Date().getTime()-TIME));
 
         }
     }
@@ -1020,8 +895,7 @@ public class ScheduleBlock extends LinearLayout {
             button1.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View view) {
-
-
+                    hint.setText("downloading schedule, please wait....");
                     PSname = nameText.getText().toString();
                     PSpass = passwordText.getText().toString();
                     Log.d("Demo","logging in with informations: name("+PSname+") pass("+PSpass+")");
@@ -1031,7 +905,6 @@ public class ScheduleBlock extends LinearLayout {
                             passwordText.getText().toString());
                     editor.commit();
                     try{
-                        hint.setText("downloading schedule, please wait....");
                         openWebView(PSname, PSpass);}
                     catch(Exception e){
                         Log.d("DEV","KMS");
@@ -1093,59 +966,8 @@ public class ScheduleBlock extends LinearLayout {
         }
     }
 
-    public int findDrawableWithString(String source){
-        Log.d("coursefind",source);
-        int id = context.getResources().getIdentifier("course_"+source, "drawable", context.getPackageName());
-        return id;
-    }
-
-    public static String trimName(String str){
-        ArrayList<Character> temp = new ArrayList<>(20);
-        Log.d("trim",str);
-        char[] charStr = str.toCharArray();
-        for(int i = 0; i < charStr.length; i++){
-            int ascii = (int)charStr[i];
-            if((ascii <= 90 && ascii >=65) || (ascii <= 122 && ascii >= 97) || (ascii <= 57 && ascii >= 48)){
-                temp.add(charStr[i]);
-            }
-        }
-        char[] charTemp = new char[temp.size()];
-        for(int i = 0; i < temp.size(); i++){
-            charTemp[i] = temp.get(i);
-        }
-        Log.d("trim","\tfinished with"+new String(charTemp));
-        return new String(charTemp);
-    }
-
-    public String binSearchSubjectType(String name){
-        Log.d("Demo","-binsearch for "+name);
-        //the chinese exclusion
-        if(name.contains("chinese")){
-            return "chinese";
-        }
-        for(int i = 0; i < allSubjects.size(); i++){
-            int low = 0, mid, high = allSubjects.get(i).length-1;
-
-            while(low<=high){
-                mid = (low + high)/2;
-                if(name.contains(allSubjects.get(i)[mid])){
-                    Log.d("coursefind","returned with type"+subjectTypes.get(i));
-                    return subjectTypes.get(i);
-                }
-                else if(name.compareTo(allSubjects.get(i)[mid])<0){
-                    high = mid-1;
-                }
-                else{
-                    low = mid + 1;
-                }
-            }
-        }
-        Log.d("coursefind","returned with type none");
-        return "none";
-    }
-
     public HashMap<String, Subject[]> getSchedule() throws Exception{
-        HashMap<String, Subject[]> schedule = new HashMap<>(0);
+        HashMap<String, Subject[]> schedule = new HashMap<>(6);
 
         HashMap<String, Integer> dateDay = getDateDayPairs();
 
@@ -1164,7 +986,7 @@ public class ScheduleBlock extends LinearLayout {
     }
 
     public HashMap<String, Integer> getDateDayPairs()throws AVException, ParseException {
-        HashMap<String, Integer> dateDay = null;
+        HashMap<String, Integer> dateDay;
 
         AVQuery query = new AVQuery("UpdateCalendar");
         List<AVObject> qList = query.find();
@@ -1385,7 +1207,7 @@ public class ScheduleBlock extends LinearLayout {
                 String name = tizer.nextToken();
                 String teacher = tizer.nextToken();
                 String room = tizer.nextToken();
-                Subject subject = new Subject(name, teacher, room);
+                Subject subject = new Subject(name, teacher, room, context);
                 Log.d("HTML_IN",subject.name() + "," + subject.teacher() + "," + subject.room() + ",");
                 daySchedule[period] = subject;
             }
@@ -1396,7 +1218,7 @@ public class ScheduleBlock extends LinearLayout {
         return schedule;
     }
 
-    public static HashMap<Integer, Subject[]> fetchSchedule(String html) throws IOException, InterruptedException {
+    public HashMap<Integer, Subject[]> fetchSchedule(String html) throws IOException, InterruptedException {
 
         String pageSource = html;
 
@@ -1448,7 +1270,7 @@ public class ScheduleBlock extends LinearLayout {
                 Log.w("HTML", days);
                 for(int i = 0; i * 2 < days.length(); i ++) {
                     int dayNum = days.charAt(i*2) - 48;
-                    Subject period = new Subject(className, teacherName, roomNum);
+                    Subject period = new Subject(className, teacherName, roomNum, context);
 
                     int pN, pC, pNe, pCe;
                     try {

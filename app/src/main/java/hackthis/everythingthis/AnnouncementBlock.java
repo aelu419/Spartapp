@@ -77,6 +77,7 @@ public class AnnouncementBlock extends LinearLayout{
         context = viewContext;
 
         defaultSubscribes.add("Student Council");
+        defaultSubscribes.add("{Hack, THIS}");
 
         editor = EDITOR;
         preferences = PREFERENCES;
@@ -299,7 +300,7 @@ public class AnnouncementBlock extends LinearLayout{
             textParams.setMargins(0,4,0,4);
 
             titleText.setText(a.title);
-            subTitle.setText(a.getClub().getName() + " - " + new SimpleDateFormat("MMMMdd").format(a.getPostTime()));
+            subTitle.setText(a.getClub().getName() + " - " + new SimpleDateFormat("MMMM dd").format(a.getPostTime()));
             bodyText.setText(a.getAnnouncement());
 
             titleText.setTextSize(STANDARD_TEXT_SIZE + 5.0f);

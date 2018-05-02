@@ -208,7 +208,7 @@ public class PostBlock extends LinearLayout {
         String pw = "";
         try {
             List<AVObject> club = clubQuery.find();
-            if(club == null) return false;
+            if(club == null || club.isEmpty()) return false;
             pw = club.get(0).getString("key");
         } catch (AVException e){
             return false;

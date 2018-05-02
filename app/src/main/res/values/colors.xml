@@ -55,4 +55,5 @@
     <!--other-->
     <color name = "highschoolenrichment">#666</color>
     <color name = "studyhall">#666</color>
+    <color name = "none">#70391c</color>
 </resources>
