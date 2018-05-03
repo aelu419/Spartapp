@@ -412,7 +412,7 @@ public class ScheduleBlock extends LinearLayout {
             time.setTime(time.getTime()+24L*60L*60L*1000L);
             cal = new GregorianCalendar();
             cal.setTime(time);
-            if(getFromTable(cal).length!=0){
+            if(getFromTable(cal)!=null && getFromTable(cal).length!=0){
                 Log.d("Demo","found tomorrow:"+cal.get(Calendar.YEAR)+ cal.get(Calendar.MONTH)+
                         cal.get(Calendar.DATE));
                 return cal;
@@ -712,7 +712,7 @@ public class ScheduleBlock extends LinearLayout {
                 //set the bar image
                 bar.setLayoutParams(new LinearLayout.LayoutParams(25,ViewGroup.LayoutParams.MATCH_PARENT));
                 bar.setScaleType(ImageView.ScaleType.FIT_XY);
-                bar.setImageResource(R.drawable.rounded_edge_short);
+                bar.setImageResource(Course.imageInt);
                 bar.setColorFilter(Color.WHITE);
 
                 //set inner frame
@@ -721,8 +721,8 @@ public class ScheduleBlock extends LinearLayout {
                 //set the background image
                 background.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT));
                 background.setScaleType(ImageView.ScaleType.FIT_XY);
-                background.setImageResource(R.drawable.course_computer);
-                //background.setBackgroundColor(getResources().getColor(R.color.white));
+                background.setImageResource(Course.imageInt);
+                background.setBackgroundColor(getResources().getColor(R.color.white));
 
                 //set textviews
                 FrameLayout.LayoutParams margin = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
@@ -918,7 +918,7 @@ public class ScheduleBlock extends LinearLayout {
             button1.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    hint.setText("downloading schedule, please wait....");
+                    hint.setText("downloading schedule, please wait....\nThe application will restart it self once downloading finished, please do not re-open the app manually.\nYou will be redirected to this log in page if the download failed");
                     PSname = nameText.getText().toString();
                     PSpass = passwordText.getText().toString();
                     Log.d("Demo","logging in with informations: name("+PSname+") pass("+PSpass+")");
