@@ -32,6 +32,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
+import static hackthis.everythingthis.utils.testInternetConnection;
+
 public class PostBlock extends LinearLayout {
     Context context;
     LinearLayout.LayoutParams bodyParams;
@@ -180,22 +182,6 @@ public class PostBlock extends LinearLayout {
         Contents.addView(dp);
     }
 
-    public boolean testInternetConnection(){
-        try
-        {
-            Log.d("announcement","try to connect");
-            URL url = new URL("http://www.baidu.com");
-            URLConnection connection = url.openConnection();
-            connection.setConnectTimeout(500);
-            connection.connect();
-        }catch (Exception e){
-            Log.d("announcement","failed to connect");
-            return false;
-        }
-
-        return true;
-    }
-
     public boolean testLoginValidity(String name, String passWord){
 
         if(name == null || passWord == null) return false;
@@ -281,7 +267,7 @@ public class PostBlock extends LinearLayout {
             editor.putBoolean(getResources().getString(R.string.has_draft_key),false);
             editor.putString(getResources().getString(R.string.draft_title_key),"");
             editor.putString(getResources().getString(R.string.draft_body_key),"");
-            editor.commit();
+            editor.apply();
 
             message.setText("Announcement successfully uploaded");
             button1.setImageResource(R.drawable.dia_abandon);
@@ -313,7 +299,7 @@ public class PostBlock extends LinearLayout {
                     editor.putBoolean(getResources().getString(R.string.has_draft_key),true);
                     editor.putString(getResources().getString(R.string.draft_title_key),ep.editTitle.getText().toString());
                     editor.putString(getResources().getString(R.string.draft_body_key),ep.editBody.getText().toString());
-                    editor.commit();
+                    editor.apply();
                     startDraft();
                 }
             });
@@ -325,7 +311,7 @@ public class PostBlock extends LinearLayout {
                     editor.putBoolean(getResources().getString(R.string.has_draft_key),false);
                     editor.putString(getResources().getString(R.string.draft_title_key),"");
                     editor.putString(getResources().getString(R.string.draft_body_key),"");
-                    editor.commit();
+                    editor.apply();
                     startDraft();
                 }
             });
@@ -488,7 +474,7 @@ public class PostBlock extends LinearLayout {
                         editor.putString(getResources().getString(R.string.draft_title_key), editTitle.getText().toString());
                         editor.putString(getResources().getString(R.string.draft_body_key), editBody.getText().toString());
                         editor.putBoolean(getResources().getString(R.string.has_draft_key), true);
-                        editor.commit();
+                        editor.apply();
                     }
                 }
             });
@@ -639,7 +625,7 @@ public class PostBlock extends LinearLayout {
                                         nameText.getText().toString());
                                 editor.putString(getResources().getString(R.string.login_password_key),
                                         passwordText.getText().toString());
-                                editor.commit();
+                                editor.apply();
                             }
                             startDraft();
                         }
@@ -658,7 +644,7 @@ public class PostBlock extends LinearLayout {
                                         nameText.getText().toString());
                                 editor.putString(getResources().getString(R.string.login_password_key),
                                         passwordText.getText().toString());
-                                editor.commit();
+                                editor.apply();
                             }
                             startDraft();
                         }
@@ -682,13 +668,13 @@ public class PostBlock extends LinearLayout {
                                     nameText.getText().toString());
                             editor.putString(getResources().getString(R.string.login_password_key),
                                     passwordText.getText().toString());
-                            editor.commit();
+                            editor.apply();
                         }
 
                         editor.putString(getResources().getString(R.string.draft_title_key),null);
                         editor.putString(getResources().getString(R.string.draft_body_key),null);
                         editor.putBoolean(getResources().getString(R.string.has_draft_key),false);
-                        editor.commit();
+                        editor.apply();
 
                         hasDraft = false;
 

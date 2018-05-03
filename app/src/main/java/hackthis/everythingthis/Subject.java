@@ -2,6 +2,7 @@ package hackthis.everythingthis;
 
 
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.util.Log;
 
 import java.util.ArrayList;
@@ -92,18 +93,19 @@ public class Subject{
         this.room = room;
         this.type = searchSubjectType(trimName(name.toLowerCase()));
         this.context = context;
-        colorInt = getColor(type);
-        imageInt = findDrawableWithString(type);
-    }
-
-    public int getColor( String subjectName ){
-        return context.getResources().getIdentifier(subjectName, "color", context.getPackageName());
+        Log.d("Demo","type of "+name+" is "+type());
+        colorInt = getColor(type());
+        imageInt = findDrawableWithString(type());
     }
 
     public int findDrawableWithString(String source){
         Log.d("coursefind",source);
         int id = context.getResources().getIdentifier("course_"+source, "drawable", context.getPackageName());
         return id;
+    }
+
+    public int getColor( String subjectName ){
+        return context.getResources().getIdentifier(subjectName, "color", context.getPackageName());
     }
 
     public String name(){return name;}

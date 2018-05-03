@@ -144,13 +144,16 @@ public class ScheduleBlock extends LinearLayout {
         fetch.setImageResource(R.drawable.fetch_enabled);
         LinearLayout.LayoutParams fetchParams = new LinearLayout.LayoutParams(((int)(0.075*screenWidth)), ViewGroup.LayoutParams.WRAP_CONTENT);
         fetch.setPadding(5,0,5,0);
-        fetchParams.setMargins(130,0,0,0);
         fetch.setLayoutParams(fetchParams);
         fetch.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
-                login();
-                isLoggedIn=true;
+                if(isLoggedIn) {
+                    isLoggedIn = false;
+                    LoginScreen ls = new LoginScreen(true);
+                    bodyBlock.removeAllViews();
+                    bodyBlock.addView(ls);
+                }
             }
         });
 
@@ -166,9 +169,11 @@ public class ScheduleBlock extends LinearLayout {
         rightArrow = new ImageView(context);
         LinearLayout.LayoutParams arrowParams = new LinearLayout.LayoutParams((int)(0.075*screenWidth), ViewGroup.LayoutParams.WRAP_CONTENT);
         leftArrow.setLayoutParams(arrowParams);
-        rightArrow.setLayoutParams(new LinearLayout.LayoutParams((int)(0.15*screenWidth), ViewGroup.LayoutParams.WRAP_CONTENT));
-        leftArrow.setPadding(10+(int)(0.01*screenWidth),0,5+(int)(0.01*screenWidth),0);
-        rightArrow.setPadding(5+(int)(0.01*screenWidth),0,10+(int)(0.085*screenWidth),0);
+        leftArrow.setPadding(10,15,10,15);
+        rightArrow.setLayoutParams(arrowParams);
+        rightArrow.setPadding(10,15,10,15);
+
+
         leftArrow.setImageResource(R.drawable.arrow_left_disabled);
         rightArrow.setImageResource(R.drawable.arrow_right_disabled);
         leftArrow.setOnClickListener(new OnClickListener() {
@@ -255,7 +260,7 @@ public class ScheduleBlock extends LinearLayout {
             isLoggedIn = true;
         }
         catch(Exception e) {
-            LoginScreen ls = new LoginScreen();
+            LoginScreen ls = new LoginScreen(false);
             bodyBlock.removeAllViews();
             bodyBlock.addView(ls);
         }
@@ -453,7 +458,9 @@ public class ScheduleBlock extends LinearLayout {
                 else{
                     if(i!=subjects.length-1) {
                         if (subjects[i].equals(subjects[i + 1])) {
-
+                            subjectsTrimmed.add(subjects[i]);
+                            periodsTrimmed.add(i);
+                            i++;
                         } else {
                             subjectsTrimmed.add(subjects[i]);
                             periodsTrimmed.add(i);
@@ -518,6 +525,7 @@ public class ScheduleBlock extends LinearLayout {
                     if(periodTimes[periodsTrimmed.get(i)]>hm && !foundFirst){
                         foundFirst = true;
                         isMain[i] = true;
+                        Log.d("Demo",hm+"less than"+periodTimes[periodsTrimmed.get(i)]);
                     }
                     else{
                         isMain[i] = false;
@@ -528,7 +536,7 @@ public class ScheduleBlock extends LinearLayout {
                         && tmrTemp.get(GregorianCalendar.DATE) == temp.get(GregorianCalendar.DATE)) {
                     Log.i("Demo", "tomorrow is selected");
                     if (todayIsSchoolDay) {
-                        if (hm > periodTimes[7]) {
+                        if (hm > periodTimes[periodsTrimmed.get(periodsTrimmed.size()-1)]) {
                             isMain[0] = true;
                         }
                     } else {
@@ -713,11 +721,8 @@ public class ScheduleBlock extends LinearLayout {
                 //set the background image
                 background.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT));
                 background.setScaleType(ImageView.ScaleType.FIT_XY);
-                background.setImageResource(Course.imageInt);
-                //background.setImageResource(findDrawableWithString(type));
-                background.setBackgroundColor(getResources().getColor(R.color.white));
-
-                description.setBackground(getResources().getDrawable(R.drawable.button_background));
+                background.setImageResource(R.drawable.course_computer);
+                //background.setBackgroundColor(getResources().getColor(R.color.white));
 
                 //set textviews
                 FrameLayout.LayoutParams margin = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
@@ -794,11 +799,12 @@ public class ScheduleBlock extends LinearLayout {
         }
     }
 
+
+
     //tries to get time from internet, if fails then set time as system time
     public static Date getTime() {
+        /*todo:rmove this
         Date date = new Date();
-
-        if(testInternetConnection()) {
             String URL1 = "http://www.baidu.com";
             String URL2 = "http://www.ntsc.ac.cn";
             String URL3 = "http://www.beijing-time.org";
@@ -816,11 +822,8 @@ public class ScheduleBlock extends LinearLayout {
                 } else {
                     Log.i("Demo", "System");
                 }
-            } catch (Exception e) {
-
-            }
-        }
-        return date;
+            } catch (Exception e) { }*/
+        return new Date();
     }
 
     public class LoginScreen extends LinearLayout{
@@ -828,13 +831,33 @@ public class ScheduleBlock extends LinearLayout {
         public Button button1;
         public LinearLayout buttonBox;
         public TextView hint;
-        public LoginScreen(){
+        public ImageView returnButton;
+
+        //mode: log in from fetch button = true
+        public LoginScreen(boolean mode){
             super(context);
             this.setLayoutParams(new LinearLayout.LayoutParams(screenWidth, (int)(0.76*screenHeight)));
             this.setPadding((int)(0.075*screenWidth),(int)(0.03*screenHeight),(int)(0.075*screenWidth),10);
             this.setOrientation(VERTICAL);
             this.setGravity(Gravity.LEFT);
             this.setBackgroundColor(getResources().getColor(R.color.powerschool));
+
+            if(mode){
+               returnButton = new ImageView(context);
+               returnButton.setLayoutParams(new LinearLayout.LayoutParams((int)(0.1*screenWidth), (int)(0.05*screenHeight)));
+               returnButton.setScaleType(ImageView.ScaleType.FIT_CENTER);
+               returnButton.setAdjustViewBounds(true);
+               returnButton.setImageResource(R.drawable.return_button);
+               returnButton.setOnClickListener(new OnClickListener() {
+                   @Override
+                   public void onClick(View v) {
+                       isLoggedIn = true;
+                       onSelection();
+                   }
+               });
+               this.addView(returnButton);
+            }
+
 
             LinearLayout iconBox = new LinearLayout(context);
             iconBox.setLayoutParams(new LinearLayout.LayoutParams((int)(0.85*screenWidth), ViewGroup.LayoutParams.WRAP_CONTENT));
@@ -903,7 +926,7 @@ public class ScheduleBlock extends LinearLayout {
                             nameText.getText().toString());
                     editor.putString(getResources().getString(R.string.ps_pass_key),
                             passwordText.getText().toString());
-                    editor.commit();
+                    editor.apply();
                     try{
                         openWebView(PSname, PSpass);}
                     catch(Exception e){
@@ -913,22 +936,6 @@ public class ScheduleBlock extends LinearLayout {
             });
         }
 
-    }
-
-    public static boolean testInternetConnection(){
-        try
-        {
-            Log.d("announcement","try to connect");
-            URL url = new URL("http://www.baidu.com");
-            URLConnection connection = url.openConnection();
-            connection.setConnectTimeout(500);
-            connection.connect();
-        }catch (Exception e){
-            Log.d("announcement","failed to connect");
-            return false;
-        }
-
-        return true;
     }
 
     //get time from internet with given url
@@ -959,10 +966,10 @@ public class ScheduleBlock extends LinearLayout {
     public void setPeriodTimes(GregorianCalendar date){
         periodTimes = new int[8];
         if(date.get(GregorianCalendar.DAY_OF_WEEK)==Calendar.WEDNESDAY){
-            periodTimes = new int[]{835, 855, 920, 940, 1120, 1210, 1320, 1340};
+            periodTimes = new int[]{815, 835, 855, 920, 940, 1120, 1210, 1320};
         }
         else {
-            periodTimes = new int[]{855, 935, 1035, 1115, 1205, 1350, 1435, 1515};
+            periodTimes = new int[]{815, 855, 935, 1035, 1115, 1205, 1350, 1435};
         }
     }
 
@@ -1187,6 +1194,7 @@ public class ScheduleBlock extends LinearLayout {
             out.write("\n");
         }
         out.close();
+        f.close();
         Log.d("HTML_OUT", "output success");
         triggerRebirth(context.getApplicationContext());
     }
@@ -1215,6 +1223,7 @@ public class ScheduleBlock extends LinearLayout {
             dayInCycle ++;
         }
         in.close();
+        f.close();
         return schedule;
     }
 

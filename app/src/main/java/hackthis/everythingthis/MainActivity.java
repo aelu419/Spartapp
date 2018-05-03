@@ -28,6 +28,8 @@ import com.avos.avoscloud.*;
 import java.net.URL;
 import java.net.URLConnection;
 
+import static hackthis.everythingthis.utils.testInternetConnection;
+
 
 public class MainActivity extends Activity {
 
@@ -69,9 +71,6 @@ public class MainActivity extends Activity {
 
         //getActionBar().hide();
 
-        preferences = this.getSharedPreferences(getResources().getString(R.string.preferences_key),Context.MODE_PRIVATE);
-        editor = preferences.edit();
-
         //get access to internet
         StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
                 .detectDiskReads().detectDiskWrites().detectNetwork()
@@ -91,10 +90,15 @@ public class MainActivity extends Activity {
         AVInstallation.getCurrentInstallation().saveInBackground();
 
         PushService.setDefaultPushCallback(this, MainActivity.class);
+
+        preferences = this.getSharedPreferences(getString(R.string.preferences_key),Context.MODE_PRIVATE);
+        editor = preferences.edit();
+
         firstRun = preferences.getBoolean(getResources().getString(R.string.first_run_key), true);
         //TODO: write any firstRun methods here
 
         editor.putBoolean(getResources().getString(R.string.first_run_key), false);
+        editor.apply();
 
 
 
@@ -110,12 +114,6 @@ public class MainActivity extends Activity {
                 }
             }
         });*/
-    }
-
-    @Override
-    public void onStart(){
-
-        super.onStart();
 
         //getScreenDimensions
         DisplayMetrics metrics = new DisplayMetrics();
@@ -123,7 +121,7 @@ public class MainActivity extends Activity {
         screenWidth = metrics.widthPixels;
         screenHeight = metrics.heightPixels;
 
-        if(!testInternetConnection()){
+        if(!testInternetConnection(this)){
             //read local version code
             Log.d("VER","failed to connect");
         }
@@ -181,23 +179,23 @@ public class MainActivity extends Activity {
         LinearLayout.LayoutParams footerButtonParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT);
 
         scheduleIcon = (ImageView)findViewById(R.id.scheduleIcon);
-           scheduleIcon.setLayoutParams(footerButtonParams);
-           scheduleIcon.setScaleType(ImageView.ScaleType.FIT_CENTER);
-            scheduleIcon.setPadding((int)(0.025*screenHeight),(int)(0.025*screenHeight),(int)(0.025*screenHeight),(int)(0.025*screenHeight));
-            scheduleIcon.setAdjustViewBounds(true);
+        scheduleIcon.setLayoutParams(footerButtonParams);
+        scheduleIcon.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        scheduleIcon.setPadding((int)(0.025*screenHeight),(int)(0.025*screenHeight),(int)(0.025*screenHeight),(int)(0.025*screenHeight));
+        scheduleIcon.setAdjustViewBounds(true);
 
 
         announcementIcon = (ImageView)findViewById(R.id.announcementIcon);
-           announcementIcon.setLayoutParams(footerButtonParams);
-           announcementIcon.setScaleType(ImageView.ScaleType.FIT_CENTER);
-          announcementIcon.setPadding((int)(0.025*screenHeight),(int)(0.025*screenHeight),(int)(0.025*screenHeight),(int)(0.025*screenHeight));
-          announcementIcon.setAdjustViewBounds(true);
+        announcementIcon.setLayoutParams(footerButtonParams);
+        announcementIcon.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        announcementIcon.setPadding((int)(0.025*screenHeight),(int)(0.025*screenHeight),(int)(0.025*screenHeight),(int)(0.025*screenHeight));
+        announcementIcon.setAdjustViewBounds(true);
 
         postIcon = (ImageView)findViewById(R.id.postIcon);
-           postIcon.setLayoutParams(footerButtonParams);
-           postIcon.setPadding((int)(0.025*screenHeight),(int)(0.025*screenHeight),(int)(0.025*screenHeight),(int)(0.025*screenHeight));
-           postIcon.setScaleType(ImageView.ScaleType.FIT_XY);
-           postIcon.setAdjustViewBounds(true);
+        postIcon.setLayoutParams(footerButtonParams);
+        postIcon.setPadding((int)(0.025*screenHeight),(int)(0.025*screenHeight),(int)(0.025*screenHeight),(int)(0.025*screenHeight));
+        postIcon.setScaleType(ImageView.ScaleType.FIT_XY);
+        postIcon.setAdjustViewBounds(true);
 
 
         scheduleIcon.setOnClickListener(new View.OnClickListener() {
@@ -237,30 +235,6 @@ public class MainActivity extends Activity {
         pageModeHistory = 1;
 
         updatePageMode();
-
-    }
-
-    public static class UpdateFragment extends DialogFragment {
-        @Override
-        public Dialog onCreateDialog(Bundle savedInstanceState) {
-            // Use the Builder class for convenient dialog construction
-            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-            builder.setMessage("A new version (" + versionName + ") is available. Do you want to redirect to its download page?")
-                    .setPositiveButton("yes", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://thisprogrammingclub.github.io/"));
-                            startActivity(browserIntent);
-                            dismiss();
-                        }
-                    })
-                    .setNegativeButton("no", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            dismiss();
-                        }
-                    });
-            // Create the AlertDialog object and return it
-            return builder.create();
-        }
     }
 
     BroadcastReceiver announcementUpdateReceiver = new BroadcastReceiver() {
@@ -285,23 +259,6 @@ public class MainActivity extends Activity {
     public void onDestroy(){
         super.onDestroy();
         unregisterReceiver(announcementUpdateReceiver);
-    }
-
-    public static boolean testInternetConnection(){
-        try {
-            Log.d("Demo","try to connect (main activity)");
-            URL url = new URL("http://www.baidu.com");
-            URLConnection connection = url.openConnection();
-            connection.setConnectTimeout(2000);
-            connection.connect();
-        }catch (Exception e){
-            Log.d("Demo","failed to connect (called inside method)");
-            e.printStackTrace();
-            Log.d("Demo",Log.getStackTraceString(e.getCause()));
-            return false;
-        }
-
-        return true;
     }
 
     public void updatePageMode() {

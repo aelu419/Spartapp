@@ -21,12 +21,12 @@ import com.avos.avoscloud.AVException;
 import com.avos.avoscloud.AVObject;
 import com.avos.avoscloud.AVQuery;
 
-import java.net.URL;
-import java.net.URLConnection;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+
+import static hackthis.everythingthis.utils.testInternetConnection;
 
 public class AnnouncementBlock extends LinearLayout{
     //status vars
@@ -77,7 +77,7 @@ public class AnnouncementBlock extends LinearLayout{
         context = viewContext;
 
         defaultSubscribes.add("Student Council");
-        defaultSubscribes.add("{Hack, THIS}");
+        defaultSubscribes.add("{Hack,THIS}");
 
         editor = EDITOR;
         preferences = PREFERENCES;
@@ -219,57 +219,39 @@ public class AnnouncementBlock extends LinearLayout{
     public void pullFromDatabase(){
         //check if there is internet connection
 
-        try
-        {
-            Log.d("announcement","try to connect");
-            URL url = new URL("http://www.baidu.com");
-
-            URLConnection connection = url.openConnection();
-            connection.connect();
-            internetConnected = true;
-
-
-        }catch (Exception e){
-
-            Log.d("announcement","failed to connect");
-            internetConnected = false;
-            return;
-
-        }
-
-
-
-        try {
-            announcements.clear();
-            for(String i : subscribed) {
-                announcementQuery = new AVQuery<>("Announcements");
-                announcementQuery.whereContains("clubName",i);
-                List<AVObject> annList = announcementQuery.find();
-                for(AVObject j : annList){
-                    announcements.add(new Announcement(j.getString("announcementTitle"),
-                            j.getString("announcementTitle"), j.getDate("updatedAt"),
-                            new Club(j.getString("clubName"), j.getString("key"))));
+        if(testInternetConnection(context)) {
+            try {
+                announcements.clear();
+                for (String i : subscribed) {
+                    announcementQuery = new AVQuery<>("Announcements");
+                    announcementQuery.whereContains("clubName", i);
+                    List<AVObject> annList = announcementQuery.find();
+                    for (AVObject j : annList) {
+                        announcements.add(new Announcement(j.getString("announcementTitle"),
+                                j.getString("announcementTitle"), j.getDate("updatedAt"),
+                                new Club(j.getString("clubName"), j.getString("key"))));
+                    }
                 }
+            } catch (AVException e) {
+                //TODO: add handler?
+            }
+
+
+            try {
+                clubQuery = new AVQuery<>("Clubs");
+                clubQuery.setLimit(1000);
+                List<AVObject> clubsList = clubQuery.find();
+                clubs.clear();
+                for (AVObject i : clubsList) {
+                    //TODO: add the key part
+                    clubs.add(new Club(i.getString("name"), i.getString("key")));
+                }
+            } catch (AVException e) {
+                //TODO: any handler?
             }
         }
-        catch (AVException e){
-            //TODO: add handler?
-        }
-
-
-
-        try {
-            clubQuery = new AVQuery<>("Clubs");
-            clubQuery.setLimit(1000);
-            List<AVObject> clubsList = clubQuery.find();
-            clubs.clear();
-            for(AVObject i : clubsList){
-                //TODO: add the key part
-                clubs.add(new Club(i.getString("name"), i.getString("key")));
-            }
-        }
-        catch(AVException e){
-            //TODO: any handler?
+        else{
+            internetConnected = false;
         }
 
     }
@@ -588,7 +570,7 @@ public class AnnouncementBlock extends LinearLayout{
 
                             editor.putStringSet(getResources().getString(R.string.subscribed_channels_key),
                                     new HashSet<>(subscribed));
-                            editor.commit();
+                            editor.apply();
 
                             isSelected = b;
 
