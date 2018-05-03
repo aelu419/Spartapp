@@ -115,7 +115,7 @@ public class PostBlock extends LinearLayout {
         Contents.setBackgroundColor(getResources().getColor(R.color.background));
         this.addView(Contents);
 
-        internetConnected = testInternetConnection();
+        internetConnected = testInternetConnection(context);
 
         hasDraft = preferences.getBoolean(getResources().getString(R.string.has_draft_key),false);
         editor.putBoolean(getResources().getString(R.string.has_draft_key), hasDraft);
@@ -186,7 +186,7 @@ public class PostBlock extends LinearLayout {
 
         if(name == null || passWord == null) return false;
 
-        if(!testInternetConnection())
+        if(!testInternetConnection(context))
             return false;
 
         AVQuery clubQuery = new AVQuery("Clubs");
@@ -400,7 +400,7 @@ public class PostBlock extends LinearLayout {
                     if(isValid()){
                         try{
 
-                            if(!testInternetConnection())
+                            if(!testInternetConnection(context))
                                 throw new Exception();
 
                             AVObject product = new AVObject("Announcements");
