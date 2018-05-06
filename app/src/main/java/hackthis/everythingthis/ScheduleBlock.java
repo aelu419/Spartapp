@@ -99,6 +99,8 @@ public class ScheduleBlock extends LinearLayout {
     public SharedPreferences preferences;
     public SharedPreferences.Editor editor;
 
+    private int LoginTimes;
+
 
     //Dimensions
     private int DateViewCommonWidth;
@@ -111,6 +113,7 @@ public class ScheduleBlock extends LinearLayout {
         editor = EDITOR;
         preferences = PREFERENCES;
         isLoggedIn = false;
+        LoginTimes = 0;
 
         //params
         screenHeight = height;
@@ -150,7 +153,7 @@ public class ScheduleBlock extends LinearLayout {
             public void onClick(View view) {
                 if(isLoggedIn) {
                     isLoggedIn = false;
-                    LoginScreen ls = new LoginScreen(true);
+                    LoginScreen ls = new LoginScreen(false, true);
                     bodyBlock.removeAllViews();
                     bodyBlock.addView(ls);
                 }
@@ -247,20 +250,20 @@ public class ScheduleBlock extends LinearLayout {
         PSname = preferences.getString(getResources().getString(R.string.ps_name_key),null);
         PSpass = preferences.getString(getResources().getString(R.string.ps_pass_key),null);
 
-        login();
+        login(false);
 
         updatePage();
 
         initializeDateBar();
     }
 
-    public void login(){
+    public void login(boolean calledFromFetch){
         try {
             subjectTable = getSchedule();
             isLoggedIn = true;
         }
         catch(Exception e) {
-            LoginScreen ls = new LoginScreen(false);
+            LoginScreen ls = new LoginScreen(calledFromFetch, false);
             bodyBlock.removeAllViews();
             bodyBlock.addView(ls);
         }
@@ -694,7 +697,7 @@ public class ScheduleBlock extends LinearLayout {
 
             course.setText(Course.name());
             course.setTypeface(null, Typeface.BOLD);
-            extra.setText(Course.teacher());
+            extra.setText(Course.teacher()+" "+Course.room());
 
             String type = Course.type();
 
@@ -739,9 +742,9 @@ public class ScheduleBlock extends LinearLayout {
                 extra.setGravity(Gravity.BOTTOM);
                 extra.setTextColor(Color.BLACK);
                 if(extra.getText().length()>20)
-                    extra.setTextSize(24.0f);
+                    extra.setTextSize(20.0f);
                 else
-                    extra.setTextSize(30.0f);
+                    extra.setTextSize(24.0f);
 
                 //add components: linear{bar, frame{name, extra, background}}
                 description.addView(background);
@@ -803,26 +806,7 @@ public class ScheduleBlock extends LinearLayout {
 
     //tries to get time from internet, if fails then set time as system time
     public static Date getTime() {
-        /*todo:rmove this
-        Date date = new Date();
-            String URL1 = "http://www.baidu.com";
-            String URL2 = "http://www.ntsc.ac.cn";
-            String URL3 = "http://www.beijing-time.org";
-            Log.i("Demo", "current time source :");
-            try {
-                if (getWebDate(URL1) != null) {
-                    Log.i("Demo", URL1);
-                    date = getWebDate(URL1);
-                } else if (getWebDate(URL2) != null) {
-                    Log.i("Demo", URL2);
-                    date = getWebDate(URL2);
-                } else if (getWebDate(URL3) != null) {
-                    Log.i("Demo", URL3);
-                    date = getWebDate(URL3);
-                } else {
-                    Log.i("Demo", "System");
-                }
-            } catch (Exception e) { }*/
+        /*todo: currently time is set to local time, it is recommended to switch to internet time*/
         return new Date();
     }
 
@@ -832,9 +816,10 @@ public class ScheduleBlock extends LinearLayout {
         public LinearLayout buttonBox;
         public TextView hint;
         public ImageView returnButton;
+        public LinearLayout iconBox;
 
         //mode: log in from fetch button = true
-        public LoginScreen(boolean mode){
+        public LoginScreen(boolean calledFromFetch, boolean returnable){
             super(context);
             this.setLayoutParams(new LinearLayout.LayoutParams(screenWidth, (int)(0.76*screenHeight)));
             this.setPadding((int)(0.075*screenWidth),(int)(0.03*screenHeight),(int)(0.075*screenWidth),10);
@@ -842,7 +827,7 @@ public class ScheduleBlock extends LinearLayout {
             this.setGravity(Gravity.LEFT);
             this.setBackgroundColor(getResources().getColor(R.color.powerschool));
 
-            if(mode){
+            if(returnable){
                returnButton = new ImageView(context);
                returnButton.setLayoutParams(new LinearLayout.LayoutParams((int)(0.1*screenWidth), (int)(0.05*screenHeight)));
                returnButton.setScaleType(ImageView.ScaleType.FIT_CENTER);
@@ -859,7 +844,7 @@ public class ScheduleBlock extends LinearLayout {
             }
 
 
-            LinearLayout iconBox = new LinearLayout(context);
+            iconBox = new LinearLayout(context);
             iconBox.setLayoutParams(new LinearLayout.LayoutParams((int)(0.85*screenWidth), ViewGroup.LayoutParams.WRAP_CONTENT));
             iconBox.setGravity(Gravity.CENTER_HORIZONTAL);
 
@@ -876,7 +861,12 @@ public class ScheduleBlock extends LinearLayout {
             textParams.setMargins(0,10,0,10);
 
             hint = new TextView(context);
-            hint.setText("");
+            if(calledFromFetch){
+                hint.setText("Your last login has failed, please try again!");
+            }
+            else{
+                hint.setText("");
+            }
             hint.setTextColor(getResources().getColor(R.color.white));
             hint.setLayoutParams(textParams);
             this.addView(hint);
@@ -913,12 +903,14 @@ public class ScheduleBlock extends LinearLayout {
             button1.setLayoutParams(buttonParam);
             buttonBox.addView(button1);
             button1.setTextColor(getResources().getColor(R.color.purple));
+            button1.setTextSize(12.0f);
             button1.setText("log in");
 
             button1.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    hint.setText("downloading schedule, please wait....\nThe application will restart it self once downloading finished, please do not re-open the app manually.\nYou will be redirected to this log in page if the download failed");
+                    LoginTimes = 0;
+                    hint.setText("downloading schedule, please wait....\nThe application will restart it self once downloading finished, please do not re-open the app manually.");
                     PSname = nameText.getText().toString();
                     PSpass = passwordText.getText().toString();
                     Log.d("Demo","logging in with informations: name("+PSname+") pass("+PSpass+")");
@@ -927,6 +919,7 @@ public class ScheduleBlock extends LinearLayout {
                     editor.putString(getResources().getString(R.string.ps_pass_key),
                             passwordText.getText().toString());
                     editor.apply();
+                    iconMode();
                     try{
                         openWebView(PSname, PSpass);}
                     catch(Exception e){
@@ -936,31 +929,12 @@ public class ScheduleBlock extends LinearLayout {
             });
         }
 
-    }
+        private void iconMode(){
+            this.removeAllViews();
+            this.addView(iconBox);
+            this.addView(hint);
+        }
 
-    //get time from internet with given url
-    private static Date getWebDate(String url) {
-        Date temp;
-        Log.i("Demo","getting time from " + url);
-        URL u;
-        try {
-            u = new URL(url);
-        } catch (Exception e){
-            e.printStackTrace();
-            return null;
-        }
-        try{
-            HttpURLConnection connecter = (HttpURLConnection)u.openConnection();
-            connecter.setConnectTimeout(500);
-            connecter.connect();
-            temp = new Date(connecter.getDate());
-            connecter.disconnect();
-        }catch(Exception e){
-            e.printStackTrace();
-            return null;
-        }
-        Log.i("Demo","got time from " + url);
-        return temp;
     }
 
     public void setPeriodTimes(GregorianCalendar date){
@@ -1148,6 +1122,9 @@ public class ScheduleBlock extends LinearLayout {
             @Override
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
+                LoginTimes++;
+                if(LoginTimes>2)
+                    webView.destroy();
                 Log.d("HTML", url + " onpagefinished()");
                 webView.evaluateJavascript("document.getElementById('fieldAccount').value='"+account_+"'", null);
                 webView.evaluateJavascript("document.getElementById('fieldPassword').value='"+password_+"'", null);
@@ -1180,7 +1157,13 @@ public class ScheduleBlock extends LinearLayout {
     public void writeWeeklySchedule(String html) throws Exception{
         HashMap<Integer, Subject[]> schedule = fetchSchedule(html);
         Log.d("HTML_OUT", "called");
-        if(schedule.get(1)==null) return;
+        if(schedule.get(1)==null){
+            Log.d("HTML_OUT", "schedule.get(1) returned null" );
+            if(LoginTimes>=2){
+                login(true);
+            }
+            return;
+        }
 
         FileOutputStream f = context.openFileOutput("week_schedule.dat", context.MODE_PRIVATE);
         Log.d("HTML_OUT", "output found");
