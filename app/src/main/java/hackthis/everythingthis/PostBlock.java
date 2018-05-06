@@ -600,9 +600,9 @@ public class PostBlock extends LinearLayout {
             button2.setLayoutParams(jiba);
 
 
-            button1.setTextSize(STANDARD_TEXT_SIZE+2.0f);
+            button1.setTextSize(STANDARD_TEXT_SIZE);
             button1.setTextColor(getResources().getColor(R.color.purple));
-            button2.setTextSize(STANDARD_TEXT_SIZE+2.0f);
+            button2.setTextSize(STANDARD_TEXT_SIZE);
             button2.setTextColor(getResources().getColor(R.color.purple));
 
             if(preferences.getBoolean(getResources().getString(R.string.has_draft_key), false)){
