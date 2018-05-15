@@ -957,6 +957,7 @@ public class ScheduleBlock extends LinearLayout {
         for(Map.Entry<String, Integer> keyValuePair : dateDay.entrySet()){
             String date = keyValuePair.getKey();
             Integer day = keyValuePair.getValue();
+            Log.d("Demo",date+" is day "+day);
             if(day != -1)
                 schedule.put(date, weeklySchedule.get(day));
             else
@@ -1066,6 +1067,8 @@ public class ScheduleBlock extends LinearLayout {
 
     public List<AVObject> QSDateHelper(List<AVObject> arr){
         QuickSortDate(arr, 0, arr.size()-1);
+        for(AVObject i : arr)
+            Log.d("SORT","sorted " +i.getInt("daysSince"));
         return arr;
     }
 
@@ -1078,10 +1081,10 @@ public class ScheduleBlock extends LinearLayout {
         AVObject midValue = arr.get(low);
         int i = low, j = high;
         while(true){
-            while(i<j && arr.get(j).getInt("dateSince")>=midValue.getInt("dateSince")){
+            while(i<j && arr.get(j).getInt("daysSince")>=midValue.getInt("daysSince")){
                 j--;
             }
-            while(i<j && arr.get(i).getInt("dateSince")<=midValue.getInt("dateSince")){
+            while(i<j && arr.get(i).getInt("daysSince")<=midValue.getInt("daysSince")){
                 i++;
             }
             if(i<j){
@@ -1177,7 +1180,6 @@ public class ScheduleBlock extends LinearLayout {
             out.write("\n");
         }
         out.close();
-        f.close();
         Log.d("HTML_OUT", "output success");
         triggerRebirth(context.getApplicationContext());
     }
@@ -1206,7 +1208,6 @@ public class ScheduleBlock extends LinearLayout {
             dayInCycle ++;
         }
         in.close();
-        f.close();
         return schedule;
     }
 
