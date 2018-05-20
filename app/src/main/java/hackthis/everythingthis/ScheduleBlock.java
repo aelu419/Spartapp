@@ -1126,7 +1126,7 @@ public class ScheduleBlock extends LinearLayout {
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
                 LoginTimes++;
-                if(LoginTimes>2)
+                if(LoginTimes>3)
                     webView.destroy();
                 Log.d("HTML", url + " onpagefinished()");
                 webView.evaluateJavascript("document.getElementById('fieldAccount').value='"+account_+"'", null);
@@ -1162,7 +1162,7 @@ public class ScheduleBlock extends LinearLayout {
         Log.d("HTML_OUT", "called");
         if(schedule.get(1)==null){
             Log.d("HTML_OUT", "schedule.get(1) returned null" );
-            if(LoginTimes>=2){
+            if(LoginTimes>=3){
                 login(true);
             }
             return;
