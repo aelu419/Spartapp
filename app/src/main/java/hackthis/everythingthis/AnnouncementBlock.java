@@ -21,12 +21,12 @@ import com.avos.avoscloud.AVException;
 import com.avos.avoscloud.AVObject;
 import com.avos.avoscloud.AVQuery;
 
-import java.net.URL;
-import java.net.URLConnection;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+
+import static hackthis.everythingthis.utils.testInternetConnection;
 
 public class AnnouncementBlock extends LinearLayout{
     //status vars
@@ -77,6 +77,7 @@ public class AnnouncementBlock extends LinearLayout{
         context = viewContext;
 
         defaultSubscribes.add("Student Council");
+        defaultSubscribes.add("{Hack,THIS}");
 
         editor = EDITOR;
         preferences = PREFERENCES;
@@ -91,7 +92,12 @@ public class AnnouncementBlock extends LinearLayout{
         optionCellLayout = new LinearLayout.LayoutParams((int)(0.75 * bodyWidth), ViewGroup.LayoutParams.WRAP_CONTENT);
         optionCellLayout.setMargins(0,8,0,8);
 
-        STANDARD_TEXT_SIZE = (float)(0.02*bodyHeight);
+        if(bodyWidth <= 1080){
+            STANDARD_TEXT_SIZE = 12.0f;
+        }
+        else{
+            STANDARD_TEXT_SIZE = 14.0f;
+        }
 
         this.setLayoutParams(bodyParams);
         this.setOrientation(VERTICAL);
@@ -156,7 +162,7 @@ public class AnnouncementBlock extends LinearLayout{
             contents[i] = new Contents(filteredAnnouncement.get(i));
         }
 
-        contents = sortByDates(contents);
+        contents = QSContentHelper(contents);
 
         for(Contents i : contents){
             list.addView(i);
@@ -171,102 +177,81 @@ public class AnnouncementBlock extends LinearLayout{
         return a.title.toLowerCase().contains(searchKey.toLowerCase());
     }
 
-    public Contents[] sortByDates(Contents[] contents){
-        QuickSortAnnouncement(contents);
-        return contents;
+    public Contents[] QSContentHelper(Contents[] arr){
+        QuickSortContents(arr, 0, arr.length-1);
+        return arr;
     }
 
-    public Contents[] QuickSortAnnouncement(Contents[] arr){
-        if(arr == null || arr.length<=1)
-            return arr;
-        int len = 0;
-        Contents midValue = arr[0];
-        for(int i = 1; i < arr.length; i++){
-
-			if((arr[i].content).compareTo(midValue.content)>=0)
-				len++;
+    public void QuickSortContents(Contents[] arr, int low, int high){
+        for(int k = low; k <= high; k++){
         }
-        Contents[] tempLeft = new Contents[len];
-        Contents[] tempRight = new Contents[arr.length - 1 - len];
-        int m1 = 0, m2 = 0;
-        for(int i = 1; i < arr.length; i++){
-			if((arr[i].content).compareTo(midValue.content)>=0)
-				tempLeft[m1++] = arr[i];
-			else{
-				tempRight[m2++] = arr[i];
-			}
+        if(arr==null || high-low <1 || high<=low){
+            return;
         }
-
-        tempLeft = QuickSortAnnouncement(tempLeft);
-        tempRight = QuickSortAnnouncement(tempRight);
-
-        for(int i = 0; i < arr.length; i++){
-            if(i < len)
-                arr[i] = tempLeft[i];
-            else if(i>len)
-                arr[i] = tempRight[i - len - 1];
-            else
-                arr[i] = midValue;
+        Contents midValue = arr[low];
+        int i = low, j = high;
+        while(true){
+            while(i<j && arr[j].content.getPostTime().getTime()
+                    <=midValue.content.getPostTime().getTime()){
+                j--;
+            }
+            while(i<j && arr[i].content.getPostTime().getTime()
+                    >=midValue.content.getPostTime().getTime()){
+                i++;
+            }
+            if(i<j){
+                Contents temp = arr[i];
+                arr[i] = arr[j];
+                arr[j] = temp;
+            }
+            else{
+                Contents temp = arr[low];
+                arr[low] = arr[i];
+                arr[i] = temp;
+                break;
+            }
         }
-
-        return arr;
+        QuickSortContents(arr, low, i-1);
+        QuickSortContents(arr, i+1, high);
     }
 
 
     public void pullFromDatabase(){
         //check if there is internet connection
 
-        try
-        {
-            Log.d("announcement","try to connect");
-            URL url = new URL("http://www.baidu.com");
-
-            URLConnection connection = url.openConnection();
-            connection.connect();
-            internetConnected = true;
-
-
-        }catch (Exception e){
-
-            Log.d("announcement","failed to connect");
-            internetConnected = false;
-            return;
-
-        }
-
-
-
-        try {
-            announcements.clear();
-            for(String i : subscribed) {
-                announcementQuery = new AVQuery<>("Announcements");
-                announcementQuery.whereContains("clubName",i);
-                List<AVObject> annList = announcementQuery.find();
-                for(AVObject j : annList){
-                    announcements.add(new Announcement(j.getString("announcementTitle"),
-                            j.getString("announcementTitle"), j.getDate("updatedAt"),
-                            new Club(j.getString("clubName"), j.getString("key"))));
+        if(testInternetConnection(context)) {
+            try {
+                announcements.clear();
+                for (String i : subscribed) {
+                    announcementQuery = new AVQuery<>("Announcements");
+                    announcementQuery.whereContains("clubName", i);
+                    List<AVObject> annList = announcementQuery.find();
+                    for (AVObject j : annList) {
+                        announcements.add(new Announcement(j.getString("announcementTitle"),
+                                j.getString("announcementTitle"), j.getDate("updatedAt"),
+                                new Club(j.getString("clubName"), j.getString("key"))));
+                    }
                 }
+            } catch (AVException e) {
+                //TODO: add handler?
+            }
+
+
+            try {
+                clubQuery = new AVQuery<>("Clubs");
+                clubQuery.setLimit(1000);
+                List<AVObject> clubsList = clubQuery.find();
+                clubs.clear();
+                for (AVObject i : clubsList) {
+                    //TODO: add the key part
+                    clubs.add(new Club(i.getString("name"), i.getString("key")));
+                }
+            } catch (AVException e) {
+                //TODO: any handler?
             }
         }
-        catch (AVException e){
-            //TODO: add handler?
-        }
-
-
-
-        try {
-            clubQuery = new AVQuery<>("Clubs");
-            clubQuery.setLimit(1000);
-            List<AVObject> clubsList = clubQuery.find();
-            clubs.clear();
-            for(AVObject i : clubsList){
-                //TODO: add the key part
-                clubs.add(new Club(i.getString("name"), i.getString("key")));
-            }
-        }
-        catch(AVException e){
-            //TODO: any handler?
+        else{
+            internetConnected = false;
         }
 
     }
@@ -297,7 +282,7 @@ public class AnnouncementBlock extends LinearLayout{
             textParams.setMargins(0,4,0,4);
 
             titleText.setText(a.title);
-            subTitle.setText(a.getClub().getName() + " - " + new SimpleDateFormat("MMMMdd").format(a.getPostTime()));
+            subTitle.setText(a.getClub().getName() + " - " + new SimpleDateFormat("MMMM dd").format(a.getPostTime()));
             bodyText.setText(a.getAnnouncement());
 
             titleText.setTextSize(STANDARD_TEXT_SIZE + 5.0f);
@@ -366,6 +351,7 @@ public class AnnouncementBlock extends LinearLayout{
             editText.setBackgroundColor(getResources().getColor(R.color.shaded_background));
             editText.setLayoutParams(generateLinearParams(0.5, 0.08));
             editText.setPadding(8,8,8,8);
+            editText.setTextSize(STANDARD_TEXT_SIZE);
             editText.setTextColor(getResources().getColor(R.color.black));
             TextWatcher renewKey = new TextWatcher() {
 
@@ -416,21 +402,6 @@ public class AnnouncementBlock extends LinearLayout{
             });
 
             this.addView(searchButton);
-
-            refreshButton = new ImageView(context);
-            refreshButton.setLayoutParams(new LinearLayoutCompat.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, (int)(0.08*bodyHeight)));
-            refreshButton.setImageResource(R.drawable.fetch_enabled);
-            refreshButton.setPadding(0,20,0,20);
-            refreshButton.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    if(!filterShown){
-                        loadAnnouncements();
-                    }
-                }
-            });
-
-            this.addView(refreshButton);
 
             filterButton = new ImageView(context);
             filterButton.setLayoutParams(new LinearLayoutCompat.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, (int)(0.08*bodyHeight)));
@@ -559,13 +530,14 @@ public class AnnouncementBlock extends LinearLayout{
 
                 this.setLayoutParams(optionCellLayout);
                 this.setOrientation(HORIZONTAL);
-                this.setGravity(Gravity.START);
+                this.setGravity(Gravity.LEFT);
 
                 nameBar = new TextView(context);
 
                 nameBar.setText(contentClub.getName());
-                nameBar.setLayoutParams(new LinearLayout.LayoutParams((int)(0.6*bodyWidth), ViewGroup.LayoutParams.WRAP_CONTENT));
-                nameBar.setPadding(8,8,8,8);
+                nameBar.setGravity(Gravity.CENTER_VERTICAL);
+                nameBar.setLayoutParams(new LinearLayout.LayoutParams((int)(0.6*bodyWidth), ViewGroup.LayoutParams.MATCH_PARENT));
+                nameBar.setPadding(8,2,8,2);
                 nameBar.setBackgroundColor(isSelected ? getResources().getColor(R.color.purple) : getResources().getColor(R.color.white));
                 nameBar.setTextColor(isSelected ? getResources().getColor(R.color.white) : getResources().getColor(R.color.black));
                 nameBar.setTextSize(STANDARD_TEXT_SIZE);
@@ -573,8 +545,8 @@ public class AnnouncementBlock extends LinearLayout{
 
                 box = new CheckBox(context);
                 box.setChecked(isSelected);
-                box.setLayoutParams(new LinearLayout.LayoutParams((int)(0.15*bodyWidth), ViewGroup.LayoutParams.MATCH_PARENT));
-                box.setBackgroundColor(getResources().getColor(R.color.shaded_background));
+                box.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT));
+                box.setBackgroundColor(getResources().getColor(R.color.white));
                 box.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                     @Override
                     public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
@@ -598,7 +570,7 @@ public class AnnouncementBlock extends LinearLayout{
 
                             editor.putStringSet(getResources().getString(R.string.subscribed_channels_key),
                                     new HashSet<>(subscribed));
-                            editor.commit();
+                            editor.apply();
 
                             isSelected = b;
 

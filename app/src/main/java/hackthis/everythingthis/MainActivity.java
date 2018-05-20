@@ -1,9 +1,8 @@
 package hackthis.everythingthis;
 
-import android.app.AlarmManager;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.IntentFilter;
 import android.content.pm.PackageInfo;
@@ -16,44 +15,23 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.StrictMode;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
-import android.webkit.ValueCallback;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
 import com.avos.avoscloud.*;
 
-import org.apache.commons.lang3.StringEscapeUtils;
-
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.PrintWriter;
 import java.net.URL;
 import java.net.URLConnection;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.StringTokenizer;
+
+import static hackthis.everythingthis.utils.testInternetConnection;
 
 
-public class MainActivity extends AppCompatActivity{
+public class MainActivity extends Activity {
 
     //schedule:0 announcement:1 post:2
     private int pageMode = 0;
@@ -91,10 +69,7 @@ public class MainActivity extends AppCompatActivity{
 
         setContentView(R.layout.activity_main);
 
-        getSupportActionBar().hide();
-
-        preferences = this.getSharedPreferences(getResources().getString(R.string.preferences_key),Context.MODE_PRIVATE);
-        editor = preferences.edit();
+        //getActionBar().hide();
 
         //get access to internet
         StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
@@ -115,10 +90,15 @@ public class MainActivity extends AppCompatActivity{
         AVInstallation.getCurrentInstallation().saveInBackground();
 
         PushService.setDefaultPushCallback(this, MainActivity.class);
+
+        preferences = this.getSharedPreferences(getString(R.string.preferences_key),Context.MODE_PRIVATE);
+        editor = preferences.edit();
+
         firstRun = preferences.getBoolean(getResources().getString(R.string.first_run_key), true);
         //TODO: write any firstRun methods here
 
         editor.putBoolean(getResources().getString(R.string.first_run_key), false);
+        editor.apply();
 
 
 
@@ -134,12 +114,6 @@ public class MainActivity extends AppCompatActivity{
                 }
             }
         });*/
-    }
-
-    @Override
-    public void onStart(){
-
-        super.onStart();
 
         //getScreenDimensions
         DisplayMetrics metrics = new DisplayMetrics();
@@ -147,9 +121,9 @@ public class MainActivity extends AppCompatActivity{
         screenWidth = metrics.widthPixels;
         screenHeight = metrics.heightPixels;
 
-        if(!testInternetConnection()){
+        if(!testInternetConnection(this)){
             //read local version code
-            Log.d("Demo","failed to connect");
+            Log.d("VER","failed to connect");
         }
         else{
             try {
@@ -162,13 +136,26 @@ public class MainActivity extends AppCompatActivity{
                 try {
                     PackageInfo pInfo = getApplicationContext().getPackageManager().getPackageInfo(getPackageName(), 0);
                     localVersionCode = pInfo.versionCode;
-                    Log.d("Demo","local version code is " + localVersionCode);
+                    Log.d("VER","local version code is " + localVersionCode);
 
                     if(localVersionCode < versionCode){
-                        Log.d("Demo","connected and obtained version "+versionName+" with code "+versionCode);
-                        DialogFragment newFragment = new UpdateFragment();
-                        newFragment.show(getSupportFragmentManager(), "update");
+                        AlertDialog.Builder alertBuilder = new AlertDialog.Builder(this);
+                        alertBuilder.setPositiveButton("yes", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://thisprogrammingclub.github.io/"));
+                                startActivity(browserIntent);
+                            }
+                        }).setNegativeButton("no", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+
+                            }
+                        }).setMessage("A new version (" + versionName + ") is available. Do you want to redirect to its download page?")
+                                .setCancelable(true);
+                        Log.d("VER","connected and obtained version "+versionName+" with code "+versionCode);
+                        AlertDialog dialog = alertBuilder.create();
+                        dialog.show();
                     }
+
                 } catch (PackageManager.NameNotFoundException e) {
                     e.printStackTrace();
                 }
@@ -179,11 +166,11 @@ public class MainActivity extends AppCompatActivity{
         }
 
         //initialize body
-        body = findViewById(R.id.body);
+        body = (LinearLayout)findViewById(R.id.body);
         body.setLayoutParams(new LinearLayout.LayoutParams(screenWidth, (int)(0.875*screenHeight)));
 
         //initialize footer
-        LinearLayout footer = findViewById(R.id.footer);
+        LinearLayout footer = (LinearLayout)findViewById(R.id.footer);
         footer.setLayoutParams(new LinearLayout.LayoutParams(screenWidth, (int)(0.10*screenHeight)));
         //footer.setPadding(0,(int)(0.01*screenHeight),0,(int)(0.01*screenHeight));
 
@@ -191,24 +178,24 @@ public class MainActivity extends AppCompatActivity{
 
         LinearLayout.LayoutParams footerButtonParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT);
 
-        scheduleIcon = findViewById(R.id.scheduleIcon);
-     //   scheduleIcon.setLayoutParams(footerButtonParams);
-     //   scheduleIcon.setScaleType(ImageView.ScaleType.FIT_CENTER);
-    //    scheduleIcon.setPadding(30,30,30,30);
-    //    scheduleIcon.setAdjustViewBounds(true);
+        scheduleIcon = (ImageView)findViewById(R.id.scheduleIcon);
+        scheduleIcon.setLayoutParams(footerButtonParams);
+        scheduleIcon.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        scheduleIcon.setPadding((int)(0.025*screenHeight),(int)(0.025*screenHeight),(int)(0.025*screenHeight),(int)(0.025*screenHeight));
+        scheduleIcon.setAdjustViewBounds(true);
 
 
-        announcementIcon = findViewById(R.id.announcementIcon);
-     //   announcementIcon.setLayoutParams(footerButtonParams);
-     //   announcementIcon.setScaleType(ImageView.ScaleType.FIT_CENTER);
-      //  announcementIcon.setPadding(30,30,30,30);
-      //  announcementIcon.setAdjustViewBounds(true);
+        announcementIcon = (ImageView)findViewById(R.id.announcementIcon);
+        announcementIcon.setLayoutParams(footerButtonParams);
+        announcementIcon.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        announcementIcon.setPadding((int)(0.025*screenHeight),(int)(0.025*screenHeight),(int)(0.025*screenHeight),(int)(0.025*screenHeight));
+        announcementIcon.setAdjustViewBounds(true);
 
-        postIcon = findViewById(R.id.postIcon);
-      //  postIcon.setLayoutParams(footerButtonParams);
-       // postIcon.setPadding(30,30,30,30);
-     //   postIcon.setScaleType(ImageView.ScaleType.FIT_XY);
-     //   postIcon.setAdjustViewBounds(true);
+        postIcon = (ImageView)findViewById(R.id.postIcon);
+        postIcon.setLayoutParams(footerButtonParams);
+        postIcon.setPadding((int)(0.025*screenHeight),(int)(0.025*screenHeight),(int)(0.025*screenHeight),(int)(0.025*screenHeight));
+        postIcon.setScaleType(ImageView.ScaleType.FIT_XY);
+        postIcon.setAdjustViewBounds(true);
 
 
         scheduleIcon.setOnClickListener(new View.OnClickListener() {
@@ -248,7 +235,6 @@ public class MainActivity extends AppCompatActivity{
         pageModeHistory = 1;
 
         updatePageMode();
-
     }
 
     BroadcastReceiver announcementUpdateReceiver = new BroadcastReceiver() {
@@ -273,46 +259,6 @@ public class MainActivity extends AppCompatActivity{
     public void onDestroy(){
         super.onDestroy();
         unregisterReceiver(announcementUpdateReceiver);
-    }
-
-    public static class UpdateFragment extends DialogFragment {
-        @Override
-        public Dialog onCreateDialog(Bundle savedInstanceState) {
-            // Use the Builder class for convenient dialog construction
-            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                builder.setMessage("A new version (" + versionName + ") is available. Do you want to redirect to its download page?")
-                        .setPositiveButton("yes", new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-                                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://thisprogrammingclub.github.io/"));
-                                startActivity(browserIntent);
-                                dismiss();
-                            }
-                        })
-                        .setNegativeButton("no", new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-                                dismiss();
-                            }
-                        });
-            // Create the AlertDialog object and return it
-            return builder.create();
-        }
-    }
-
-    public static boolean testInternetConnection(){
-        try {
-            Log.d("Demo","try to connect (main activity)");
-            URL url = new URL("http://www.baidu.com");
-            URLConnection connection = url.openConnection();
-            connection.setConnectTimeout(2000);
-            connection.connect();
-        }catch (Exception e){
-            Log.d("Demo","failed to connect (called inside method)");
-            e.printStackTrace();
-            Log.d("Demo",Log.getStackTraceString(e.getCause()));
-            return false;
-        }
-
-        return true;
     }
 
     public void updatePageMode() {

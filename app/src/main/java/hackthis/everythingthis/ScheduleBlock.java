@@ -6,9 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
-import android.graphics.PorterDuff;
 import android.graphics.Typeface;
-import android.graphics.drawable.Drawable;
 import android.support.v7.widget.LinearLayoutCompat;
 import android.text.InputType;
 import android.util.Log;
@@ -20,7 +18,6 @@ import android.webkit.ValueCallback;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.HorizontalScrollView;
@@ -47,6 +44,7 @@ import java.io.PrintWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -65,10 +63,7 @@ public class ScheduleBlock extends LinearLayout {
     private Calendar browsingTime;
     private Date currentTime;
     private int selectedDate;
-    private HashMap<String, Integer> themeColorTable;
     private HashMap<String, Subject[]> subjectTable;
-    private ArrayList<String> subjectTypes;
-    private ArrayList<String[]> allSubjects;
     private int screenWidth, screenHeight;
     private boolean leftArrowEnabled, rightArrowEnabled;
     public boolean isLoggedIn;
@@ -104,6 +99,8 @@ public class ScheduleBlock extends LinearLayout {
     public SharedPreferences preferences;
     public SharedPreferences.Editor editor;
 
+    private int LoginTimes;
+
 
     //Dimensions
     private int DateViewCommonWidth;
@@ -115,66 +112,8 @@ public class ScheduleBlock extends LinearLayout {
 
         editor = EDITOR;
         preferences = PREFERENCES;
-
-        subjectTypes = new ArrayList<>(30);
-        allSubjects = new ArrayList<>(30);
-        subjectTypes.add("art");
-        allSubjects.add(new String[]{"ceramics", "easternart6", "easternart7", "easternart8", "easternarti", "easternartii", "foundationsofart", "foundationsofdigitalart", "introtosculpture", "paintingi", "paintingii", "paintingiii", "theartportfolio", "westernart6", "westernart7", "westernart8"});
-        subjectTypes.add("beginningguitar");
-        allSubjects.add(new String[]{"beginningguitar"});
-        subjectTypes.add("biology");
-        allSubjects.add(new String[]{"biology"});
-        subjectTypes.add("chinese");
-        allSubjects.add(new String[]{"apchinese", "chinese6a", "chinese6b", "chinese7a", "chinese7b", "chinese8a", "chinese8b", "chinese9a", "chinese9b", "chinese10a", "chinese10b", "chinese11a", "chinese11b", "chinese12a", "chinese12b"});
-        subjectTypes.add("choir");
-        allSubjects.add(new String[]{"choir"});
-        subjectTypes.add("computer");
-        allSubjects.add(new String[]{"apcomputersciencea", "desktoppublishing", "digitalphotography", "digitalvideo", "grade6computerfoundations", "grade7computerfoundations", "grade8computerfoundations", "introtocomputerscience", "mobileappdesign", "roboticsi", "roboticsii", "webdesign"});
-        subjectTypes.add("filmstudies");
-        allSubjects.add(new String[]{"filmstudyi", "filmstudyii"});
-        subjectTypes.add("french");
-        allSubjects.add(new String[]{"frenchlangi", "frenchlangii", "frenchlangiii", "frenchlangiv"});
-        subjectTypes.add("highschoolenrichment");
-        allSubjects.add(new String[]{"highschoolenrichment"});
-        subjectTypes.add("linguistics");
-        allSubjects.add(new String[]{"linguistics"});
-        subjectTypes.add("math");
-        allSubjects.add(new String[]{"advalgebraii", "advgeometry", "algebrai", "algebraii", "algebraiii", "algebraii/trignometry", "apcalculusab", "apcalculusbc","apstatistics", "appliedmath","calculus","geometry", "introtolinearalgebra", "math6", "math7", "precalculus"});
-        subjectTypes.add("music");
-        allSubjects.add(new String[]{"advband8", "band", "beginninginstrumentalmusic", "instrumentalmusicband6", "instrumentalmusicband7", "vocalmusic6", "vocalmusic7"});
-        subjectTypes.add("spanish");
-        allSubjects.add(new String[]{"spanishi", "spanishii", "spanishiii", "spanishiv", "bilingualtranslation"});
-        subjectTypes.add("steam");
-        allSubjects.add(new String[]{"steam", "steami", "steamii", "steamiii", "steamday"});
-        subjectTypes.add("chemistry");
-        allSubjects.add(new String[]{"apchemistry", "chemistry"});
-        subjectTypes.add("economics");
-        allSubjects.add(new String[]{"apmacroeconomics", "economics"});
-        subjectTypes.add("english");
-        allSubjects.add(new String[]{"langarts6", "langarts7", "langarts8", "englih9", "english10", "englih11", "englih12", "apenglishlanguage&composition", "apenglishliteraturecomposition"});
-        subjectTypes.add("history");
-        allSubjects.add(new String[]{"ancientworldhistory7", "apushistory", "apworldhistory", "arthistorymethods", "chinesehistory6", "chinesehistory7", "chinesehistory8", "chinesehistoryi", "chinesehistoryii", "Geography 6","medievalworldhistory8", "modernworldhistory", "ushistory",});
-        subjectTypes.add("socialstudy");
-        allSubjects.add(new String[]{"currentaffairs", "digitalethnography", "foundationsofmodernchina", "humanities", "philosophy"});
-        subjectTypes.add("physics");
-        allSubjects.add(new String[]{"apphysicsi", "apphysicsii", "earthandspacescience", "earthscience6", "lifescience7", "physicalscience8"});
-        subjectTypes.add("piano");
-        allSubjects.add(new String[]{"pianoi", "pianoii"});
-        subjectTypes.add("studyhall");
-        allSubjects.add(new String[]{"studyhall"});
-        subjectTypes.add("theater");
-        allSubjects.add(new String[]{"advacting", "classicalacting", "theater6", "theater7", "theater8"});
-        subjectTypes.add("genderstudies");
-        allSubjects.add(new String[]{"genderstudiesi"});
-        subjectTypes.add("els");
-        allSubjects.add(new String[]{"langsupport6", "langsupport7", "langsupport8", "langsupport9", "langsupport10"});
-        subjectTypes.add("health");
-        allSubjects.add(new String[]{"health7", "health8", "health9", "health10"});
-        subjectTypes.add("fitness");
-        allSubjects.add(new String[]{"advfitness"});
-        subjectTypes.add("sport");
-        allSubjects.add(new String[]{"outdooreducation", "pe6", "pe7", "pe8", "pe9", "sportsmanagement", "strengthtraining", "ultimatesports"});
-
+        isLoggedIn = false;
+        LoginTimes = 0;
 
         //params
         screenHeight = height;
@@ -208,14 +147,16 @@ public class ScheduleBlock extends LinearLayout {
         fetch.setImageResource(R.drawable.fetch_enabled);
         LinearLayout.LayoutParams fetchParams = new LinearLayout.LayoutParams(((int)(0.075*screenWidth)), ViewGroup.LayoutParams.WRAP_CONTENT);
         fetch.setPadding(5,0,5,0);
-        fetchParams.setMargins(130,0,0,0);
         fetch.setLayoutParams(fetchParams);
         fetch.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
-                login();
-                isLoggedIn=true;
-                //TODO: insert fetching stuff here
+                if(isLoggedIn) {
+                    isLoggedIn = false;
+                    LoginScreen ls = new LoginScreen(false, true);
+                    bodyBlock.removeAllViews();
+                    bodyBlock.addView(ls);
+                }
             }
         });
 
@@ -231,9 +172,11 @@ public class ScheduleBlock extends LinearLayout {
         rightArrow = new ImageView(context);
         LinearLayout.LayoutParams arrowParams = new LinearLayout.LayoutParams((int)(0.075*screenWidth), ViewGroup.LayoutParams.WRAP_CONTENT);
         leftArrow.setLayoutParams(arrowParams);
-        rightArrow.setLayoutParams(new LinearLayout.LayoutParams((int)(0.15*screenWidth), ViewGroup.LayoutParams.WRAP_CONTENT));
-        leftArrow.setPadding(10+(int)(0.01*screenWidth),0,5+(int)(0.01*screenWidth),0);
-        rightArrow.setPadding(5+(int)(0.01*screenWidth),0,10+(int)(0.085*screenWidth),0);
+        leftArrow.setPadding(10,15,10,15);
+        rightArrow.setLayoutParams(arrowParams);
+        rightArrow.setPadding(10,15,10,15);
+
+
         leftArrow.setImageResource(R.drawable.arrow_left_disabled);
         rightArrow.setImageResource(R.drawable.arrow_right_disabled);
         leftArrow.setOnClickListener(new OnClickListener() {
@@ -257,8 +200,6 @@ public class ScheduleBlock extends LinearLayout {
         });
 
         header.addView(leftArrow);
-
-
 
         LinearLayout.LayoutParams monthParams = new LayoutParams((int)(0.7*screenWidth), ((int)(0.15*screenHeight)));
         month.setPadding(0,0,0,0);
@@ -303,65 +244,31 @@ public class ScheduleBlock extends LinearLayout {
         bodyBlockHolder.addView(bodyBlock);
 
         this.addView(bodyBlockHolder);
-        //download file from database
-        //To be written
 
-        //input data
-        //readFile();       //pre-written method for reading downloaded schedule
-        readDemoFile();     //for demo purposes
-
-        //initializing date selection bar
-        //        //This will trigger a chain of events
-        //
-        //        //see OnSelection()
-        //read stored powerschool settings
-
-        //todo:initialize webview before here
+        //readDemoFile();
 
         PSname = preferences.getString(getResources().getString(R.string.ps_name_key),null);
         PSpass = preferences.getString(getResources().getString(R.string.ps_pass_key),null);
-        try {
-            subjectTable = getSchedule();
-            isLoggedIn = true;
-        }
-        catch(Exception e){
-            login();
-        }
+
+        login(false);
+
         updatePage();
 
         initializeDateBar();
     }
 
-    public void login(){
+    public void login(boolean calledFromFetch){
         try {
-            throw new Exception();
-            //todo:add fetch-success testing
-
+            subjectTable = getSchedule();
+            isLoggedIn = true;
         }
         catch(Exception e) {
-            if(preferences.getString(getResources().getString(R.string.ps_name_key),null) == null
-                    ||preferences.getString(getResources().getString(R.string.ps_pass_key),null) == null) {
-                LoginScreen ls = new LoginScreen();
-                bodyBlock.removeAllViews();
-                bodyBlock.addView(ls);
-            }
-            else{
-                LoginScreen ls = new LoginScreen();
-                bodyBlock.removeAllViews();
-                bodyBlock.addView(ls);
-            }
+            LoginScreen ls = new LoginScreen(calledFromFetch, false);
+            bodyBlock.removeAllViews();
+            bodyBlock.addView(ls);
         }
-    }
 
-    public boolean testPSLogin(){
-        if((PSname==null || PSname.equals("")) || (PSpass==null || PSpass.equals(""))) {
-            Log.d("Demo","logging in under mode"+false);
-            return false;
-        }
-        else{
-            Log.d("Demo","logging in under mode"+true);
-            return true;
-        }
+        Log.d("Demo","login finished function");
     }
 
     public void updatePage(){
@@ -441,30 +348,6 @@ public class ScheduleBlock extends LinearLayout {
         }
     }
 
-    public void readDemoFile(){
-        subjectTable = new HashMap<>(0);
-        Subject chinese = new Subject("Chinese", "Yongkuan Zhang", "N404");
-        Subject studyHall = new Subject("Study Hall", "", "");
-        Subject calc = new Subject("AP Calculus BC","Qin Jing","N306");
-        Subject lang = new Subject("AP Lang", "James Cusack", "N408");
-        Subject history = new Subject("US History", "Andrew Dickerson", "N405");
-        Subject foda = new Subject("Foundations of Digital Art", "Angelito Balboa", "N 401");
-        Subject french = new Subject("French III", "Lisbeth Stammerjohann", "Library");
-        Subject physics = new Subject("AP Physics II", "Xiaobin Xu", "N315");
-        subjectTable.put("2018-04-01", new Subject[]{chinese, studyHall, calc, lang});
-        subjectTable.put("2018-04-02", new Subject[]{history, foda, calc, physics});
-        subjectTable.put("2018-04-03", new Subject[]{chinese, physics, lang, french});
-        subjectTable.put("2018-04-04", new Subject[]{calc, lang, history, physics});
-        subjectTable.put("2018-04-05", new Subject[]{chinese, foda, lang, french});
-        subjectTable.put("2018-04-06", new Subject[]{history, physics, calc, studyHall});
-        //colors
-        themeColorTable = new HashMap<>(0);
-        themeColorTable.put("AP Physics II", this.getResources().getColor(R.color.orange));
-        themeColorTable.put("AP Calculus BC", this.getResources().getColor(R.color.algebra));
-        themeColorTable.put("US History", this.getResources().getColor(R.color.blue));
-        themeColorTable.put("AP Lang", this.getResources().getColor(R.color.english));
-    }
-
     public void initializeDateBar(){
         Log.i("Demo","Start Initializing date bar");
         if(dateSpinner.getLayoutParams().height - 10 > screenWidth/11) {
@@ -511,26 +394,61 @@ public class ScheduleBlock extends LinearLayout {
         return false;
     }
 
+    public Subject[] getFromTable(Calendar cal){
+        int month = cal.get(Calendar.MONTH)+1;
+        int yr =  cal.get(Calendar.YEAR);
+        int day = cal.get(Calendar.DAY_OF_MONTH);
+        String m = month<10?"0"+Integer.toString(month):Integer.toString(month);
+        String d = day<10?"0"+Integer.toString(day):Integer.toString(day);
+
+        //updates the colors and text to match the selected date
+        Log.d("DATEPARSE", Integer.toString(yr)+"-"+m+"-"+d);
+        Subject[] subjects = subjectTable.get(Integer.toString(yr)+"-"+m+"-"+d);
+
+        return subjects;
+    }
+
+    public GregorianCalendar getTomorrow(){
+        Date time = currentTime;
+        GregorianCalendar cal;
+        do{
+            time.setTime(time.getTime()+24L*60L*60L*1000L);
+            cal = new GregorianCalendar();
+            cal.setTime(time);
+            if(getFromTable(cal)!=null && getFromTable(cal).length!=0){
+                Log.d("Demo","found tomorrow:"+cal.get(Calendar.YEAR)+ cal.get(Calendar.MONTH)+
+                        cal.get(Calendar.DATE));
+                return cal;
+            }
+        }while(cal.get(Calendar.MONTH)<Calendar.JULY || cal.get(Calendar.YEAR)<currentTime.getYear());
+        return null;
+    }
+
     public void onSelection(){
 
         if(!isLoggedIn){
             return;
         }
 
+        Log.i("timing","onselection onselection called"+new Date().getTime());
+        long TIME = new Date().getTime();
+
         //clears the existing contents in the body
         bodyBlock.removeAllViews();
 
         Log.d("Demo","starting onSelection");
 
-        int month = browsingTime.get(Calendar.MONTH)+1;
-        int yr =  browsingTime.get(Calendar.YEAR);
-        String m = month<10?"0"+Integer.toString(month):Integer.toString(month);
-        String d = selectedDate<10?"0"+Integer.toString(selectedDate):Integer.toString(selectedDate);
-        //updates the colors and text to match the selected date
-        Log.d("DATEPARSE", Integer.toString(yr)+"-"+m+"-"+d);
-        Subject[] subjects = subjectTable.get(Integer.toString(yr)+"-"+m+"-"+d);
-        //TODO: change this to get from browsingTime
-        Log.d("Demo","getting subjects from "+selectedDate);
+        currentTime = getTime();
+        Log.i("timing","onselection onselection -got time"+(new Date().getTime()-TIME));
+
+        GregorianCalendar todayTemp = new GregorianCalendar();
+        todayTemp.setTime(currentTime);
+        Subject[] currentTimeSubjects = getFromTable(todayTemp);
+        boolean todayIsSchoolDay = currentTimeSubjects!=null && currentTimeSubjects.length!=0;
+        int hm = currentTime.getHours()*100+currentTime.getMinutes();
+        Log.d("Demo", "today is "+todayIsSchoolDay+" a school day");
+
+        Subject[] subjects = getFromTable(browsingTime);
 
         ArrayList<Subject> subjectsTrimmed = new ArrayList<>(8);
         ArrayList<Integer> periodsTrimmed = new ArrayList<>(8);
@@ -543,7 +461,9 @@ public class ScheduleBlock extends LinearLayout {
                 else{
                     if(i!=subjects.length-1) {
                         if (subjects[i].equals(subjects[i + 1])) {
-
+                            subjectsTrimmed.add(subjects[i]);
+                            periodsTrimmed.add(i);
+                            i++;
                         } else {
                             subjectsTrimmed.add(subjects[i]);
                             periodsTrimmed.add(i);
@@ -559,18 +479,7 @@ public class ScheduleBlock extends LinearLayout {
 
         Log.d("Demo",subjectsTrimmed.toString()+"\n"+periodsTrimmed.toString());
 
-        currentTime = getTime();
-        GregorianCalendar todayTemp = new GregorianCalendar();
-        todayTemp.setTime(currentTime);
-        int hm = currentTime.getHours()*100+currentTime.getMinutes();
-
-
-        Date tmr = new Date();
-        tmr.setTime(currentTime.getTime()+24L*60L*60L*1000L);
-        GregorianCalendar tmrTemp = new GregorianCalendar();
-        tmrTemp.setTime(tmr);
-        Log.d("Demo","tmr:"+tmrTemp.get(Calendar.YEAR)+ tmrTemp.get(Calendar.MONTH)+
-                tmrTemp.get(Calendar.DATE));
+        GregorianCalendar tmrTemp = getTomorrow();
 
         GregorianCalendar temp = new GregorianCalendar(browsingTime.get(Calendar.YEAR), browsingTime.get(Calendar.MONTH), browsingTime.get(Calendar.DATE));
         int fuckCalendarsWhyTheFuckDoesntWeekDayChangeAutomatically = temp.get(GregorianCalendar.DAY_OF_WEEK);
@@ -617,40 +526,40 @@ public class ScheduleBlock extends LinearLayout {
                 boolean foundFirst = false;
                 for(int i = 0; i < subjectsTrimmed.size(); i++){
                     if(periodTimes[periodsTrimmed.get(i)]>hm && !foundFirst){
-                            foundFirst = true;
-                            isMain[i] = true;
+                        foundFirst = true;
+                        isMain[i] = true;
+                        Log.d("Demo",hm+"less than"+periodTimes[periodsTrimmed.get(i)]);
                     }
                     else{
                         isMain[i] = false;
                     }
                 }
-            } else if (tmrTemp.get(GregorianCalendar.MONTH) == temp.get(GregorianCalendar.MONTH)
-                    && tmrTemp.get(GregorianCalendar.DATE) == temp.get(GregorianCalendar.DATE)) {
-                Log.i("Demo", "tomorrow is selected");
-                if(hm > periodTimes[7]) {
-                    isMain[0] = true;
+            } else if(tmrTemp != null){
+                if (tmrTemp.get(GregorianCalendar.MONTH) == temp.get(GregorianCalendar.MONTH)
+                        && tmrTemp.get(GregorianCalendar.DATE) == temp.get(GregorianCalendar.DATE)) {
+                    Log.i("Demo", "tomorrow is selected");
+                    if (todayIsSchoolDay) {
+                        if (hm > periodTimes[periodsTrimmed.get(periodsTrimmed.size()-1)]) {
+                            isMain[0] = true;
+                        }
+                    } else {
+                        isMain[0] = true;
+                    }
+                } else {
+                    Log.i("Demo", "no next periods in today");
                 }
-
-            } else {
+            }
+            else {
                 Log.i("Demo", "no next periods in today");
             }
-
-
-
-            for(int i = 0; i < subjectsTrimmed.size(); i ++){
+            Log.i("timing","onselection add block begins"+(new Date().getTime() - TIME));
+            for (int i = 0; i < subjectsTrimmed.size(); i++) {
                 blocks[i] = new courseBlock(context, isMain[i], subjectsTrimmed.get(i), i);
                 bodyBlock.addView(blocks[i]);
             }
+            Log.i("timing","onselection add block ended"+(new Date().getTime() - TIME));
         }
         Log.d("Demo","ending onSelection");
-    }
-
-
-    public int getColor( String subjectName ){
-        if( themeColorTable.containsKey(subjectName) )
-            return themeColorTable.get(subjectName);
-        else
-            return Color.BLACK;
     }
 
     public void addDateView( int date ){
@@ -668,7 +577,7 @@ public class ScheduleBlock extends LinearLayout {
     public class DateView extends FrameLayout implements View.OnClickListener {
 
         private final TextView textView;
-        private final Drawable background;
+        private ImageView image;
         private boolean selected;
 
         public DateView(Context context, int date, HorizontalScrollView parent ){
@@ -680,6 +589,14 @@ public class ScheduleBlock extends LinearLayout {
             this.setScaleX(1.5f);
             this.setScaleY(1.5f);
             this.setId(date);
+
+            image = new ImageView(context);
+            image.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+            image.setScaleType(ImageView.ScaleType.FIT_CENTER);
+            image.setAdjustViewBounds(true);
+            image.setImageResource(R.drawable.date_picker_off);
+            this.addView(image);
+
             textView = new TextView(context);
             textView.setText(String.valueOf(date));
             textView.setTextColor(context.getResources().getColor(R.color.purple));
@@ -687,9 +604,6 @@ public class ScheduleBlock extends LinearLayout {
             textView.setTypeface(null, Typeface.BOLD);
             this.addView(textView);
 
-            background = context.getResources().getDrawable(R.drawable.date_picker);
-            background.setColorFilter(context.getResources().getColor(R.color.purple), PorterDuff.Mode.SCREEN );
-            this.setBackgroundResource(R.drawable.date_picker_off);
             this.setOnClickListener( this );
         }
 
@@ -712,13 +626,13 @@ public class ScheduleBlock extends LinearLayout {
             if(selected) {
                 selectedDate = Integer.parseInt(textView.getText().toString());
                 browsingTime.set(Calendar.DATE, Integer.parseInt(textView.getText().toString()));
-                this.setBackgroundResource(R.drawable.date_picker);
+                image.setImageResource(R.drawable.date_picker);
                 textView.setTextColor(Color.WHITE);
                 scroll();
                 if(isLoggedIn)
                     onSelection();
             }else {
-                this.setBackgroundResource(R.drawable.date_picker_off);
+                image.setImageResource(R.drawable.date_picker_off);
                 textView.setTextColor(getContext().getResources().getColor(R.color.purple));
             }
         }
@@ -768,9 +682,6 @@ public class ScheduleBlock extends LinearLayout {
         public courseBlock(Context context, boolean b, Subject Course, int blockNumber){
             super(context);
 
-
-            Log.d("Demo", "initializing subject "+blockNumber+" "+b);
-
             this.setId(blockNumber);
             this.setOrientation(LinearLayout.HORIZONTAL);
             this.setGravity(Gravity.CENTER_HORIZONTAL);
@@ -785,7 +696,14 @@ public class ScheduleBlock extends LinearLayout {
             background = new ImageView(context);
 
             course.setText(Course.name());
-            extra.setText(Course.teacher());
+            course.setTypeface(null, Typeface.BOLD);
+            extra.setText(Course.teacher()+" "+Course.room());
+
+            String type = Course.type();
+
+            //long TIME = new Date().getTime();
+            //Log.i("Demo","initialization started"+(new Date().getTime()-TIME));
+            Log.d("Demo", "initializing course: "+course.getText()+" (type: "+type+")");
 
             if(isMain){
                 //set the dimensions of the frame
@@ -797,7 +715,7 @@ public class ScheduleBlock extends LinearLayout {
                 //set the bar image
                 bar.setLayoutParams(new LinearLayout.LayoutParams(25,ViewGroup.LayoutParams.MATCH_PARENT));
                 bar.setScaleType(ImageView.ScaleType.FIT_XY);
-                bar.setImageResource(R.drawable.rounded_edge_short);
+                bar.setImageResource(Course.imageInt);
                 bar.setColorFilter(Color.WHITE);
 
                 //set inner frame
@@ -806,10 +724,8 @@ public class ScheduleBlock extends LinearLayout {
                 //set the background image
                 background.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT));
                 background.setScaleType(ImageView.ScaleType.FIT_XY);
-                background.setImageResource(findDrawableWithString(Course.name));
+                background.setImageResource(Course.imageInt);
                 background.setBackgroundColor(getResources().getColor(R.color.white));
-
-                description.setBackground(getResources().getDrawable(R.drawable.button_background));
 
                 //set textviews
                 FrameLayout.LayoutParams margin = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
@@ -826,9 +742,9 @@ public class ScheduleBlock extends LinearLayout {
                 extra.setGravity(Gravity.BOTTOM);
                 extra.setTextColor(Color.BLACK);
                 if(extra.getText().length()>20)
-                    extra.setTextSize(24.0f);
+                    extra.setTextSize(20.0f);
                 else
-                    extra.setTextSize(30.0f);
+                    extra.setTextSize(24.0f);
 
                 //add components: linear{bar, frame{name, extra, background}}
                 description.addView(background);
@@ -852,7 +768,7 @@ public class ScheduleBlock extends LinearLayout {
                 bar.setLayoutParams(new LinearLayout.LayoutParams(25,ViewGroup.LayoutParams.MATCH_PARENT));
                 bar.setScaleType(ImageView.ScaleType.FIT_XY);
                 bar.setImageResource(R.drawable.rounded_edge_short);
-                bar.setColorFilter(getColor(Course.name()));
+                bar.setColorFilter(getResources().getColor(Course.colorInt));
 
 
                 //set the background image
@@ -867,7 +783,7 @@ public class ScheduleBlock extends LinearLayout {
                 margin.setMargins(5, 5, 5, 5);
                 course.setLayoutParams(margin);
                 course.setGravity(Gravity.CENTER_VERTICAL);
-                course.setTextColor(getColor(Course.name()));
+                course.setTextColor(getResources().getColor(Course.colorInt));
                 if(course.getText().length()>15)
                     course.setTextSize(20.0f);
                 else
@@ -881,43 +797,29 @@ public class ScheduleBlock extends LinearLayout {
                 this.addView(description);
             }
 
+            //Log.i("Demo","intialization for "+Course.name()+" finished at "+(new Date().getTime()-TIME));
+
         }
     }
 
+
+
     //tries to get time from internet, if fails then set time as system time
     public static Date getTime() {
-        Date date = new Date();
-
-        if(testInternetConnection()) {
-            String URL1 = "http://www.baidu.com";
-            String URL2 = "http://www.ntsc.ac.cn";
-            String URL3 = "http://www.beijing-time.org";
-            Log.i("Demo", "current time source :");
-            try {
-                if (getWebDate(URL1) != null) {
-                    Log.i("Demo", URL1);
-                    date = getWebDate(URL1);
-                } else if (getWebDate(URL2) != null) {
-                    Log.i("Demo", URL2);
-                    date = getWebDate(URL2);
-                } else if (getWebDate(URL3) != null) {
-                    Log.i("Demo", URL3);
-                    date = getWebDate(URL3);
-                } else {
-                    Log.i("Demo", "System");
-                }
-            } catch (Exception e) {
-
-            }
-        }
-        return date;
+        /*todo: currently time is set to local time, it is recommended to switch to internet time*/
+        return new Date();
     }
 
     public class LoginScreen extends LinearLayout{
         public EditText nameText, passwordText;
         public Button button1;
         public LinearLayout buttonBox;
-        public LoginScreen(){
+        public TextView hint;
+        public ImageView returnButton;
+        public LinearLayout iconBox;
+
+        //mode: log in from fetch button = true
+        public LoginScreen(boolean calledFromFetch, boolean returnable){
             super(context);
             this.setLayoutParams(new LinearLayout.LayoutParams(screenWidth, (int)(0.76*screenHeight)));
             this.setPadding((int)(0.075*screenWidth),(int)(0.03*screenHeight),(int)(0.075*screenWidth),10);
@@ -925,7 +827,24 @@ public class ScheduleBlock extends LinearLayout {
             this.setGravity(Gravity.LEFT);
             this.setBackgroundColor(getResources().getColor(R.color.powerschool));
 
-            LinearLayout iconBox = new LinearLayout(context);
+            if(returnable){
+               returnButton = new ImageView(context);
+               returnButton.setLayoutParams(new LinearLayout.LayoutParams((int)(0.1*screenWidth), (int)(0.05*screenHeight)));
+               returnButton.setScaleType(ImageView.ScaleType.FIT_CENTER);
+               returnButton.setAdjustViewBounds(true);
+               returnButton.setImageResource(R.drawable.return_button);
+               returnButton.setOnClickListener(new OnClickListener() {
+                   @Override
+                   public void onClick(View v) {
+                       isLoggedIn = true;
+                       onSelection();
+                   }
+               });
+               this.addView(returnButton);
+            }
+
+
+            iconBox = new LinearLayout(context);
             iconBox.setLayoutParams(new LinearLayout.LayoutParams((int)(0.85*screenWidth), ViewGroup.LayoutParams.WRAP_CONTENT));
             iconBox.setGravity(Gravity.CENTER_HORIZONTAL);
 
@@ -940,6 +859,17 @@ public class ScheduleBlock extends LinearLayout {
 
             LinearLayout.LayoutParams textParams = new LinearLayout.LayoutParams((int)(0.85*screenWidth), ViewGroup.LayoutParams.WRAP_CONTENT);
             textParams.setMargins(0,10,0,10);
+
+            hint = new TextView(context);
+            if(calledFromFetch){
+                hint.setText("Your last login has failed, please try again!");
+            }
+            else{
+                hint.setText("");
+            }
+            hint.setTextColor(getResources().getColor(R.color.white));
+            hint.setLayoutParams(textParams);
+            this.addView(hint);
 
             nameText = new EditText(context);
             nameText.setHint("ID");
@@ -973,155 +903,72 @@ public class ScheduleBlock extends LinearLayout {
             button1.setLayoutParams(buttonParam);
             buttonBox.addView(button1);
             button1.setTextColor(getResources().getColor(R.color.purple));
+            button1.setTextSize(12.0f);
             button1.setText("log in");
 
             button1.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View view) {
-
-
+                    LoginTimes = 0;
+                    hint.setText("downloading schedule, please wait....\nThe application will restart it self once downloading finished, please do not re-open the app manually.");
                     PSname = nameText.getText().toString();
                     PSpass = passwordText.getText().toString();
                     Log.d("Demo","logging in with informations: name("+PSname+") pass("+PSpass+")");
-                        editor.putString(getResources().getString(R.string.ps_name_key),
-                                nameText.getText().toString());
-                        editor.putString(getResources().getString(R.string.ps_pass_key),
-                                passwordText.getText().toString());
-                        editor.commit();
-                        try{
-                            openWebView(PSname, PSpass);}
-                            catch(Exception e){
-                            Log.d("DEV","KMS");
-                            }
+                    editor.putString(getResources().getString(R.string.ps_name_key),
+                            nameText.getText().toString());
+                    editor.putString(getResources().getString(R.string.ps_pass_key),
+                            passwordText.getText().toString());
+                    editor.apply();
+                    iconMode();
+                    try{
+                        openWebView(PSname, PSpass);}
+                    catch(Exception e){
+                        Log.d("DEV","KMS");
+                    }
                 }
             });
         }
 
-    }
-
-    public static boolean testInternetConnection(){
-        try
-        {
-            Log.d("announcement","try to connect");
-            URL url = new URL("http://www.baidu.com");
-            URLConnection connection = url.openConnection();
-            connection.setConnectTimeout(500);
-            connection.connect();
-        }catch (Exception e){
-            Log.d("announcement","failed to connect");
-            return false;
+        private void iconMode(){
+            this.removeAllViews();
+            this.addView(iconBox);
+            this.addView(hint);
         }
 
-        return true;
-    }
-
-    //get time from internet with given url
-    private static Date getWebDate(String url) {
-        Date temp;
-        Log.i("Demo","getting time from " + url);
-        URL u;
-        try {
-            u = new URL(url);
-        } catch (Exception e){
-            e.printStackTrace();
-            return null;
-        }
-        try{
-            HttpURLConnection connecter = (HttpURLConnection)u.openConnection();
-            connecter.setConnectTimeout(500);
-            connecter.connect();
-            temp = new Date(connecter.getDate());
-            connecter.disconnect();
-        }catch(Exception e){
-            e.printStackTrace();
-            return null;
-        }
-        Log.i("Demo","got time from " + url);
-        return temp;
     }
 
     public void setPeriodTimes(GregorianCalendar date){
         periodTimes = new int[8];
         if(date.get(GregorianCalendar.DAY_OF_WEEK)==Calendar.WEDNESDAY){
-            periodTimes = new int[]{835, 855, 920, 940, 1120, 1210, 1320, 1340};
+            periodTimes = new int[]{815, 835, 855, 920, 940, 1120, 1210, 1320};
         }
         else {
-            periodTimes = new int[]{855, 935, 1035, 1115, 1205, 1350, 1435, 1515};
+            periodTimes = new int[]{815, 855, 935, 1035, 1115, 1205, 1350, 1435};
         }
-    }
-
-    public int findDrawableWithString(String source){
-        source = source.toLowerCase();
-        source = trimName(source);
-        Log.d("coursefind",source);
-        int id = context.getResources().getIdentifier("course_"+binSearchSubjectType(source), "drawable", context.getPackageName());
-        return id;
-    }
-
-    public static String trimName(String str){
-        ArrayList<Character> temp = new ArrayList<>(20);
-        char[] charStr = str.toCharArray();
-        for(int i = 0; i < charStr.length; i++){
-            int ascii = (int)charStr[i];
-            if((ascii <= 90 && ascii >=65) || (ascii <= 122 && ascii >= 97) || (ascii <= 57 && ascii >= 48)){
-                temp.add(charStr[i]);
-            }
-        }
-        char[] charTemp = new char[temp.size()];
-        for(int i = 0; i < temp.size(); i++){
-            charTemp[i] = temp.get(i);
-        }
-        return new String(charTemp);
-    }
-
-    public String binSearchSubjectType(String name){
-        for(int i = 0; i < allSubjects.size(); i++){
-            int low = 0, mid, high = allSubjects.get(i).length-1;
-
-            Log.d("coursefind","current course length "+allSubjects.get(i).length);
-
-            while(low<=high){
-                mid = (low + high)/2;
-                if(subjectTypes.get(i).equals("history")){
-                    Log.d("coursefind","current mid on "+allSubjects.get(i)[mid]);
-                }
-                if(allSubjects.get(i)[mid].equals(name)){
-                    Log.d("coursefind","returned with type"+subjectTypes.get(i));
-                    return subjectTypes.get(i);
-                }
-                else if(name.compareTo(allSubjects.get(i)[mid])<0){
-                    high = mid-1;
-                }
-                else{
-                    low = mid + 1;
-                }
-            }
-        }
-        Log.d("coursefind","returned with type none");
-        return "none";
     }
 
     public HashMap<String, Subject[]> getSchedule() throws Exception{
-        HashMap<String, Subject[]> schedule = new HashMap<>(0);
+        HashMap<String, Subject[]> schedule = new HashMap<>(6);
 
-            HashMap<String, Integer> dateDay = getDateDayPairs();
+        HashMap<String, Integer> dateDay = getDateDayPairs();
 
-            HashMap<Integer, Subject[]> weeklySchedule = readWeeklySchedule();
+        HashMap<Integer, Subject[]> weeklySchedule = readWeeklySchedule();
 
-            for(Map.Entry<String, Integer> keyValuePair : dateDay.entrySet()){
-                String date = keyValuePair.getKey();
-                Integer day = keyValuePair.getValue();
-                if(day != -1)
-                    schedule.put(date, weeklySchedule.get(day));
-                else
-                    schedule.put(date, null);
-            }
+        for(Map.Entry<String, Integer> keyValuePair : dateDay.entrySet()){
+            String date = keyValuePair.getKey();
+            Integer day = keyValuePair.getValue();
+            Log.d("Demo",date+" is day "+day);
+            if(day != -1)
+                schedule.put(date, weeklySchedule.get(day));
+            else
+                schedule.put(date, null);
+        }
 
         return schedule;
     }
 
     public HashMap<String, Integer> getDateDayPairs()throws AVException, ParseException {
-        HashMap<String, Integer> dateDay = null;
+        HashMap<String, Integer> dateDay;
 
         AVQuery query = new AVQuery("UpdateCalendar");
         List<AVObject> qList = query.find();
@@ -1190,7 +1037,7 @@ public class ScheduleBlock extends LinearLayout {
         AVQuery calendar = new AVQuery("DayCycle");
         calendar.limit(1000);
         List<AVObject> schoolDays = calendar.find();
-        schoolDays.sort(new AVObjectComparator());
+        schoolDays = QSDateHelper(schoolDays);
         Log.d("WKD_", new Integer(schoolDays.size()).toString());
         return schoolDays;
 
@@ -1218,6 +1065,44 @@ public class ScheduleBlock extends LinearLayout {
         return null;*/
     }
 
+    public List<AVObject> QSDateHelper(List<AVObject> arr){
+        QuickSortDate(arr, 0, arr.size()-1);
+        for(AVObject i : arr)
+            Log.d("SORT","sorted " +i.getInt("daysSince"));
+        return arr;
+    }
+
+    public void QuickSortDate(List<AVObject> arr, int low, int high){
+        for(int k = low; k <= high; k++){
+        }
+        if(arr==null || high-low <1 || high<=low){
+            return;
+        }
+        AVObject midValue = arr.get(low);
+        int i = low, j = high;
+        while(true){
+            while(i<j && arr.get(j).getInt("daysSince")>=midValue.getInt("daysSince")){
+                j--;
+            }
+            while(i<j && arr.get(i).getInt("daysSince")<=midValue.getInt("daysSince")){
+                i++;
+            }
+            if(i<j){
+                AVObject temp = arr.get(i);
+                arr.set(i, arr.get(j));
+                arr.set(j, temp);
+            }
+            else{
+                AVObject temp = arr.get(low);
+                arr.set(low, arr.get(i));
+                arr.set(i, temp);
+                break;
+            }
+        }
+        QuickSortDate(arr, low, i-1);
+        QuickSortDate(arr, i+1, high);
+    }
+
     class AVObjectComparator implements Comparator<AVObject> {
         @Override
         public int compare(AVObject obj1, AVObject obj2){
@@ -1240,6 +1125,9 @@ public class ScheduleBlock extends LinearLayout {
             @Override
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
+                LoginTimes++;
+                if(LoginTimes>2)
+                    webView.destroy();
                 Log.d("HTML", url + " onpagefinished()");
                 webView.evaluateJavascript("document.getElementById('fieldAccount').value='"+account_+"'", null);
                 webView.evaluateJavascript("document.getElementById('fieldPassword').value='"+password_+"'", null);
@@ -1272,7 +1160,13 @@ public class ScheduleBlock extends LinearLayout {
     public void writeWeeklySchedule(String html) throws Exception{
         HashMap<Integer, Subject[]> schedule = fetchSchedule(html);
         Log.d("HTML_OUT", "called");
-        if(schedule.get(1)==null) return;
+        if(schedule.get(1)==null){
+            Log.d("HTML_OUT", "schedule.get(1) returned null" );
+            if(LoginTimes>=2){
+                login(true);
+            }
+            return;
+        }
 
         FileOutputStream f = context.openFileOutput("week_schedule.dat", context.MODE_PRIVATE);
         Log.d("HTML_OUT", "output found");
@@ -1306,7 +1200,7 @@ public class ScheduleBlock extends LinearLayout {
                 String name = tizer.nextToken();
                 String teacher = tizer.nextToken();
                 String room = tizer.nextToken();
-                Subject subject = new Subject(name, teacher, room);
+                Subject subject = new Subject(name, teacher, room, context);
                 Log.d("HTML_IN",subject.name() + "," + subject.teacher() + "," + subject.room() + ",");
                 daySchedule[period] = subject;
             }
@@ -1317,7 +1211,7 @@ public class ScheduleBlock extends LinearLayout {
         return schedule;
     }
 
-    public static HashMap<Integer, Subject[]> fetchSchedule(String html) throws IOException, InterruptedException {
+    public HashMap<Integer, Subject[]> fetchSchedule(String html) throws IOException, InterruptedException {
 
         String pageSource = html;
 
@@ -1369,7 +1263,7 @@ public class ScheduleBlock extends LinearLayout {
                 Log.w("HTML", days);
                 for(int i = 0; i * 2 < days.length(); i ++) {
                     int dayNum = days.charAt(i*2) - 48;
-                    Subject period = new Subject(className, teacherName, roomNum);
+                    Subject period = new Subject(className, teacherName, roomNum, context);
 
                     int pN, pC, pNe, pCe;
                     try {
@@ -1408,7 +1302,7 @@ public class ScheduleBlock extends LinearLayout {
         Intent mStartActivity = new Intent(context, MainActivity.class);
         Log.d("EASTER", "how long will this go on...");
         int mPendingIntentId = 123456;
-        PendingIntent mPendingIntent = PendingIntent.getActivity(context, mPendingIntentId,    mStartActivity, PendingIntent.FLAG_CANCEL_CURRENT);
+        PendingIntent mPendingIntent = PendingIntent.getActivity(context, mPendingIntentId, mStartActivity, PendingIntent.FLAG_CANCEL_CURRENT);
         AlarmManager mgr = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
         mgr.set(AlarmManager.RTC, System.currentTimeMillis() + 100, mPendingIntent);
         System.exit(0);

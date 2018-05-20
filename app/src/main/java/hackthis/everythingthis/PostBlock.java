@@ -32,6 +32,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
+import static hackthis.everythingthis.utils.testInternetConnection;
+
 public class PostBlock extends LinearLayout {
     Context context;
     LinearLayout.LayoutParams bodyParams;
@@ -70,7 +72,12 @@ public class PostBlock extends LinearLayout {
         this.setOrientation(VERTICAL);
         this.setGravity(Gravity.START);
 
-        STANDARD_TEXT_SIZE = (float)(0.02*bodyHeight);
+        if(bodyWidth <= 1080){
+            STANDARD_TEXT_SIZE = 12.0f;
+        }
+        else{
+            STANDARD_TEXT_SIZE = 14.0f;
+        }
 
         Title = new LinearLayout(context);
         LinearLayout.LayoutParams tableParams = new LinearLayout.LayoutParams(bodyWidth, (int)(0.15*bodyHeight));
@@ -108,7 +115,7 @@ public class PostBlock extends LinearLayout {
         Contents.setBackgroundColor(getResources().getColor(R.color.background));
         this.addView(Contents);
 
-        internetConnected = testInternetConnection();
+        internetConnected = testInternetConnection(context);
 
         hasDraft = preferences.getBoolean(getResources().getString(R.string.has_draft_key),false);
         editor.putBoolean(getResources().getString(R.string.has_draft_key), hasDraft);
@@ -175,27 +182,11 @@ public class PostBlock extends LinearLayout {
         Contents.addView(dp);
     }
 
-    public boolean testInternetConnection(){
-        try
-        {
-            Log.d("announcement","try to connect");
-            URL url = new URL("http://www.baidu.com");
-            URLConnection connection = url.openConnection();
-            connection.setConnectTimeout(500);
-            connection.connect();
-        }catch (Exception e){
-            Log.d("announcement","failed to connect");
-            return false;
-        }
-
-        return true;
-    }
-
     public boolean testLoginValidity(String name, String passWord){
 
         if(name == null || passWord == null) return false;
 
-        if(!testInternetConnection())
+        if(!testInternetConnection(context))
             return false;
 
         AVQuery clubQuery = new AVQuery("Clubs");
@@ -203,7 +194,7 @@ public class PostBlock extends LinearLayout {
         String pw = "";
         try {
             List<AVObject> club = clubQuery.find();
-            if(club == null) return false;
+            if(club == null || club.isEmpty()) return false;
             pw = club.get(0).getString("key");
         } catch (AVException e){
             return false;
@@ -276,7 +267,7 @@ public class PostBlock extends LinearLayout {
             editor.putBoolean(getResources().getString(R.string.has_draft_key),false);
             editor.putString(getResources().getString(R.string.draft_title_key),"");
             editor.putString(getResources().getString(R.string.draft_body_key),"");
-            editor.commit();
+            editor.apply();
 
             message.setText("Announcement successfully uploaded");
             button1.setImageResource(R.drawable.dia_abandon);
@@ -308,7 +299,7 @@ public class PostBlock extends LinearLayout {
                     editor.putBoolean(getResources().getString(R.string.has_draft_key),true);
                     editor.putString(getResources().getString(R.string.draft_title_key),ep.editTitle.getText().toString());
                     editor.putString(getResources().getString(R.string.draft_body_key),ep.editBody.getText().toString());
-                    editor.commit();
+                    editor.apply();
                     startDraft();
                 }
             });
@@ -320,7 +311,7 @@ public class PostBlock extends LinearLayout {
                     editor.putBoolean(getResources().getString(R.string.has_draft_key),false);
                     editor.putString(getResources().getString(R.string.draft_title_key),"");
                     editor.putString(getResources().getString(R.string.draft_body_key),"");
-                    editor.commit();
+                    editor.apply();
                     startDraft();
                 }
             });
@@ -409,7 +400,7 @@ public class PostBlock extends LinearLayout {
                     if(isValid()){
                         try{
 
-                            if(!testInternetConnection())
+                            if(!testInternetConnection(context))
                                 throw new Exception();
 
                             AVObject product = new AVObject("Announcements");
@@ -483,7 +474,7 @@ public class PostBlock extends LinearLayout {
                         editor.putString(getResources().getString(R.string.draft_title_key), editTitle.getText().toString());
                         editor.putString(getResources().getString(R.string.draft_body_key), editBody.getText().toString());
                         editor.putBoolean(getResources().getString(R.string.has_draft_key), true);
-                        editor.commit();
+                        editor.apply();
                     }
                 }
             });
@@ -562,12 +553,14 @@ public class PostBlock extends LinearLayout {
             nameText.setTextColor(getResources().getColor(R.color.black));
             nameText.setBackgroundColor(getResources().getColor(R.color.white));
             nameText.setPadding(8,8,8,8);
+            nameText.setHintTextColor(getResources().getColor(R.color.purple));
             this.addView(nameText);
 
             passwordText = new EditText(context);
-            passwordText.setInputType(InputType.TYPE_NUMBER_VARIATION_PASSWORD);
+            passwordText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
             passwordText.setTextColor(getResources().getColor(R.color.black));
             passwordText.setHint("Club Key");
+            passwordText.setHintTextColor(getResources().getColor(R.color.purple));
             passwordText.setTextSize(STANDARD_TEXT_SIZE);
             passwordText.setLayoutParams(textParams);
             passwordText.setBackgroundColor(getResources().getColor(R.color.white));
@@ -583,6 +576,7 @@ public class PostBlock extends LinearLayout {
             TextView rememberText = new TextView(context);
             rememberText.setText("remember my login informations");
             rememberText.setTextSize(STANDARD_TEXT_SIZE);
+            rememberText.setTextColor(getResources().getColor(R.color.black));
             rememberText.setPadding(0,0,0,10);
             this.addView(rememberText);
 
@@ -606,9 +600,9 @@ public class PostBlock extends LinearLayout {
             button2.setLayoutParams(jiba);
 
 
-            button1.setTextSize(STANDARD_TEXT_SIZE+2.0f);
+            button1.setTextSize(STANDARD_TEXT_SIZE);
             button1.setTextColor(getResources().getColor(R.color.purple));
-            button2.setTextSize(STANDARD_TEXT_SIZE+2.0f);
+            button2.setTextSize(STANDARD_TEXT_SIZE);
             button2.setTextColor(getResources().getColor(R.color.purple));
 
             if(preferences.getBoolean(getResources().getString(R.string.has_draft_key), false)){
@@ -631,7 +625,7 @@ public class PostBlock extends LinearLayout {
                                         nameText.getText().toString());
                                 editor.putString(getResources().getString(R.string.login_password_key),
                                         passwordText.getText().toString());
-                                editor.commit();
+                                editor.apply();
                             }
                             startDraft();
                         }
@@ -650,7 +644,7 @@ public class PostBlock extends LinearLayout {
                                         nameText.getText().toString());
                                 editor.putString(getResources().getString(R.string.login_password_key),
                                         passwordText.getText().toString());
-                                editor.commit();
+                                editor.apply();
                             }
                             startDraft();
                         }
@@ -674,13 +668,13 @@ public class PostBlock extends LinearLayout {
                                     nameText.getText().toString());
                             editor.putString(getResources().getString(R.string.login_password_key),
                                     passwordText.getText().toString());
-                            editor.commit();
+                            editor.apply();
                         }
 
                         editor.putString(getResources().getString(R.string.draft_title_key),null);
                         editor.putString(getResources().getString(R.string.draft_body_key),null);
                         editor.putBoolean(getResources().getString(R.string.has_draft_key),false);
-                        editor.commit();
+                        editor.apply();
 
                         hasDraft = false;
 

@@ -40,6 +40,7 @@ public class CustomReceiver extends BroadcastReceiver {
                 try {
                     defaultSubscribes = new ArrayList<>();
                     defaultSubscribes.add("Student Council");
+                    defaultSubscribes.add("{Hack,THIS}");
 
                     Log.d("pushannon","trying to find club "+json.getString("clubname").toLowerCase());
                     HashSet<String> clubSet = new HashSet<>(preferences.getStringSet(context.getResources().getString(R.string.subscribed_channels_key),
