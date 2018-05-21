@@ -500,7 +500,7 @@ public class ScheduleBlock extends LinearLayout {
 
             errorMessage.setTextSize((float)(screenWidth > screenHeight ? screenWidth/50.0 : screenHeight/50.0));
             errorMessage.setGravity(Gravity.CENTER_HORIZONTAL|Gravity.CENTER_VERTICAL);
-
+            errorMessage.setTextColor(getResources().getColor(R.color.black));
             if(fuckCalendarsWhyTheFuckDoesntWeekDayChangeAutomatically == GregorianCalendar.SUNDAY
                     || fuckCalendarsWhyTheFuckDoesntWeekDayChangeAutomatically == GregorianCalendar.SATURDAY) {
                 restImage.setImageResource(R.drawable.weekend);
@@ -698,7 +698,7 @@ public class ScheduleBlock extends LinearLayout {
 
             course.setText(Course.name());
             course.setTypeface(null, Typeface.BOLD);
-            extra.setText(Course.teacher()+" "+Course.room());
+            extra.setText(Course.room()+"\n"+Course.teacher());
 
             String type = Course.type();
 
@@ -724,7 +724,7 @@ public class ScheduleBlock extends LinearLayout {
 
                 //set textviews
                 FrameLayout.LayoutParams margin = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-                margin.setMargins(2, 2, 2, 2);
+                margin.setMargins(30, 2, 2, 2);
                 course.setLayoutParams(margin);
                 course.setTextColor(Color.BLACK);
                 course.setGravity(Gravity.TOP);
@@ -778,7 +778,7 @@ public class ScheduleBlock extends LinearLayout {
                 course.setLayoutParams(margin);
                 course.setGravity(Gravity.CENTER_VERTICAL);
                 course.setTextColor(getResources().getColor(Course.colorInt));
-                if(course.getText().length()>15)
+                if(course.getText().length()>18)
                     course.setTextSize(20.0f);
                 else
                     course.setTextSize(26.0f);
