@@ -819,7 +819,7 @@ public class ScheduleBlock extends LinearLayout {
             this.setLayoutParams(new LinearLayout.LayoutParams(screenWidth, (int)(0.76*screenHeight)));
             this.setPadding((int)(0.075*screenWidth),(int)(0.03*screenHeight),(int)(0.075*screenWidth),10);
             this.setOrientation(VERTICAL);
-            this.setGravity(Gravity.LEFT);
+            this.setGravity(Gravity.RIGHT);
             this.setBackgroundColor(getResources().getColor(R.color.powerschool));
 
             if(returnable){
@@ -867,7 +867,7 @@ public class ScheduleBlock extends LinearLayout {
             this.addView(hint);
 
             nameText = new EditText(context);
-            nameText.setHint("ID");
+            nameText.setHint("   ID");
             nameText.setLayoutParams(textParams);
             nameText.setTextColor(getResources().getColor(R.color.white));
             nameText.setBackgroundColor(getResources().getColor(R.color.powerschool_shaded));
@@ -877,15 +877,17 @@ public class ScheduleBlock extends LinearLayout {
             passwordText = new EditText(context);
             passwordText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
             passwordText.setTextColor(getResources().getColor(R.color.white));
-            passwordText.setHint("Password");
+            passwordText.setHint(" password");
             passwordText.setLayoutParams(textParams);
             passwordText.setBackgroundColor(getResources().getColor(R.color.powerschool_shaded));
             passwordText.setPadding(8,8,8,8);
             this.addView(passwordText);
 
             buttonBox = new LinearLayout(context);
-            buttonBox.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT));
+            LayoutParams lparams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT);
+            lparams.setMargins(0, 30, 0,0);
+            buttonBox.setLayoutParams(lparams);
             buttonBox.setGravity(Gravity.START);
             buttonBox.setOrientation(HORIZONTAL);
             this.addView(buttonBox);
@@ -905,10 +907,10 @@ public class ScheduleBlock extends LinearLayout {
                 @Override
                 public void onClick(View view) {
                     LoginTimes = 0;
-                    hint.setText("downloading schedule, please wait....\nThe application will restart it self once downloading finished, please do not re-open the app manually.");
+                    hint.setText("downloading schedule, please wait....\nThe application will restart it self once done downloading, please do not re-open the app manually.");
                     PSname = nameText.getText().toString();
                     PSpass = passwordText.getText().toString();
-                    Log.d("Demo","logging in with informations: name("+PSname+") pass("+PSpass+")");
+                    Log.d("Demo","logging in with information: name("+PSname+") pass("+PSpass+")");
                     editor.putString(getResources().getString(R.string.ps_name_key),
                             nameText.getText().toString());
                     editor.putString(getResources().getString(R.string.ps_pass_key),
