@@ -555,6 +555,7 @@ public class ScheduleBlock extends LinearLayout {
             Log.i("timing","onselection add block begins"+(new Date().getTime() - TIME));
             for (int i = 0; i < subjectsTrimmed.size(); i++) {
                 blocks[i] = new courseBlock(context, isMain[i], subjectsTrimmed.get(i), i);
+
                 bodyBlock.addView(blocks[i]);
             }
             Log.i("timing","onselection add block ended"+(new Date().getTime() - TIME));
@@ -712,16 +713,10 @@ public class ScheduleBlock extends LinearLayout {
                 this.setLayoutParams(lay);
                 //this.setBackground(getResources().getDrawable(R.drawable.button_background));
 
-                //set the bar image
-                bar.setLayoutParams(new LinearLayout.LayoutParams(25,ViewGroup.LayoutParams.MATCH_PARENT));
-                bar.setScaleType(ImageView.ScaleType.FIT_XY);
-                bar.setImageResource(Course.imageInt);
-                bar.setColorFilter(Color.WHITE);
-
                 //set inner frame
                 description.setLayoutParams(new LinearLayout.LayoutParams((int)(0.8*screenWidth), ViewGroup.LayoutParams.MATCH_PARENT));
 
-                //set the background image
+               //set the background image
                 background.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT));
                 background.setScaleType(ImageView.ScaleType.FIT_XY);
                 background.setImageResource(Course.imageInt);
@@ -751,7 +746,6 @@ public class ScheduleBlock extends LinearLayout {
                 description.addView(course);
                 description.addView(extra);
 
-                this.addView(bar);
                 this.addView(description);
             }
             else{
@@ -810,6 +804,7 @@ public class ScheduleBlock extends LinearLayout {
         return new Date();
     }
 
+    //login screen ctrlf
     public class LoginScreen extends LinearLayout{
         public EditText nameText, passwordText;
         public Button button1;
