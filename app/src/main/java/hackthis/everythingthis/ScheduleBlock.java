@@ -819,7 +819,7 @@ public class ScheduleBlock extends LinearLayout {
             this.setLayoutParams(new LinearLayout.LayoutParams(screenWidth, (int)(0.76*screenHeight)));
             this.setPadding((int)(0.075*screenWidth),(int)(0.03*screenHeight),(int)(0.075*screenWidth),10);
             this.setOrientation(VERTICAL);
-            this.setGravity(Gravity.RIGHT);
+            this.setGravity(Gravity.RIGHT); //looks nice
             this.setBackgroundColor(getResources().getColor(R.color.powerschool));
 
             if(returnable){
