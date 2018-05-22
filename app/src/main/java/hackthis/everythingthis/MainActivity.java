@@ -177,7 +177,7 @@ public class MainActivity extends Activity {
         //initialize icon buttons
 
         LinearLayout.LayoutParams footerButtonParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT);
-
+        footerButtonParams.setMargins((int)(0.06*screenWidth), 0, (int)(0.06*screenWidth), 30);
         scheduleIcon = (ImageView)findViewById(R.id.scheduleIcon);
         scheduleIcon.setLayoutParams(footerButtonParams);
         scheduleIcon.setScaleType(ImageView.ScaleType.FIT_CENTER);
@@ -194,7 +194,7 @@ public class MainActivity extends Activity {
         postIcon = (ImageView)findViewById(R.id.postIcon);
         postIcon.setLayoutParams(footerButtonParams);
         postIcon.setPadding((int)(0.025*screenHeight),(int)(0.025*screenHeight),(int)(0.025*screenHeight),(int)(0.025*screenHeight));
-        postIcon.setScaleType(ImageView.ScaleType.FIT_XY);
+        postIcon.setScaleType(ImageView.ScaleType.FIT_CENTER);
         postIcon.setAdjustViewBounds(true);
 
 

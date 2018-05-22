@@ -442,7 +442,7 @@ public class AnnouncementBlock extends LinearLayout{
             this.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
             this.setPadding((int)(0.05*bodyWidth),10,(int)(0.05*bodyWidth),10);
             this.setOrientation(VERTICAL);
-            this.setGravity(Gravity.TOP);
+            this.setGravity(Gravity.CENTER_HORIZONTAL);
             //this.setBackgroundColor(getResources().getColor(R.color.white));
 
             LinearLayout.LayoutParams introTextParams = new LinearLayout.LayoutParams((int)(0.9*bodyWidth), ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -454,8 +454,8 @@ public class AnnouncementBlock extends LinearLayout{
             introText_1.setLayoutParams(introTextParams);
             introText_1.setTextSize(STANDARD_TEXT_SIZE);
             introText_1.setTextColor(AnnouncementBlock.this.getResources().getColor(R.color.black));
-            introText_1.setGravity(Gravity.START);
-            introText_1.setText("Select which of these school organizations to subscribe:");
+            introText_1.setGravity(Gravity.CENTER);
+            introText_1.setText("Subscribe to the following channels:");
             this.addView(introText_1);
 
             cells = new ArrayList<>(30);
@@ -530,7 +530,7 @@ public class AnnouncementBlock extends LinearLayout{
 
                 this.setLayoutParams(optionCellLayout);
                 this.setOrientation(HORIZONTAL);
-                this.setGravity(Gravity.LEFT);
+                this.setGravity(Gravity.CENTER);
 
                 nameBar = new TextView(context);
 

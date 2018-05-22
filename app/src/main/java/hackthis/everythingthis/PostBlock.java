@@ -91,7 +91,7 @@ public class PostBlock extends LinearLayout {
         TextView titleText = new TextView(context);
         titleText.setLayoutParams(new LinearLayout.LayoutParams((int)(0.85*bodyWidth-40), (int)(0.15*bodyHeight)));
         titleText.setTextSize(STANDARD_TEXT_SIZE + 4.0f);
-        titleText.setText("Post Announcement");
+        titleText.setText("Make Announcements");
         titleText.setGravity(Gravity.CENTER_VERTICAL);
         titleText.setTextColor(getResources().getColor(R.color.white));
         Title.addView(titleText);

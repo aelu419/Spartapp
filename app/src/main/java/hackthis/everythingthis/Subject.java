@@ -90,7 +90,10 @@ public class Subject{
     public Subject( String name, String teacher, String room, Context context){
         this.name = name;
         this.teacher = teacher;
-        this.room = room;
+        if(room.substring(0,1).equals(" "))
+            this.room = room.substring(1);
+        else
+            this.room = room;
         this.type = searchSubjectType(trimName(name.toLowerCase()));
         this.context = context;
         Log.d("Demo","type of "+name+" is "+type());

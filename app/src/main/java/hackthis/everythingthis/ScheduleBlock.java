@@ -500,7 +500,7 @@ public class ScheduleBlock extends LinearLayout {
 
             errorMessage.setTextSize((float)(screenWidth > screenHeight ? screenWidth/50.0 : screenHeight/50.0));
             errorMessage.setGravity(Gravity.CENTER_HORIZONTAL|Gravity.CENTER_VERTICAL);
-
+            errorMessage.setTextColor(getResources().getColor(R.color.black));
             if(fuckCalendarsWhyTheFuckDoesntWeekDayChangeAutomatically == GregorianCalendar.SUNDAY
                     || fuckCalendarsWhyTheFuckDoesntWeekDayChangeAutomatically == GregorianCalendar.SATURDAY) {
                 restImage.setImageResource(R.drawable.weekend);
@@ -555,6 +555,7 @@ public class ScheduleBlock extends LinearLayout {
             Log.i("timing","onselection add block begins"+(new Date().getTime() - TIME));
             for (int i = 0; i < subjectsTrimmed.size(); i++) {
                 blocks[i] = new courseBlock(context, isMain[i], subjectsTrimmed.get(i), i);
+
                 bodyBlock.addView(blocks[i]);
             }
             Log.i("timing","onselection add block ended"+(new Date().getTime() - TIME));
@@ -697,7 +698,7 @@ public class ScheduleBlock extends LinearLayout {
 
             course.setText(Course.name());
             course.setTypeface(null, Typeface.BOLD);
-            extra.setText(Course.teacher()+" "+Course.room());
+            extra.setText(Course.room()+"\n"+Course.teacher());
 
             String type = Course.type();
 
@@ -712,16 +713,10 @@ public class ScheduleBlock extends LinearLayout {
                 this.setLayoutParams(lay);
                 //this.setBackground(getResources().getDrawable(R.drawable.button_background));
 
-                //set the bar image
-                bar.setLayoutParams(new LinearLayout.LayoutParams(25,ViewGroup.LayoutParams.MATCH_PARENT));
-                bar.setScaleType(ImageView.ScaleType.FIT_XY);
-                bar.setImageResource(Course.imageInt);
-                bar.setColorFilter(Color.WHITE);
-
                 //set inner frame
                 description.setLayoutParams(new LinearLayout.LayoutParams((int)(0.8*screenWidth), ViewGroup.LayoutParams.MATCH_PARENT));
 
-                //set the background image
+               //set the background image
                 background.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT));
                 background.setScaleType(ImageView.ScaleType.FIT_XY);
                 background.setImageResource(Course.imageInt);
@@ -729,7 +724,7 @@ public class ScheduleBlock extends LinearLayout {
 
                 //set textviews
                 FrameLayout.LayoutParams margin = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-                margin.setMargins(2, 2, 2, 2);
+                margin.setMargins(30, 2, 2, 2);
                 course.setLayoutParams(margin);
                 course.setTextColor(Color.BLACK);
                 course.setGravity(Gravity.TOP);
@@ -751,7 +746,6 @@ public class ScheduleBlock extends LinearLayout {
                 description.addView(course);
                 description.addView(extra);
 
-                this.addView(bar);
                 this.addView(description);
             }
             else{
@@ -784,7 +778,7 @@ public class ScheduleBlock extends LinearLayout {
                 course.setLayoutParams(margin);
                 course.setGravity(Gravity.CENTER_VERTICAL);
                 course.setTextColor(getResources().getColor(Course.colorInt));
-                if(course.getText().length()>15)
+                if(course.getText().length()>18)
                     course.setTextSize(20.0f);
                 else
                     course.setTextSize(26.0f);
@@ -810,6 +804,7 @@ public class ScheduleBlock extends LinearLayout {
         return new Date();
     }
 
+    //login screen ctrlf
     public class LoginScreen extends LinearLayout{
         public EditText nameText, passwordText;
         public Button button1;
@@ -824,7 +819,7 @@ public class ScheduleBlock extends LinearLayout {
             this.setLayoutParams(new LinearLayout.LayoutParams(screenWidth, (int)(0.76*screenHeight)));
             this.setPadding((int)(0.075*screenWidth),(int)(0.03*screenHeight),(int)(0.075*screenWidth),10);
             this.setOrientation(VERTICAL);
-            this.setGravity(Gravity.LEFT);
+            this.setGravity(Gravity.RIGHT); //looks nice
             this.setBackgroundColor(getResources().getColor(R.color.powerschool));
 
             if(returnable){
@@ -872,7 +867,7 @@ public class ScheduleBlock extends LinearLayout {
             this.addView(hint);
 
             nameText = new EditText(context);
-            nameText.setHint("ID");
+            nameText.setHint("   ID");
             nameText.setLayoutParams(textParams);
             nameText.setTextColor(getResources().getColor(R.color.white));
             nameText.setBackgroundColor(getResources().getColor(R.color.powerschool_shaded));
@@ -882,15 +877,17 @@ public class ScheduleBlock extends LinearLayout {
             passwordText = new EditText(context);
             passwordText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
             passwordText.setTextColor(getResources().getColor(R.color.white));
-            passwordText.setHint("Password");
+            passwordText.setHint(" password");
             passwordText.setLayoutParams(textParams);
             passwordText.setBackgroundColor(getResources().getColor(R.color.powerschool_shaded));
             passwordText.setPadding(8,8,8,8);
             this.addView(passwordText);
 
             buttonBox = new LinearLayout(context);
-            buttonBox.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT));
+            LayoutParams lparams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT);
+            lparams.setMargins(0, 30, 0,0);
+            buttonBox.setLayoutParams(lparams);
             buttonBox.setGravity(Gravity.START);
             buttonBox.setOrientation(HORIZONTAL);
             this.addView(buttonBox);
@@ -910,10 +907,10 @@ public class ScheduleBlock extends LinearLayout {
                 @Override
                 public void onClick(View view) {
                     LoginTimes = 0;
-                    hint.setText("downloading schedule, please wait....\nThe application will restart it self once downloading finished, please do not re-open the app manually.");
+                    hint.setText("downloading schedule, please wait....\nThe application will restart it self once done downloading, please do not re-open the app manually.");
                     PSname = nameText.getText().toString();
                     PSpass = passwordText.getText().toString();
-                    Log.d("Demo","logging in with informations: name("+PSname+") pass("+PSpass+")");
+                    Log.d("Demo","logging in with information: name("+PSname+") pass("+PSpass+")");
                     editor.putString(getResources().getString(R.string.ps_name_key),
                             nameText.getText().toString());
                     editor.putString(getResources().getString(R.string.ps_pass_key),
@@ -1126,7 +1123,7 @@ public class ScheduleBlock extends LinearLayout {
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
                 LoginTimes++;
-                if(LoginTimes>2)
+                if(LoginTimes>3)
                     webView.destroy();
                 Log.d("HTML", url + " onpagefinished()");
                 webView.evaluateJavascript("document.getElementById('fieldAccount').value='"+account_+"'", null);
@@ -1162,7 +1159,7 @@ public class ScheduleBlock extends LinearLayout {
         Log.d("HTML_OUT", "called");
         if(schedule.get(1)==null){
             Log.d("HTML_OUT", "schedule.get(1) returned null" );
-            if(LoginTimes>=2){
+            if(LoginTimes>=3){
                 login(true);
             }
             return;
