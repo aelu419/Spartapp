@@ -1031,21 +1031,23 @@ public class ScheduleBlock extends LinearLayout {
     }
 
     public List<AVObject> getWkDayList()throws AVException {
-        AVQuery calendar = new AVQuery("DayCycle");
+      /*  AVQuery calendar = new AVQuery("DayCycle");
         calendar.limit(1000);
         List<AVObject> schoolDays = calendar.find();
         schoolDays = QSDateHelper(schoolDays);
         Log.d("WKD_", new Integer(schoolDays.size()).toString());
         return schoolDays;
-
- /*       AVQuery calendar = new AVQuery("Calendar");
+*/
+        AVQuery calendar = new AVQuery("Calendar");
         List<AVObject> schoolDays = calendar.find();
-        schoolDays.sort(new AVObjectComparator());
+        List<AVObject> dayCycle = new ArrayList<AVObject>(0);
+
+        schoolDays = QSDateHelper(schoolDays);
         int schoolDayCount = -1;
         int days = -1;
         for(AVObject schoolDay : schoolDays){
             for(Boolean isDay : (List<Boolean>)schoolDay.getList("weeklyCalendar")) {
-                AVObject schoolday = new AVObject("DayCycle");
+                AVObject schoolday = new AVObject("Void");
                 schoolday.put("daysSince", days);
                 if (isDay){
                     schoolday.put("dayInCycle", schoolDayCount % 6 + 1);
@@ -1055,11 +1057,12 @@ public class ScheduleBlock extends LinearLayout {
                     schoolday.put("dayInCycle", -1);
                 }
                 days++;
-                schoolday.saveInBackground();
+                //schoolday.saveInBackground();
+                dayCycle.add(schoolday);
                 //Log.d("WKD", new Boolean(isDay).toString() + " " + new Integer(schoolDayCount%6+1));
             }
         }
-        return null;*/
+        return dayCycle;
     }
 
     public List<AVObject> QSDateHelper(List<AVObject> arr){
@@ -1123,7 +1126,8 @@ public class ScheduleBlock extends LinearLayout {
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
                 LoginTimes++;
-                if(LoginTimes>3)
+                Log.d("LoginCount", Integer.toString(LoginTimes));
+                if(LoginTimes>5)
                     webView.destroy();
                 Log.d("HTML", url + " onpagefinished()");
                 webView.evaluateJavascript("document.getElementById('fieldAccount').value='"+account_+"'", null);
@@ -1159,7 +1163,7 @@ public class ScheduleBlock extends LinearLayout {
         Log.d("HTML_OUT", "called");
         if(schedule.get(1)==null){
             Log.d("HTML_OUT", "schedule.get(1) returned null" );
-            if(LoginTimes>=3){
+            if(LoginTimes>=5){
                 login(true);
             }
             return;
