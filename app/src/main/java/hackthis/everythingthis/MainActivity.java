@@ -91,6 +91,8 @@ public class MainActivity extends Activity {
 
         PushService.setDefaultPushCallback(this, MainActivity.class);
 
+        Log.d("INIT", "pushservice");
+
         preferences = this.getSharedPreferences(getString(R.string.preferences_key),Context.MODE_PRIVATE);
         editor = preferences.edit();
 

@@ -5,8 +5,14 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+
+import android.graphics.Matrix;
 import android.support.v7.widget.LinearLayoutCompat;
 import android.text.InputType;
 import android.util.Log;
@@ -29,6 +35,7 @@ import android.widget.TextView;
 import com.avos.avoscloud.AVException;
 import com.avos.avoscloud.AVObject;
 import com.avos.avoscloud.AVQuery;
+import com.avos.avoscloud.search.Resources;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 
@@ -41,10 +48,6 @@ import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLConnection;
-import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -56,6 +59,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+
+import static hackthis.everythingthis.utils.testInternetConnection;
 
 public class ScheduleBlock extends LinearLayout {
     Context context;
@@ -708,18 +713,43 @@ public class ScheduleBlock extends LinearLayout {
 
             if(isMain){
                 //set the dimensions of the frame
-                LinearLayout.LayoutParams lay = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, (int)(0.42*(int)(0.76 *screenHeight)));
-                lay.setMargins(4, 10, 4, 4);
+                LinearLayout.LayoutParams lay = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, (int)(0.47*(int)(0.76 *screenHeight)));
+                lay.setMargins(4, 10, 4, 10);
                 this.setLayoutParams(lay);
                 //this.setBackground(getResources().getDrawable(R.drawable.button_background));
 
                 //set inner frame
-                description.setLayoutParams(new LinearLayout.LayoutParams((int)(0.8*screenWidth), ViewGroup.LayoutParams.MATCH_PARENT));
+                description.setLayoutParams(new LinearLayout.LayoutParams((int)(0.9*screenWidth), ViewGroup.LayoutParams.MATCH_PARENT));
+
+                Bitmap bitmapOrg = BitmapFactory.decodeResource(context.getResources(), Course.imageInt);
+
+                int width = bitmapOrg.getWidth();
+                int height = bitmapOrg.getHeight();
+                Log.d("CROP", Integer.toString(width));
+                int newWidth = 1050;
+                int newHeight = 613;
+
+                // calculate the scale - in this case = 0.4f
+                float scaleWidth = ((float) newWidth) / width;
+                float scaleHeight = ((float) newHeight) / height;
+
+                // createa matrix for the manipulation
+                Matrix matrix = new Matrix();
+                // resize the bit map
+                matrix.postScale(scaleWidth, scaleHeight);
+
+                // recreate the new Bitmap
+                Bitmap resizedBitmap = Bitmap.createBitmap(bitmapOrg, 150, 50,
+                        newWidth, newHeight, matrix, true);
+
+                // make a Drawable from Bitmap to allow to set the BitMap
+                // to the ImageView, ImageButton or what ever
+                BitmapDrawable bmd = new BitmapDrawable(resizedBitmap);
 
                //set the background image
                 background.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT));
                 background.setScaleType(ImageView.ScaleType.FIT_XY);
-                background.setImageResource(Course.imageInt);
+                background.setImageDrawable(bmd);
                 background.setBackgroundColor(getResources().getColor(R.color.white));
 
                 //set textviews
@@ -750,12 +780,12 @@ public class ScheduleBlock extends LinearLayout {
             }
             else{
                 //set the dimensions of the frame
-                LinearLayout.LayoutParams lay = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, (int)(0.175*(int)(0.76*screenHeight)));
-                lay.setMargins(4, 10, 4, 4);
+                LinearLayout.LayoutParams lay = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, (int)(0.14*(int)(0.76*screenHeight)));
+                lay.setMargins(4, 15, 4, 15);
                 this.setLayoutParams(lay);
 
                 //set inner frame
-                LinearLayout.LayoutParams LAY = new LinearLayout.LayoutParams((int)(0.8*screenWidth), ViewGroup.LayoutParams.MATCH_PARENT);
+                LinearLayout.LayoutParams LAY = new LinearLayout.LayoutParams((int)(0.9*screenWidth), ViewGroup.LayoutParams.MATCH_PARENT);
                 description.setLayoutParams(LAY);
 
                 //set the bar image
@@ -1115,16 +1145,17 @@ public class ScheduleBlock extends LinearLayout {
         final String account_ = account;
         final String password_ = password;
         final WebView webView = new WebView(context.getApplicationContext());
-        Log.d("HTML", "declared webView");
+
         webView.getSettings().setJavaScriptEnabled(true);
-        Log.d("HTML", "added webView");
+
         webView.loadUrl("https://power.this.edu.cn/public/home.html");
+
         Log.d("HTML", "loaded url");
 
         webView.setWebViewClient(new WebViewClient() {
             @Override
             public void onPageFinished(WebView view, String url) {
-                super.onPageFinished(view, url);
+               // super.onPageFinished(view, url);
                 LoginTimes++;
                 Log.d("LoginCount", Integer.toString(LoginTimes));
                 if(LoginTimes>5)
@@ -1134,7 +1165,7 @@ public class ScheduleBlock extends LinearLayout {
                 webView.evaluateJavascript("document.getElementById('fieldPassword').value='"+password_+"'", null);
                 webView.evaluateJavascript("document.getElementById('btn-enter').click();",
                         new ValueCallback<String>() {
-                            public void onReceiveValue(String html) {
+                            public void onReceiveValue(String html_) {
                                 webView.evaluateJavascript(
                                         "(function() { return ('<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>'); })();",
                                         new ValueCallback<String>() {

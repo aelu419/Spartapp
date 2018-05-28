@@ -24,20 +24,20 @@
     <color name = "english">#ffaa00</color>
 
     <!--fine arts-->
-    <color name = "art">#14a700</color>
-    <color name = "filmstudies">#14a700</color>
+    <color name = "art">#0e7b00</color>
+    <color name = "filmstudies">#0e7b00</color>
 
     <!--performing arts-->
-    <color name = "music">#66ff66</color>
-    <color name = "choir">#66ff66</color>
-    <color name = "theater">#66ff66</color>
-    <color name = "piano">#66ff66</color>
+    <color name = "music">#72a4af</color>
+    <color name = "choir">#72a4af</color>
+    <color name = "theater">#72a4af</color>
+    <color name = "piano">#72a4af</color>
 
     <!--social study related-->
-    <color name = "history">#ff0000</color>
-    <color name = "genderstudies">#ff0000</color>
-    <color name = "socialstudy">#ff0000</color>
-    <color name = "economics">#ff0000</color>
+    <color name = "history">#af0000</color>
+    <color name = "genderstudies">#af0000</color>
+    <color name = "socialstudy">#af0000</color>
+    <color name = "economics">#af0000</color>
 
     <!--sciency stuff-->
     <color name = "biology">#023979</color>
