@@ -8,8 +8,8 @@ android {
         applicationId "hackthis.spartapp"
         minSdkVersion 19
         targetSdkVersion 21
-        versionCode 10
-        versionName "0.9.9"
+        versionCode 11
+        versionName "0.9.10"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         multiDexEnabled true
     }
