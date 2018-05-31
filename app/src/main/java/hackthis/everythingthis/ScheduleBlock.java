@@ -1184,6 +1184,10 @@ public class ScheduleBlock extends LinearLayout {
 
         webView.getSettings().setJavaScriptEnabled(true);
 
+
+        webView.loadUrl("https://power.this.edu.cn/public/home.html");
+        Log.d("HTML", "loaded url");
+
         webView.setWebViewClient(new WebViewClient() {
 
             public void onReceivedError(WebView view, int errorCode, String description, String failingURL){
@@ -1226,9 +1230,6 @@ public class ScheduleBlock extends LinearLayout {
 
             }
         });
-
-        webView.loadUrl("https://power.this.edu.cn/public/home.html");
-        Log.d("HTML", "loaded url");
 
     }
 
