@@ -228,7 +228,7 @@ public class AnnouncementBlock extends LinearLayout{
                     List<AVObject> annList = announcementQuery.find();
                     for (AVObject j : annList) {
                         announcements.add(new Announcement(j.getString("announcementTitle"),
-                                j.getString("announcementTitle"), j.getDate("updatedAt"),
+                                j.getString("announcementBody"), j.getDate("updatedAt"),
                                 new Club(j.getString("clubName"), j.getString("key"))));
                     }
                 }

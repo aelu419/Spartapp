@@ -187,10 +187,9 @@ public class ScheduleBlock extends LinearLayout {
         leftArrow.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(leftArrowEnabled){
-                    browsingTime.set(Calendar.MONTH, browsingTime.get(Calendar.MONTH)-1);
+                if(leftArrowEnabled) {
+                    updatePage(browsingTime.get(Calendar.MONTH)-1);
                 }
-                updatePage();
             }
         });
 
@@ -198,9 +197,8 @@ public class ScheduleBlock extends LinearLayout {
             @Override
             public void onClick(View view) {
                 if(rightArrowEnabled){
-                    browsingTime.set(Calendar.MONTH, browsingTime.get(Calendar.MONTH)+1);
+                    updatePage(browsingTime.get(Calendar.MONTH)+1);
                 }
-                updatePage();
             }
         });
 
@@ -257,9 +255,8 @@ public class ScheduleBlock extends LinearLayout {
 
         login(false);
 
-        updatePage();
+        updatePage(browsingTime.get(Calendar.MONTH));
 
-        initializeDateBar();
     }
 
     public void login(boolean calledFromFetch){
@@ -276,46 +273,76 @@ public class ScheduleBlock extends LinearLayout {
         Log.d("Demo","login finished function");
     }
 
-    public void updatePage(){
+    public void updatePage(int newMonth){
 
         if(!isLoggedIn){
             fetch.setImageResource(R.drawable.fetch_enabled);
             return;
         }
 
-        Log.i("calendar",browsingTime.get(Calendar.YEAR)+" "+browsingTime.get(Calendar.MONTH)+" "+
-                browsingTime.get(Calendar.DATE)+" "+browsingTime.get(Calendar.DAY_OF_WEEK));
+        Log.i("updatePage","updatePage: from "+browsingTime.get(Calendar.YEAR)+" "+browsingTime.get(Calendar.MONTH)+" "+
+                browsingTime.get(Calendar.DATE)+" "+browsingTime.get(Calendar.DAY_OF_WEEK)+"\t to "+newMonth);
 
         //if current month is after july, then it must be the starting year of a new school year, therefore available months are july to december
         int minMonth, maxMonth;
         leftArrowEnabled = true;
         rightArrowEnabled = true;
 
-        if(browsingTime.get(Calendar.MONTH) >= 6){
-            minMonth = 6;
-            maxMonth = 11;
+        if(browsingTime.get(Calendar.MONTH) >= Calendar.JULY){
+            minMonth = Calendar.JULY;
+            maxMonth = Calendar.DECEMBER;
 
-            if(browsingTime.get(Calendar.MONTH) > maxMonth){
+            if(newMonth > maxMonth){
+                if(browsingTime.get(Calendar.DATE)>(is365()?maxDate365[Calendar.JANUARY]:maxDate366[Calendar.JANUARY])) {
+                    //Log.d("updatePage","has more day");
+                    browsingTime.set(Calendar.DATE, (is365() ? maxDate365[Calendar.JANUARY] : maxDate366[Calendar.JANUARY]));
+                }
                 browsingTime.set(Calendar.YEAR, (browsingTime.get(Calendar.YEAR)+1));
                 browsingTime.set(Calendar.MONTH, Calendar.JANUARY);
             }
-            else if(browsingTime.get(Calendar.MONTH)<=minMonth){
+            else if(newMonth <= minMonth){
+                if(browsingTime.get(Calendar.DATE)>(is365()?maxDate365[Calendar.JULY]:maxDate366[Calendar.JULY])) {
+                    //Log.d("updatePage","has more day");
+                    browsingTime.set(Calendar.DATE, (is365() ? maxDate365[Calendar.JULY] : maxDate366[Calendar.JULY]));
+                }
                 browsingTime.set(Calendar.MONTH, Calendar.JULY);
                 leftArrowEnabled = false;
+            }
+            else{
+                if(browsingTime.get(Calendar.DATE)>(is365()?maxDate365[newMonth]:maxDate366[newMonth]))
+                    browsingTime.set(Calendar.DATE,(is365()?maxDate365[newMonth]:maxDate366[newMonth]));
+                browsingTime.set(Calendar.MONTH, newMonth);
             }
         }
         else{
             //second year in a school year, available months 1 ~ 6
-            minMonth = 0;
-            maxMonth = 5;
+            minMonth = Calendar.JANUARY;
+            maxMonth = Calendar.JUNE;
 
-            if(browsingTime.get(Calendar.MONTH) >= maxMonth){
+            //Log.d("updatePage","currently on "+browsingTime.get(Calendar.MONTH)+" "+browsingTime.get(Calendar.DATE)+", next month has"+(is365()?maxDate365[newMonth]:maxDate366[newMonth]));
+
+            if(newMonth >= maxMonth){
+                if(browsingTime.get(Calendar.DATE)>(is365()?maxDate365[Calendar.JUNE]:maxDate366[Calendar.JUNE])) {
+                    //Log.d("updatePage","has more day");
+                    browsingTime.set(Calendar.DATE, (is365() ? maxDate365[Calendar.JUNE] : maxDate366[Calendar.JUNE]));
+                }
                 browsingTime.set(Calendar.MONTH, Calendar.JUNE);
                 rightArrowEnabled= false;
             }
-            else if(browsingTime.get(Calendar.MONTH)<minMonth){
-                browsingTime.set(Calendar.YEAR, browsingTime.get(Calendar.YEAR-1));
+            else if(newMonth < minMonth){
+                if(browsingTime.get(Calendar.DATE)>(is365()?maxDate365[Calendar.DECEMBER]:maxDate366[Calendar.DECEMBER])) {
+                    //Log.d("updatePage","has more day");
+                    browsingTime.set(Calendar.DATE, (is365() ? maxDate365[Calendar.DECEMBER] : maxDate366[Calendar.DECEMBER]));
+                }
+                browsingTime.set(Calendar.YEAR, browsingTime.get(Calendar.YEAR)-1);
                 browsingTime.set(Calendar.MONTH, Calendar.DECEMBER);
+            }
+            else{
+                if(browsingTime.get(Calendar.DATE)>(is365()?maxDate365[newMonth]:maxDate366[newMonth])) {
+                    //Log.d("updatePage","has more day");
+                    browsingTime.set(Calendar.DATE, (is365() ? maxDate365[newMonth] : maxDate366[newMonth]));
+                }
+                browsingTime.set(Calendar.MONTH, newMonth);
             }
         }
 
@@ -329,7 +356,7 @@ public class ScheduleBlock extends LinearLayout {
         else
             rightArrow.setImageResource(R.drawable.arrow_right_disabled);
 
-        if(is365()){
+        /*if(is365()){
             if(selectedDate > maxDate365[browsingTime.get(Calendar.MONTH)]){
                 selectedDate = maxDate365[browsingTime.get(Calendar.MONTH)];
             }
@@ -338,7 +365,7 @@ public class ScheduleBlock extends LinearLayout {
             if(selectedDate > maxDate366[browsingTime.get(Calendar.MONTH)]){
                 selectedDate = maxDate366[browsingTime.get(Calendar.MONTH)];
             }
-        }
+        }*/
 
         initializeDateBar();
 
@@ -346,9 +373,11 @@ public class ScheduleBlock extends LinearLayout {
 
     public void onLayout(boolean changed, int l, int t, int r, int b){
         super.onLayout(changed, l, t, r, b);
+        //GregorianCalendar gc = new GregorianCalendar();
+       // gc.setTime(currentTime);
         if(isSet) {
-            Log.d("calendar","onLayout function toggles" + selectedDate);
-            dateList.get(selectedDate - 1).toggle();
+            Log.d("calendar","onLayout function toggles" + browsingTime.get(Calendar.DATE));
+            dateList.get(browsingTime.get(Calendar.DATE) - 1).toggle();
             isSet = false;
         }
     }
@@ -383,20 +412,23 @@ public class ScheduleBlock extends LinearLayout {
         addInterval();
 
         Log.i("Demo","Finished initializing date bar");
-
         isSet = true;
     }
 
     private boolean is365(){
         int thisYear = browsingTime.get(Calendar.YEAR);
         if(thisYear % 4 == 0){
-            if(thisYear % 400 == 0)
-                return true;
-            else if(thisYear % 100 == 0)
+            if(thisYear % 400 == 0) {
+                Log.i("year",thisYear+"returns false");
                 return false;
-            return true;
+            }
+            else{
+                Log.i("year",thisYear+"returns"+(thisYear%100==0));
+                return (thisYear%100==0);
+            }
         }
-        return false;
+        Log.i("year",thisYear+"returns true");
+        return true;
     }
 
     public Subject[] getFromTable(Calendar cal){
@@ -435,16 +467,9 @@ public class ScheduleBlock extends LinearLayout {
             return;
         }
 
-        Log.i("timing","onselection onselection called"+new Date().getTime());
-        long TIME = new Date().getTime();
-
-        //clears the existing contents in the body
-        bodyBlock.removeAllViews();
-
         Log.d("Demo","starting onSelection");
 
         currentTime = getTime();
-        Log.i("timing","onselection onselection -got time"+(new Date().getTime()-TIME));
 
         GregorianCalendar todayTemp = new GregorianCalendar();
         todayTemp.setTime(currentTime);
@@ -482,7 +507,7 @@ public class ScheduleBlock extends LinearLayout {
             }
         }
 
-        Log.d("Demo",subjectsTrimmed.toString()+"\n"+periodsTrimmed.toString());
+        Log.d("Demo",subjectsTrimmed.toString()+" "+periodsTrimmed.toString());
 
         GregorianCalendar tmrTemp = getTomorrow();
 
@@ -491,79 +516,81 @@ public class ScheduleBlock extends LinearLayout {
         setPeriodTimes(new GregorianCalendar(browsingTime.get(Calendar.YEAR), browsingTime.get(Calendar.MONTH),
                 browsingTime.get(Calendar.DATE)));
 
-        Log.d("Demo","today:"+browsingTime.get(Calendar.YEAR)+ browsingTime.get(Calendar.MONTH)+
+        Log.d("Demo","today:"+browsingTime.get(Calendar.YEAR)+ " "+browsingTime.get(Calendar.MONTH)+" "+
                 browsingTime.get(Calendar.DATE));
-
 
         //if the calendar does not yet exist
         if( subjectsTrimmed.isEmpty() || subjects == null) {
+                bodyBlock.removeAllViews();
+                ImageView restImage = new ImageView(context);
+                restImage.setPadding(20,40,20,0);
+
+                TextView errorMessage = new TextView(context);
+
+                errorMessage.setTextSize((float)(screenWidth > screenHeight ? screenWidth/50.0 : screenHeight/50.0));
+                errorMessage.setGravity(Gravity.CENTER_HORIZONTAL|Gravity.CENTER_VERTICAL);
+                errorMessage.setTextColor(getResources().getColor(R.color.black));
+                if(fuckCalendarsWhyTheFuckDoesntWeekDayChangeAutomatically == GregorianCalendar.SUNDAY
+                        || fuckCalendarsWhyTheFuckDoesntWeekDayChangeAutomatically == GregorianCalendar.SATURDAY) {
+                    restImage.setImageResource(R.drawable.weekend);
+                    errorMessage.setText("ENJOY YOUR WEEKEND");
+                }
+                else {
+                    errorMessage.setText("ENJOY YOUR DAY OFF");
+                    restImage.setImageResource(R.drawable.vacation);
+                }
+                LinearLayout.LayoutParams restParams = new LinearLayout.LayoutParams((int)(0.7*screenWidth),(int)(0.7*screenWidth));
+                restParams.setMargins(0, 140, 0, 0);
+                restImage.setLayoutParams(restParams);
+                bodyBlock.addView(restImage);
+                bodyBlock.addView(errorMessage);
             Log.d("Demo","empty day");
-            ImageView restImage = new ImageView(context);
-            restImage.setPadding(20,40,20,0);
-
-            TextView errorMessage = new TextView(context);
-
-            errorMessage.setTextSize((float)(screenWidth > screenHeight ? screenWidth/50.0 : screenHeight/50.0));
-            errorMessage.setGravity(Gravity.CENTER_HORIZONTAL|Gravity.CENTER_VERTICAL);
-            errorMessage.setTextColor(getResources().getColor(R.color.black));
-            if(fuckCalendarsWhyTheFuckDoesntWeekDayChangeAutomatically == GregorianCalendar.SUNDAY
-                    || fuckCalendarsWhyTheFuckDoesntWeekDayChangeAutomatically == GregorianCalendar.SATURDAY) {
-                restImage.setImageResource(R.drawable.weekend);
-                errorMessage.setText("ENJOY YOUR WEEKEND");
-            }
-            else {
-                errorMessage.setText("ENJOY YOUR DAY OFF");
-                restImage.setImageResource(R.drawable.vacation);
-            }
-            LinearLayout.LayoutParams restParams = new LinearLayout.LayoutParams((int)(0.7*screenWidth),(int)(0.7*screenWidth));
-            restParams.setMargins(0, 140, 0, 0);
-            restImage.setLayoutParams(restParams);
-            bodyBlock.addView(restImage);
-            bodyBlock.addView(errorMessage);
         }
         else {
-            Log.d("Demo","school day");
-            courseBlock[] blocks = new courseBlock[subjectsTrimmed.size()];
-            boolean[] isMain = new boolean[subjectsTrimmed.size()];
-            if (todayTemp.get(GregorianCalendar.MONTH) == temp.get(GregorianCalendar.MONTH)
-                    && todayTemp.get(GregorianCalendar.DATE) == temp.get(GregorianCalendar.DATE)) {
-                Log.d("Demo","today is selected");
-                boolean foundFirst = false;
-                for(int i = 0; i < subjectsTrimmed.size(); i++){
-                    if(periodTimes[periodsTrimmed.get(i)]>hm && !foundFirst){
-                        foundFirst = true;
-                        isMain[i] = true;
-                        Log.d("Demo",hm+"less than"+periodTimes[periodsTrimmed.get(i)]);
+                //initialize blocks in terms of time
+                bodyBlock.removeAllViews();
+                courseBlock[] blocks = new courseBlock[subjectsTrimmed.size()];
+                boolean[] isMain = new boolean[subjectsTrimmed.size()];
+                if (todayTemp.get(GregorianCalendar.MONTH) == temp.get(GregorianCalendar.MONTH)
+                        && todayTemp.get(GregorianCalendar.DATE) == temp.get(GregorianCalendar.DATE)) {
+                    Log.d("Demo","today is selected");
+                    boolean foundFirst = false;
+                    for(int i = 0; i < subjectsTrimmed.size(); i++){
+                        if(periodTimes[periodsTrimmed.get(i)]>hm && !foundFirst){
+                            foundFirst = true;
+                            isMain[i] = true;
+                            Log.d("Demo",hm+"less than"+periodTimes[periodsTrimmed.get(i)]);
+                        }
+                        else{
+                            isMain[i] = false;
+                        }
                     }
-                    else{
-                        isMain[i] = false;
-                    }
-                }
-            } else if(tmrTemp != null){
-                if (tmrTemp.get(GregorianCalendar.MONTH) == temp.get(GregorianCalendar.MONTH)
-                        && tmrTemp.get(GregorianCalendar.DATE) == temp.get(GregorianCalendar.DATE)) {
-                    Log.i("Demo", "tomorrow is selected");
-                    if (todayIsSchoolDay) {
-                        if (hm > periodTimes[periodsTrimmed.get(periodsTrimmed.size()-1)]) {
+                } else if(tmrTemp != null){
+                    if (tmrTemp.get(GregorianCalendar.MONTH) == temp.get(GregorianCalendar.MONTH)
+                            && tmrTemp.get(GregorianCalendar.DATE) == temp.get(GregorianCalendar.DATE)) {
+                        Log.i("Demo", "tomorrow is selected");
+                        if (todayIsSchoolDay) {
+                            if (hm > periodTimes[periodsTrimmed.get(periodsTrimmed.size()-1)]) {
+                                isMain[0] = true;
+                            }
+                        } else {
                             isMain[0] = true;
                         }
                     } else {
-                        isMain[0] = true;
+                        Log.i("Demo", "no next periods in today");
                     }
-                } else {
+                }
+                else {
                     Log.i("Demo", "no next periods in today");
                 }
-            }
-            else {
-                Log.i("Demo", "no next periods in today");
-            }
-            Log.i("timing","onselection add block begins"+(new Date().getTime() - TIME));
-            for (int i = 0; i < subjectsTrimmed.size(); i++) {
-                blocks[i] = new courseBlock(context, isMain[i], subjectsTrimmed.get(i), i);
 
-                bodyBlock.addView(blocks[i]);
-            }
-            Log.i("timing","onselection add block ended"+(new Date().getTime() - TIME));
+                for (int i = 0; i < subjectsTrimmed.size(); i++) {
+                    blocks[i] = new courseBlock(context, isMain[i], subjectsTrimmed.get(i), i);
+                    bodyBlock.addView(blocks[i]);
+                }
+
+            Log.d("Demo","school day");
+
         }
         Log.d("Demo","ending onSelection");
     }
@@ -644,22 +671,22 @@ public class ScheduleBlock extends LinearLayout {
         }
 
         public void onClick(View view){
-            dateList.get(selectedDate - 1).toggle();
+            dateList.get(browsingTime.get(Calendar.DATE) - 1).toggle();
             toggle();
         }
 
     }
 
     public void scroll(){
-        if(selectedDate<=3) {
+        if(browsingTime.get(Calendar.DATE)<=3) {
             Log.i("calendar","rolled to beginning");
             //the first elements doesnt need scrolling
             dateSpinner.smoothScrollTo(0,0);
         }
         else {
             //the rest scrolls to the middle
-            Log.i("calendar",selectedDate+" rolled");
-            dateSpinner.smoothScrollTo((selectedDate - 3) * 2 * DateViewCommonWidth, 0);
+            Log.i("calendar",browsingTime.get(Calendar.DATE)+" rolled");
+            dateSpinner.smoothScrollTo((browsingTime.get(Calendar.DATE) - 3) * 2 * DateViewCommonWidth, 0);
         }
     }
 
@@ -721,7 +748,7 @@ public class ScheduleBlock extends LinearLayout {
                 //set inner frame
                 description.setLayoutParams(new LinearLayout.LayoutParams((int)(0.9*screenWidth), ViewGroup.LayoutParams.MATCH_PARENT));
 
-                Bitmap bitmapOrg = BitmapFactory.decodeResource(context.getResources(), Course.imageInt);
+                /*Bitmap bitmapOrg = BitmapFactory.decodeResource(context.getResources(), Course.imageInt);
 
                 int width = bitmapOrg.getWidth();
                 int height = bitmapOrg.getHeight();
@@ -745,11 +772,12 @@ public class ScheduleBlock extends LinearLayout {
                 // make a Drawable from Bitmap to allow to set the BitMap
                 // to the ImageView, ImageButton or what ever
                 BitmapDrawable bmd = new BitmapDrawable(resizedBitmap);
+                */
 
                //set the background image
                 background.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT));
                 background.setScaleType(ImageView.ScaleType.FIT_XY);
-                background.setImageDrawable(bmd);
+                background.setImageResource(Course.imageInt);
                 background.setBackgroundColor(getResources().getColor(R.color.white));
 
                 //set textviews
@@ -950,6 +978,7 @@ public class ScheduleBlock extends LinearLayout {
                     try{
                         openWebView(PSname, PSpass);}
                     catch(Exception e){
+                        login(true);
                         Log.d("DEV","KMS");
                     }
                 }
@@ -1142,24 +1171,35 @@ public class ScheduleBlock extends LinearLayout {
     }
 
     public void openWebView(String account, String password) throws InterruptedException{
+
+        //if not connected, then re-login directly
+        if(!testInternetConnection(context)){
+            login(true);
+            return;
+        }
+
         final String account_ = account;
         final String password_ = password;
         final WebView webView = new WebView(context.getApplicationContext());
 
         webView.getSettings().setJavaScriptEnabled(true);
 
-        webView.loadUrl("https://power.this.edu.cn/public/home.html");
-
-        Log.d("HTML", "loaded url");
-
         webView.setWebViewClient(new WebViewClient() {
+
+            public void onReceivedError(WebView view, int errorCode, String description, String failingURL){
+                super.onReceivedError(view, errorCode, description, failingURL);
+                Log.d("WebViewStuff",errorCode+description+failingURL);
+            }
+
             @Override
             public void onPageFinished(WebView view, String url) {
                // super.onPageFinished(view, url);
                 LoginTimes++;
-                Log.d("LoginCount", Integer.toString(LoginTimes));
-                if(LoginTimes>5)
+                if(LoginTimes>5){
+                    login(true);
                     webView.destroy();
+                }
+                Log.d("LoginCount", Integer.toString(LoginTimes));
                 Log.d("HTML", url + " onpagefinished()");
                 webView.evaluateJavascript("document.getElementById('fieldAccount').value='"+account_+"'", null);
                 webView.evaluateJavascript("document.getElementById('fieldPassword').value='"+password_+"'", null);
@@ -1186,6 +1226,9 @@ public class ScheduleBlock extends LinearLayout {
 
             }
         });
+
+        webView.loadUrl("https://power.this.edu.cn/public/home.html");
+        Log.d("HTML", "loaded url");
 
     }
 
