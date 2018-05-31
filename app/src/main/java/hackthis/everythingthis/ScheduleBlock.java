@@ -1182,54 +1182,41 @@ public class ScheduleBlock extends LinearLayout {
         final String password_ = password;
         final WebView webView = new WebView(context.getApplicationContext());
 
-        webView.getSettings().setJavaScriptEnabled(true);
+        final boolean[] spellCasted = {false};
 
+        webView.getSettings().setJavaScriptEnabled(true);
+        webView.setWebViewClient(new WebViewClient() {
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                if(!spellCasted[0]){
+                    Log.d("HTML", url + " onpagefinished()");
+                    webView.evaluateJavascript("document.getElementById('fieldAccount').value='"+account_+"'", null);
+                    webView.evaluateJavascript("document.getElementById('fieldPassword').value='"+password_+"'", null);
+                    webView.evaluateJavascript("document.getElementById('btn-enter').click();", null);
+                    spellCasted[0] = true;
+                }
+                else {
+                    webView.evaluateJavascript(
+                            "(function() { return ('<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>'); })();",
+                            new ValueCallback<String>() {
+                                @Override
+                                public void onReceiveValue(String html_) {
+                                    try{
+                                        String html = StringEscapeUtils.unescapeJava(html_);
+                                        //Log.d("HTML", html);
+                                        writeWeeklySchedule(html);
+                                    }
+                                    catch(Exception e){
+                                        Log.d("HTML", "escape failed");
+                                    }
+                                }
+                            });
+                }
+            }
+        });
 
         webView.loadUrl("https://power.this.edu.cn/public/home.html");
         Log.d("HTML", "loaded url");
-
-        webView.setWebViewClient(new WebViewClient() {
-
-            public void onReceivedError(WebView view, int errorCode, String description, String failingURL){
-                super.onReceivedError(view, errorCode, description, failingURL);
-                Log.d("WebViewStuff",errorCode+description+failingURL);
-            }
-
-            @Override
-            public void onPageFinished(WebView view, String url) {
-               // super.onPageFinished(view, url);
-                LoginTimes++;
-                if(LoginTimes>5){
-                    login(true);
-                    webView.destroy();
-                }
-                Log.d("LoginCount", Integer.toString(LoginTimes));
-                Log.d("HTML", url + " onpagefinished()");
-                webView.evaluateJavascript("document.getElementById('fieldAccount').value='"+account_+"'", null);
-                webView.evaluateJavascript("document.getElementById('fieldPassword').value='"+password_+"'", null);
-                webView.evaluateJavascript("document.getElementById('btn-enter').click();",
-                        new ValueCallback<String>() {
-                            public void onReceiveValue(String html_) {
-                                webView.evaluateJavascript(
-                                        "(function() { return ('<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>'); })();",
-                                        new ValueCallback<String>() {
-                                            @Override
-                                            public void onReceiveValue(String html_) {
-                                                try{
-                                                    String html = StringEscapeUtils.unescapeJava(html_);
-                                                    Log.d("HTML", html);
-                                                    writeWeeklySchedule(html);
-                                                }
-                                                catch(Exception e){
-                                                    Log.d("HTML", "escape failed");
-                                                }
-                                            }
-                                        });
-                            }
-                        });
-
-            }
-        });
 
     }
 
