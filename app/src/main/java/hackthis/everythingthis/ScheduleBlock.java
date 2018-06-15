@@ -59,6 +59,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import static hackthis.everythingthis.utils.testInternetConnection;
 
@@ -74,8 +76,6 @@ public class ScheduleBlock extends LinearLayout {
     public boolean isLoggedIn;
     private String PSname, PSpass;
 
-    //IO
-    private final String FILENAME = "schedule";
 
     //UI
     private LinearLayout header;
@@ -105,7 +105,7 @@ public class ScheduleBlock extends LinearLayout {
     public SharedPreferences.Editor editor;
 
     private int LoginTimes;
-
+    private LoginScreen ls = null;
 
     //Dimensions
     private int DateViewCommonWidth;
@@ -113,6 +113,7 @@ public class ScheduleBlock extends LinearLayout {
     public ScheduleBlock(Context context, int height, int width, SharedPreferences PREFERENCES, SharedPreferences.Editor EDITOR){
         super(context);
 
+        Log.d("INIT", "creating schedule block");
         this.context = context;
 
         editor = EDITOR;
@@ -158,7 +159,7 @@ public class ScheduleBlock extends LinearLayout {
             public void onClick(View view) {
                 if(isLoggedIn) {
                     isLoggedIn = false;
-                    LoginScreen ls = new LoginScreen(false, true);
+                    ls = new LoginScreen(false, true);
                     bodyBlock.removeAllViews();
                     bodyBlock.addView(ls);
                 }
@@ -189,6 +190,7 @@ public class ScheduleBlock extends LinearLayout {
             public void onClick(View view) {
                 if(leftArrowEnabled) {
                     updatePage(browsingTime.get(Calendar.MONTH)-1);
+
                 }
             }
         });
@@ -198,6 +200,7 @@ public class ScheduleBlock extends LinearLayout {
             public void onClick(View view) {
                 if(rightArrowEnabled){
                     updatePage(browsingTime.get(Calendar.MONTH)+1);
+
                 }
             }
         });
@@ -260,14 +263,19 @@ public class ScheduleBlock extends LinearLayout {
     }
 
     public void login(boolean calledFromFetch){
+        Log.d("INIT", "login() called");
         try {
+            Log.d("Demo","subjecttable = getschedule");
             subjectTable = getSchedule();
             isLoggedIn = true;
+            Log.d("Demo", "got it");
         }
         catch(Exception e) {
-            LoginScreen ls = new LoginScreen(calledFromFetch, false);
+            Log.d("Demo", "login screen");
+            ls = new LoginScreen(calledFromFetch, false);
             bodyBlock.removeAllViews();
             bodyBlock.addView(ls);
+            Log.d("Demo", "login screened");
         }
 
         Log.d("Demo","login finished function");
@@ -965,7 +973,7 @@ public class ScheduleBlock extends LinearLayout {
                 @Override
                 public void onClick(View view) {
                     LoginTimes = 0;
-                    hint.setText("downloading schedule, please wait....\nThe application will restart it self once done downloading, please do not re-open the app manually.");
+                    hint.setText("Downloading schedule....\nPlease do not exit the app manually");
                     PSname = nameText.getText().toString();
                     PSpass = passwordText.getText().toString();
                     Log.d("Demo","logging in with information: name("+PSname+") pass("+PSpass+")");
@@ -974,11 +982,13 @@ public class ScheduleBlock extends LinearLayout {
                     editor.putString(getResources().getString(R.string.ps_pass_key),
                             passwordText.getText().toString());
                     editor.apply();
-                    iconMode();
+                   // iconMode();
                     try{
-                        openWebView(PSname, PSpass);}
+                        openWebView(PSname, PSpass);
+                        Log.d("Demo", "openWebview ends");
+                    }
                     catch(Exception e){
-                        login(true);
+                        ls.errorTextInternet();
                         Log.d("DEV","KMS");
                     }
                 }
@@ -989,6 +999,14 @@ public class ScheduleBlock extends LinearLayout {
             this.removeAllViews();
             this.addView(iconBox);
             this.addView(hint);
+        }
+
+        public void errorTextInternet(){
+            hint.setText("Download failed\nCheck your internet connection and try again");
+        }
+
+        public void errorTextLogin(){
+            hint.setText("Login failed\nIncorrect username or password");
         }
 
     }
@@ -1004,6 +1022,7 @@ public class ScheduleBlock extends LinearLayout {
     }
 
     public HashMap<String, Subject[]> getSchedule() throws Exception{
+        Log.d("INIT", "getSchedule() called");
         HashMap<String, Subject[]> schedule = new HashMap<>(6);
 
         HashMap<String, Integer> dateDay = getDateDayPairs();
@@ -1019,29 +1038,20 @@ public class ScheduleBlock extends LinearLayout {
             else
                 schedule.put(date, null);
         }
-
+        Log.d("INIT", "getSchedule() returned");
         return schedule;
     }
 
     public HashMap<String, Integer> getDateDayPairs()throws AVException, ParseException {
-        HashMap<String, Integer> dateDay;
+        Log.d("INIT", "getDateDayPairs() called");
 
-        AVQuery query = new AVQuery("UpdateCalendar");
-        List<AVObject> qList = query.find();
-        Boolean update = qList.get(0).getBoolean("pendingUpdate");
-        String startOfYear = qList.get(0).getString("yearStart");
-        if(update){
-            dateDay = fetchDateDayPairs(startOfYear);
-            writeDateDayPairs(dateDay);
-        }
-        else{
-            try{
-                dateDay = readDateDayPairs();
-                Log.d("WKD", "read from file");
-            }catch(IOException e){
-                dateDay = fetchDateDayPairs(startOfYear);
-                writeDateDayPairs(dateDay);
-            }
+        HashMap<String, Integer> dateDay;
+        try{
+            dateDay = readDateDayPairs();
+            Log.d("INIT_AVO", "DateDayPairs read");
+        }catch(IOException e){
+            dateDay = fetchDateDayPairs("2017-08-21", true);
+            Log.d("INIT_AVO", "DateDayPairs defaulted");
         }
         return dateDay;
     }
@@ -1073,15 +1083,17 @@ public class ScheduleBlock extends LinearLayout {
         return null;
     }
 
-    public HashMap<String, Integer> fetchDateDayPairs(String startOfYear) throws ParseException, AVException {
+    public HashMap<String, Integer> fetchDateDayPairs(String startOfYear, boolean def) throws ParseException, AVException {
         HashMap<String, Integer> dateDay = new HashMap<>(0);
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         Calendar c = Calendar.getInstance();
         c.setTime(sdf.parse(startOfYear));
-        List<AVObject> schoolDays = getWkDayList();
+        List<AVObject> schoolDays = null;
+        if(!def) schoolDays = getWkDayList();
         for(AVObject schoolDay : schoolDays){
             String time = sdf.format(c.getTime());
-            Integer day = schoolDay.getInt("dayInCycle");
+            Integer day = -1;
+            if(!def) day = schoolDay.getInt("dayInCycle");
             dateDay.put(time, day);
             c.add(Calendar.DATE, 1);
             Log.d("WKD_", time  + " " + day);
@@ -1170,19 +1182,29 @@ public class ScheduleBlock extends LinearLayout {
 
     }
 
-    public void openWebView(String account, String password) throws InterruptedException{
+    public void openWebView(String account, String password) throws InterruptedException, AVException, ParseException{
 
-        //if not connected, then re-login directly
-        if(!testInternetConnection(context)){
-            login(true);
-            return;
-        }
-
+        Log.d("Demo", "webview starting");
+        //fetch 6-day schedule
         final String account_ = account;
         final String password_ = password;
         final WebView webView = new WebView(context.getApplicationContext());
 
         final boolean[] spellCasted = {false};
+        final boolean[] timeout = {false};
+
+        final Timer timer = new Timer();
+        TimerTask tt = new TimerTask(){
+            public void run(){
+                Log.d("TIME_", "timeout");
+                timeout[0] = true;
+                ls.errorTextInternet();
+                timer.purge();
+                timer.cancel();
+                Log.d("TIME_", "timer purged and cancelled");
+            }
+        };
+        timer.schedule(tt, 10000, 1);
 
         webView.getSettings().setJavaScriptEnabled(true);
         webView.setWebViewClient(new WebViewClient() {
@@ -1195,16 +1217,28 @@ public class ScheduleBlock extends LinearLayout {
                     webView.evaluateJavascript("document.getElementById('btn-enter').click();", null);
                     spellCasted[0] = true;
                 }
-                else {
+                else if(!timeout[0]){
                     webView.evaluateJavascript(
                             "(function() { return ('<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>'); })();",
                             new ValueCallback<String>() {
                                 @Override
                                 public void onReceiveValue(String html_) {
                                     try{
+                                        //internet works, fetch calendar on this thread
+                                        AVQuery query = new AVQuery("UpdateCalendar");
+                                        List<AVObject> qList = query.find();
+                                        String startOfYear = qList.get(0).getString("yearStart");
+                                        HashMap<String, Integer> dateDay;
+
+                                        //write day list
+                                        dateDay = fetchDateDayPairs(startOfYear, false);
+                                        writeDateDayPairs(dateDay);
+
                                         String html = StringEscapeUtils.unescapeJava(html_);
                                         //Log.d("HTML", html);
+                                        // if(!timedOut[0])
                                         writeWeeklySchedule(html);
+
                                     }
                                     catch(Exception e){
                                         Log.d("HTML", "escape failed");
@@ -1216,7 +1250,7 @@ public class ScheduleBlock extends LinearLayout {
         });
 
         webView.loadUrl("https://power.this.edu.cn/public/home.html");
-        Log.d("HTML", "loaded url");
+        Log.d("HTML", "load url");
 
     }
 
@@ -1225,9 +1259,7 @@ public class ScheduleBlock extends LinearLayout {
         Log.d("HTML_OUT", "called");
         if(schedule.get(1)==null){
             Log.d("HTML_OUT", "schedule.get(1) returned null" );
-            if(LoginTimes>=5){
-                login(true);
-            }
+            ls.errorTextLogin();
             return;
         }
 

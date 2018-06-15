@@ -82,90 +82,30 @@ public class MainActivity extends Activity {
         //initialize leancloud
         // 初始化参数依次为 this, AppId, AppKey
         AVOSCloud.initialize(this,"cRxhzMwEQJ07JfRuztRYFJ5n-gzGzoHsz","kIvYOVL1hGnkS3n1kh76P8NC");
-        //使用国内节点
-        AVOSCloud.useAVCloudCN();
         // 放在 SDK 初始化语句 AVOSCloud.initialize() 后面，只需要调用一次即可
         AVOSCloud.setDebugLogEnabled(true);
+        //使用国内节点
+        AVOSCloud.useAVCloudCN();
 
         AVInstallation.getCurrentInstallation().saveInBackground();
 
-        PushService.setDefaultPushCallback(this, MainActivity.class);
-
         Log.d("INIT", "pushservice");
+        PushService.setDefaultPushCallback(this, MainActivity.class);
 
         preferences = this.getSharedPreferences(getString(R.string.preferences_key),Context.MODE_PRIVATE);
         editor = preferences.edit();
 
         firstRun = preferences.getBoolean(getResources().getString(R.string.first_run_key), true);
         //TODO: write any firstRun methods here
-
         editor.putBoolean(getResources().getString(R.string.first_run_key), false);
         editor.apply();
-
-
-
-        /*// 测试 SDK 是否正常工作的代码
-        已测试，见数据库中androidTestObject项
-        AVObject testObject = new AVObject("androidTestObject");
-        testObject.put("words", "androidTestObjectMSG");
-        testObject.saveInBackground(new SaveCallback() {
-            @Override
-            public void done(AVException e) {
-                if(e == null){
-                    Log.d("saved","success!");
-                }
-            }
-        });*/
+        Log.d("INIT", "firstrun code");
 
         //getScreenDimensions
         DisplayMetrics metrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(metrics);
         screenWidth = metrics.widthPixels;
         screenHeight = metrics.heightPixels;
-
-        if(!testInternetConnection(this)){
-            //read local version code
-            Log.d("VER","failed to connect");
-        }
-        else{
-            try {
-                AVQuery versionQuery = new AVQuery("AndroidVersionInfo");
-                AVObject versionObj = versionQuery.get("5adf2f749f545433342866ec");
-                versionName = versionObj.getString("version_name");
-                int versionCode = versionObj.getInt("version_code");
-
-                int localVersionCode = 0;
-                try {
-                    PackageInfo pInfo = getApplicationContext().getPackageManager().getPackageInfo(getPackageName(), 0);
-                    localVersionCode = pInfo.versionCode;
-                    Log.d("VER","local version code is " + localVersionCode);
-
-                    if(localVersionCode < versionCode){
-                        AlertDialog.Builder alertBuilder = new AlertDialog.Builder(this);
-                        alertBuilder.setPositiveButton("yes", new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-                                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://thisprogrammingclub.github.io/"));
-                                startActivity(browserIntent);
-                            }
-                        }).setNegativeButton("no", new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-
-                            }
-                        }).setMessage("A new version (" + versionName + ") is available. Do you want to redirect to its download page?")
-                                .setCancelable(true);
-                        Log.d("VER","connected and obtained version "+versionName+" with code "+versionCode);
-                        AlertDialog dialog = alertBuilder.create();
-                        dialog.show();
-                    }
-
-                } catch (PackageManager.NameNotFoundException e) {
-                    e.printStackTrace();
-                }
-            }
-            catch(Exception e){
-                //read local version code
-            }
-        }
 
         //initialize body
         body = (LinearLayout)findViewById(R.id.body);
@@ -222,13 +162,13 @@ public class MainActivity extends Activity {
                 updatePageMode();
             }
         });
-
+        Log.d("INIT", "icons initialized");
 
         sb = new ScheduleBlock(getApplication(), (int)(0.88*screenHeight), screenWidth, preferences, editor);
         Log.d("Demo","schedule block created");
-        ab = new AnnouncementBlock(getApplication(), new LinearLayout.LayoutParams(screenWidth, (int)(0.88*screenHeight)), preferences, editor);
+        ab = null;//new AnnouncementBlock(getApplication(), new LinearLayout.LayoutParams(screenWidth, (int)(0.88*screenHeight)), preferences, editor);
         Log.d("Demo","announcement block created");
-        pb = new PostBlock(getApplication(), new LinearLayout.LayoutParams(screenWidth, (int)(0.88*screenHeight)), preferences, editor);
+        pb = null;//new PostBlock(getApplication(), new LinearLayout.LayoutParams(screenWidth, (int)(0.88*screenHeight)), preferences, editor);
         Log.d("Demo","post block created");
 
         registerReceiver(announcementUpdateReceiver, new IntentFilter("updateAnnouncements"));
@@ -237,6 +177,61 @@ public class MainActivity extends Activity {
         pageModeHistory = 1;
 
         updatePageMode();
+
+
+        //this needs to go
+      /*  Log.d("VER", "step 1");
+        if(!testInternetConnection(this)){
+            //read local version code
+            Log.d("VER","failed to connect"); AVQuery query = new AVQuery("UpdateCalendar");
+            List<AVObject> qList = query.find();
+            String startOfYear = qList.get(0).getString("yearStart");
+            HashMap<String, Integer> dateDay;
+
+            //write day list
+            dateDay = fetchDateDayPairs(startOfYear, false);
+            writeDateDayPairs(dateDay);
+        }
+        else{
+            Log.d("VER", "connected");
+            try {
+                AVQuery versionQuery = new AVQuery("AndroidVersionInfo");
+                AVObject versionObj = versionQuery.get("5adf2f749f545433342866ec");
+                versionName = versionObj.getString("version_name");
+                int versionCode = versionObj.getInt("version_code");
+                Log.d("VER", "got version info");
+                int localVersionCode = 0;
+                try {
+                    PackageInfo pInfo = getApplicationContext().getPackageManager().getPackageInfo(getPackageName(), 0);
+                    localVersionCode = pInfo.versionCode;
+                    Log.d("VER","local version code is " + localVersionCode);
+
+                    if(localVersionCode < versionCode){
+                        AlertDialog.Builder alertBuilder = new AlertDialog.Builder(this);
+                        alertBuilder.setPositiveButton("yes", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://thisprogrammingclub.github.io/"));
+                                startActivity(browserIntent);
+                            }
+                        }).setNegativeButton("no", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+
+                            }
+                        }).setMessage("A new version (" + versionName + ") is available. Do you want to redirect to its download page?")
+                                .setCancelable(true);
+                        Log.d("VER","connected and obtained version "+versionName+" with code "+versionCode);
+                        AlertDialog dialog = alertBuilder.create();
+                        dialog.show();
+                    }
+
+                } catch (PackageManager.NameNotFoundException e) {
+                    e.printStackTrace();
+                }
+            }
+            catch(Exception e){
+                //read local version code
+            }
+        }*/
     }
 
     BroadcastReceiver announcementUpdateReceiver = new BroadcastReceiver() {
